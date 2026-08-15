@@ -1,0 +1,86 @@
+.path-track { position: relative; padding-left: 34px; }
+.path-track::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--line);
+}
+.path-track.mini { padding-left: 26px; }
+.path-track.mini::before { left: 8px; }
+
+.node { position: relative; margin-bottom: 14px; }
+.node:last-child { margin-bottom: 0; }
+
+.node-dot {
+  position: absolute;
+  left: -34px;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ink-1);
+  border: 2px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-2);
+  z-index: 1;
+}
+.node-dot svg { width: 13px; height: 13px; }
+.path-track.mini .node-dot { width: 20px; height: 20px; left: -26px; }
+.path-track.mini .node-dot svg { width: 10px; height: 10px; }
+
+.node.done .node-dot { border-color: var(--gold); color: var(--gold); }
+.node.current .node-dot { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.node.locked .node-dot { color: var(--text-2); }
+
+.node-card {
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 13px 14px;
+}
+.node.current .node-card { border-color: var(--accent); }
+.node.locked .node-card { opacity: 0.55; }
+
+.node-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.node-top h4 { margin: 0; font-size: 14px; }
+.node-level {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.node-meta { font-size: 12px; color: var(--text-1); line-height: 1.4; margin-top: 4px; }
+
+.coach-note { margin-top: 8px; background: var(--accent-soft); border-radius: var(--radius-sm); padding: 9px 11px; }
+.coach-note .headline { font-size: 12.5px; color: var(--text-0); font-weight: 700; }
+.coach-note .sub { font-size: 11px; color: var(--text-1); margin-top: 2px; }
+
+.node-bar { height: 4px; border-radius: 3px; background: var(--line-soft); margin-top: 10px; overflow: hidden; }
+.node-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+
+.rating-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-top: 4px;
+}
+.rating-badge.bronze { background: rgba(196, 138, 85, 0.16); color: var(--bronze); }
+.rating-badge.silver { background: rgba(171, 176, 182, 0.16); color: var(--silver); }
+.rating-badge.gold { background: rgba(224, 184, 74, 0.16); color: var(--gold); }
+.rating-badge.platinum { background: rgba(159, 203, 221, 0.16); color: var(--platinum); }
+.rating-badge.diamond { background: rgba(143, 234, 245, 0.16); color: var(--diamond); }

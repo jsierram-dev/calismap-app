@@ -1,0 +1,158 @@
+.session-item { background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md); margin-bottom: 9px; }
+.session-item:last-child { margin-bottom: 0; }
+.session-item.active { border-color: var(--accent); }
+.session-item.done .item-row { opacity: 0.6; }
+
+.item-row { display: flex; align-items: center; gap: 10px; padding: 11px 13px; cursor: pointer; }
+
+.ex-thumb {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-1);
+}
+
+.icon { width: 16px; height: 16px; }
+
+/* Círculo de estado — sin números sueltos: "hecho" es un check, "en
+   progreso" es un anillo parcial (conic-gradient + un círculo más chico
+   encima para el efecto donut), "pendiente" queda vacío. */
+.check {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-ink);
+}
+.check svg { width: 12px; height: 12px; }
+.check.done { background: var(--accent); border-color: var(--accent); }
+.check.progress {
+  border: none;
+  background: conic-gradient(var(--accent) var(--pct, 0deg), var(--line-soft) 0deg);
+}
+.check.progress::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--ink-1);
+}
+
+.info { flex: 1; min-width: 0; }
+.info h4 { margin: 0; font-size: 13.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.info p { margin: 2px 0 0; font-size: 11.5px; color: var(--text-2); }
+
+.custom-pill {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.sets-progress { font-family: var(--font-mono); font-size: 12px; color: var(--text-2); flex-shrink: 0; }
+
+.remove-btn { background: none; border: none; color: var(--text-2); display: flex; cursor: pointer; flex-shrink: 0; padding: 4px; }
+.remove-btn:hover { color: var(--danger); }
+.remove-btn svg { width: 15px; height: 15px; }
+
+.chevron { color: var(--text-2); flex-shrink: 0; transition: transform 0.2s ease; }
+.session-item.expanded .chevron { transform: rotate(180deg); }
+
+.item-form { padding: 0 13px 13px; }
+
+.set-row-header,
+.set-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 90px 30px;
+  gap: 8px;
+  align-items: center;
+}
+.set-row-header { margin-bottom: 6px; }
+.col-label { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-2); text-transform: uppercase; }
+.set-row { margin-bottom: 6px; }
+.set-row:last-of-type { margin-bottom: 0; }
+.set-label { font-size: 11.5px; color: var(--text-1); font-family: var(--font-mono); }
+
+.field-inline input {
+  width: 100%;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 7px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-0);
+}
+.field-inline input:disabled { opacity: 0.6; }
+
+.stepper {
+  display: flex;
+  align-items: stretch;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.stepper.sm { flex: 1; min-width: 0; max-width: 120px; }
+.stepper .step-btn {
+  width: 26px;
+  flex-shrink: 0;
+  border: none;
+  background: var(--ink-1);
+  color: var(--text-0);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1;
+}
+.stepper .step-btn:first-child { border-right: 1px solid var(--line); }
+.stepper .step-btn:last-child { border-left: 1px solid var(--line); }
+.stepper .step-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.stepper input {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  border: none;
+  background: none;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-0);
+}
+
+.set-done-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-2);
+  background: none;
+  cursor: pointer;
+}
+.set-done-btn svg { width: 13px; height: 13px; }
+.set-done-btn.done { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+.hint { font-size: 10.5px; color: var(--text-2); margin: 8px 0 0; }
+
+.prescription-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.prescription-row:last-child { margin-bottom: 0; }
+.prescription-row label { font-size: 12.5px; color: var(--text-1); }

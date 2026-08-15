@@ -1,0 +1,75 @@
+.icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+app-search { display: block; margin-top: 14px; }
+
+.filter-facet { margin-bottom: 12px; }
+.facet-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); margin: 0 0 7px; }
+.chip-row { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 4px; }
+.chip {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--text-1);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--ink-2);
+  color: var(--text-1);
+  border: 1px solid var(--line-soft);
+}
+
+.ex-card { display: flex; align-items: center; gap: 12px; background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px; margin-bottom: 9px; text-decoration: none; color: inherit; }
+.ex-thumb { width: 46px; height: 46px; border-radius: 10px; background: var(--ink-2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--text-2); }
+.ex-thumb svg { width: 20px; height: 20px; }
+.ex-info { min-width: 0; }
+.ex-info h4 { margin: 0 0 5px; font-size: 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ex-info .tags { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.custom-pill { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.03em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); flex-shrink: 0; }
+
+.rating-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 5px;
+  text-transform: uppercase;
+}
+.rating-badge.bronze { background: color-mix(in srgb, var(--bronze) 22%, transparent); color: var(--bronze); }
+.rating-badge.silver { background: color-mix(in srgb, var(--silver) 22%, transparent); color: var(--silver); }
+.rating-badge.gold { background: color-mix(in srgb, var(--gold) 22%, transparent); color: var(--gold); }
+.rating-badge.platinum { background: color-mix(in srgb, var(--platinum) 22%, transparent); color: var(--platinum); }
+.rating-badge.diamond {
+  background: linear-gradient(120deg, color-mix(in srgb, var(--diamond) 30%, transparent), color-mix(in srgb, var(--diamond-2) 30%, transparent));
+  color: var(--diamond);
+}
+
+.routine-card.create {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: none;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}

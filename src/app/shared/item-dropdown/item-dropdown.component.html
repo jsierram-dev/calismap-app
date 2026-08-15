@@ -1,0 +1,88 @@
+<div class="session-item" [class.done]="mode === 'logging' && allDone" [class.active]="mode === 'logging' && !allDone" [class.expanded]="expanded()">
+  <div class="item-row" (click)="onRowClick($event)">
+    <div class="ex-thumb">
+      <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6M9 6h6M7 12h10l-1 8H8l-1-8Z" /></svg>
+    </div>
+
+    @if (mode === 'logging') {
+      <div class="check" [class.done]="allDone" [class.progress]="!allDone && doneCount > 0" [style.--pct]="progressDeg + 'deg'">
+        @if (allDone) {
+          <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        }
+      </div>
+    }
+
+    <div class="info">
+      <h4>
+        {{ exerciseName }}
+        @if (customBadge) {
+          <span class="custom-pill">Personalizado</span>
+        }
+      </h4>
+      <p>{{ subtitle }}</p>
+    </div>
+
+    @if (mode === 'logging') {
+      <span class="sets-progress">{{ doneCount }}/{{ sets.length }}</span>
+    } @else {
+      <button class="remove-btn" type="button" (click)="removed.emit()" aria-label="Quitar ejercicio">
+        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+      </button>
+    }
+
+    <svg class="icon chevron" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+  </div>
+
+  @if (expanded()) {
+    <div class="item-form">
+      @if (mode === 'logging') {
+        <div class="set-row-header">
+          <span class="set-label"></span>
+          <span class="col-label">{{ repUnit === 'reps' ? 'Reps' : 'Seg' }}</span>
+          <span class="col-label">Peso (kg)</span>
+          <span></span>
+        </div>
+        @for (set of sets; track $index; let i = $index) {
+          <div class="set-row" [class.done]="set.done">
+            <span class="set-label">Serie {{ i + 1 }}</span>
+            <div class="field-inline">
+              <input type="text" inputmode="numeric" [(ngModel)]="draftValue[i]" [disabled]="set.done" />
+            </div>
+            <div class="stepper sm">
+              <button type="button" class="step-btn" (click)="stepWeight(i, -1)" [disabled]="set.done">−</button>
+              <input type="text" inputmode="numeric" [ngModel]="draftWeight[i]" readonly />
+              <button type="button" class="step-btn" (click)="stepWeight(i, 1)" [disabled]="set.done">+</button>
+            </div>
+            @if (set.done) {
+              <span class="set-done-btn done" aria-hidden="true">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              </span>
+            } @else {
+              <button class="set-done-btn" type="button" (click)="markDone(i)" aria-label="Marcar serie hecha">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              </button>
+            }
+          </div>
+        }
+        <p class="hint">Peso negativo = asistido (banda/máquina)</p>
+      } @else {
+        <div class="prescription-row">
+          <label>Series objetivo</label>
+          <div class="stepper sm">
+            <button type="button" class="step-btn" (click)="stepTargetSets(-1)">−</button>
+            <input type="text" inputmode="numeric" [ngModel]="targetSets" readonly />
+            <button type="button" class="step-btn" (click)="stepTargetSets(1)">+</button>
+          </div>
+        </div>
+        <div class="prescription-row">
+          <label>{{ repUnit === 'reps' ? 'Reps objetivo' : 'Tiempo objetivo (seg)' }}</label>
+          <div class="stepper sm">
+            <button type="button" class="step-btn" (click)="stepTargetValue(-1)">−</button>
+            <input type="text" inputmode="numeric" [ngModel]="targetValue ?? 0" readonly />
+            <button type="button" class="step-btn" (click)="stepTargetValue(1)">+</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

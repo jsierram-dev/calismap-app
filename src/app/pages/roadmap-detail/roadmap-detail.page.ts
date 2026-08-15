@@ -1,80 +1,111 @@
-import { DecimalPipe, NgClass } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import {
-  IonBackButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonTitle,
-  IonToolbar,
-} from '@ionic/angular/standalone';
-import { addIcons } from 'ionicons';
-import { checkmarkCircle, lockClosed, trophy } from 'ionicons/icons';
+import { Component, OnInit, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { ModalController } from '@ionic/angular/standalone';
 import { Rating } from '../../models/exercise.model';
 import { RoadmapDetailViewModel, RoadmapStepViewModel } from '../../models/roadmap.model';
+import { AuthService } from '../../core/services/auth.service';
 import { RoadmapService } from '../../services/roadmap.service';
+import { RatingCalculatorService } from '../../services/rating-calculator.service';
+import { UserProfileService } from '../../services/user-profile.service';
+import { LoginComponent } from '../../shared/login/login.component';
+import { RouteComponent, RouteNode, RouteNodeState } from '../../shared/route/route.component';
 
+// Pantalla 02 — RoadmapComponent (ver COMPONENTES-calismap.md): pantalla
+// completa (tag+título+"X de N pasos") con RouteComponent anidado adentro.
+// El texto de cada nodo (coach-note/metaText) se arma acá, no en el
+// servicio: RoadmapService devuelve datos (rating/bestValue/
+// minRatingRequired), esta página los traduce a la copia real que ve el
+// usuario — mismo criterio que ya usaba la versión vieja.
 @Component({
   selector: 'app-roadmap-detail',
-  templateUrl: './roadmap-detail.page.html',
-  styleUrls: ['./roadmap-detail.page.css'],
   standalone: true,
-  imports: [
-    DecimalPipe, NgClass, RouterLink,
-    IonHeader, IonToolbar, IonTitle, IonContent,
-    IonButtons, IonBackButton, IonIcon,
-  ],
+  imports: [RouteComponent],
+  templateUrl: './roadmap-detail.page.html',
+  styleUrl: './roadmap-detail.page.css',
 })
 export class RoadmapDetailPage implements OnInit {
   detail = signal<RoadmapDetailViewModel | null>(null);
-
-  /** Steps displayed top→bottom: goal first, then prerequisites in reverse order */
-  stepsReversed = computed(() => {
-    const d = this.detail();
-    return d ? [...d.steps].reverse() : [];
-  });
-
-  progress = computed(() => {
-    const d = this.detail();
-    return d && d.totalCount > 0 ? d.completedCount / d.totalCount : 0;
-  });
+  nodes = signal<RouteNode[]>([]);
 
   constructor(
     private route: ActivatedRoute,
     private roadmapService: RoadmapService,
-  ) {
-    addIcons({ checkmarkCircle, lockClosed, trophy });
+    private ratingCalc: RatingCalculatorService,
+    private userProfile: UserProfileService,
+    private auth: AuthService,
+    private modalCtrl: ModalController,
+  ) {}
+
+  ngOnInit(): void {
+    this.load();
   }
 
-  ngOnInit(): void { this.load(); }
-  ionViewWillEnter(): void { this.load(); }
+  ionViewWillEnter(): void {
+    this.load();
+  }
 
-  private load(): void {
+  private async load(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id')!;
-    this.detail.set(this.roadmapService.getRoadmapDetail(id));
+    const detail = await this.roadmapService.getRoadmapDetail(id);
+    this.detail.set(detail);
+    this.nodes.set(detail ? this.buildNodes(detail) : []);
+
+    // Completar el objetivo es uno de los 4 momentos con motivo real para
+    // pedirle cuenta a un invitado (ver ROADMAP-calismap.md "Login:
+    // OPCIONAL") — no bloqueante, y sin gate de "ya se mostró antes" (v1:
+    // se muestra cada vez que se visita un roadmap ya completado siendo
+    // invitado, simplificación aceptada dado el alcance de esta ronda).
+    const target = detail?.steps.find((s) => s.isTarget);
+    if (target?.isCompleted && this.auth.isGuest()) {
+      const modal = await this.modalCtrl.create({ component: LoginComponent });
+      await modal.present();
+    }
   }
 
-  nodeClass(step: RoadmapStepViewModel): string {
-    if (step.isTarget) return step.isCompleted ? 'node-goal node-done' : 'node-goal';
-    if (step.isCompleted) return `node-done node-rating-${step.rating?.toLowerCase()}`;
-    if (step.isUnlocked) return 'node-unlocked';
-    return 'node-locked';
+  private buildNodes(detail: RoadmapDetailViewModel): RouteNode[] {
+    const bodyWeightKg = this.userProfile.getBodyWeightKg();
+
+    return detail.steps.map((step, index) => {
+      const state: RouteNodeState = step.isCompleted ? 'done' : step.isUnlocked ? 'current' : 'locked';
+      const node: RouteNode = {
+        title: step.exercise.name,
+        levelLabel: step.isTarget ? `${step.exercise.level} · OBJETIVO` : step.exercise.level,
+        state,
+        isTarget: step.isTarget,
+      };
+      if (state === 'current') node.stepNumber = step.stepOrder;
+      if (step.rating) node.ratingBadge = step.rating;
+
+      const unit = step.exercise.repUnit === 'reps' ? 'reps' : 'seg';
+      const next = detail.steps[index + 1];
+
+      if (state === 'done') {
+        node.metaText =
+          next && next.minRatingRequired
+            ? `Tu mejor marca: ${step.bestValue} ${unit} — supera el mínimo (${this.ratingLabel(next.minRatingRequired)}) para el siguiente paso`
+            : `Tu mejor marca: ${step.bestValue} ${unit}`;
+      } else if (state === 'current') {
+        if (next?.minRatingRequired) {
+          const needed = this.ratingCalc.valueNeededFor(next.minRatingRequired, bodyWeightKg, step.exercise.ratingThresholds);
+          const remaining = Math.max(0, needed - (step.bestValue ?? 0));
+          node.coachNote =
+            step.bestValue !== null
+              ? { headline: `${needed} ${unit} y desbloqueás ${next.exercise.name}`, sub: `Te faltan ${remaining} desde tu mejor marca (${step.bestValue})` }
+              : { headline: `${needed} ${unit} y desbloqueás ${next.exercise.name}`, sub: 'Registrá tu primera marca para arrancar' };
+          node.progressPercent = Math.min(100, Math.round(((step.bestValue ?? 0) / needed) * 100));
+        } else {
+          node.metaText = step.bestValue !== null ? `Tu mejor marca: ${step.bestValue} ${unit}` : 'Registrá tu primera marca';
+        }
+      } else if (step.minRatingRequired) {
+        const prev = detail.steps[index - 1];
+        node.metaText = `Se desbloquea con ${this.ratingLabel(step.minRatingRequired)}${prev ? ' en ' + prev.exercise.name : ''}`;
+      }
+
+      return node;
+    });
   }
 
-  connectorClass(step: RoadmapStepViewModel, next: RoadmapStepViewModel | undefined): string {
-    if (!next) return '';
-    if (next.isCompleted && step.isCompleted) return 'connector-done';
-    if (step.isCompleted) return 'connector-half';
-    return '';
-  }
-
-  ratingLabel(rating: Rating | null): string {
-    if (!rating) return '';
-    const icons: Record<Rating, string> = {
-      BRONZE: '🥉', SILVER: '🥈', GOLD: '🥇', PLATINUM: '💠', DIAMOND: '💎',
-    };
-    return icons[rating] + ' ' + rating;
+  private ratingLabel(rating: Rating): string {
+    return rating.charAt(0) + rating.slice(1).toLowerCase();
   }
 }

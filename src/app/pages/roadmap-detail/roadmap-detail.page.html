@@ -1,73 +1,9 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/roadmaps" />
-    </ion-buttons>
-    <ion-title>{{ detail()?.roadmap?.name }}</ion-title>
-  </ion-toolbar>
-</ion-header>
+@if (detail(); as d) {
+  <div class="page-content">
+    <span class="tag">{{ d.roadmap.category }}</span>
+    <h1 class="screen-title">{{ d.roadmap.name }}</h1>
+    <p class="screen-sub">{{ d.completedCount }} de {{ d.totalCount }} pasos completados</p>
 
-<ion-content>
-  @if (detail(); as d) {
-    <div class="page-content">
-
-      <!-- Progress header -->
-      <div class="progress-header">
-        <div class="progress-text">
-          <span>{{ d.completedCount }} / {{ d.totalCount }} prerequisites</span>
-          <span class="pct">{{ (progress() * 100) | number:'1.0-0' }}%</span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill" [style.width.%]="progress() * 100"></div>
-        </div>
-      </div>
-
-      <!-- Skill tree — goal at top, step 1 at bottom -->
-      <div class="tree">
-        @for (step of stepsReversed(); track step.exercise.id; let i = $index) {
-          <!-- Node -->
-          <div
-            class="node-wrap"
-            [class.node-wrap-target]="step.isTarget"
-            [routerLink]="step.isUnlocked ? ['/exercises', step.exercise.id] : null"
-          >
-            <div class="node" [ngClass]="nodeClass(step)">
-              @if (step.isCompleted) {
-                <ion-icon name="checkmark-circle" class="node-icon-svg" />
-              } @else if (step.isTarget) {
-                <ion-icon name="trophy" class="node-icon-svg" />
-              } @else if (!step.isUnlocked) {
-                <ion-icon name="lock-closed" class="node-icon-svg" />
-              } @else {
-                <span class="node-number">{{ step.stepOrder }}</span>
-              }
-            </div>
-
-            <div class="node-label">
-              <span class="node-name" [class.locked-text]="!step.isUnlocked">
-                {{ step.exercise.name }}
-              </span>
-              @if (step.isTarget) {
-                <span class="goal-tag">GOAL</span>
-              } @else if (step.rating) {
-                <span class="rating-tag" [class]="'rating-' + step.rating.toLowerCase()">
-                  {{ ratingLabel(step.rating) }}
-                </span>
-              } @else if (step.isUnlocked) {
-                <span class="tap-hint">Tap to start</span>
-              } @else {
-                <span class="lock-hint">🔒 Locked</span>
-              }
-            </div>
-          </div>
-
-          <!-- Connector between nodes (skip after last item) -->
-          @if (!$last) {
-            <div class="connector" [ngClass]="connectorClass(step, stepsReversed()[i + 1])"></div>
-          }
-        }
-      </div>
-
-    </div>
-  }
-</ion-content>
+    <app-route [nodes]="nodes()" />
+  </div>
+}

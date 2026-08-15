@@ -1,0 +1,16 @@
+/* Shell de la app — columna a toda la altura del viewport: el
+   router-outlet ocupa el espacio disponible (Ionic posiciona cada página
+   activada en .ion-page, absolute+inset:0, dentro de esta caja — ver
+   app.ts), NoticeSessionComponent/NavbarComponent quedan como hermanos
+   siguientes en flujo normal, siempre al fondo. */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--ink-0);
+}
+ion-router-outlet {
+  flex: 1;
+  min-height: 0;
+}

@@ -1,0 +1,114 @@
+.icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Elegir sesión ── */
+.session-hero {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%;
+  background: linear-gradient(180deg, var(--accent-soft), transparent 65%), var(--ink-1);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 17px;
+  margin-bottom: 24px;
+  text-align: left;
+  cursor: pointer;
+}
+.session-hero .ic { width: 44px; height: 44px; border-radius: 12px; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.session-hero .ic svg { width: 22px; height: 22px; }
+.session-hero h3 { margin: 0 0 2px; font-size: 16px; }
+.session-hero p { margin: 0; font-size: 12.5px; color: var(--text-1); }
+
+.facet-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); margin: 0 0 9px; }
+
+.routine-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%;
+  background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md);
+  padding: 14px; margin-bottom: 10px;
+  text-align: left; cursor: pointer;
+  text-decoration: none; color: inherit;
+}
+.routine-card h4 { margin: 0 0 4px; font-size: 14px; }
+.routine-card p { margin: 0; font-size: 11.5px; color: var(--text-2); }
+.routine-card .origin { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 7px; border-radius: 4px; flex-shrink: 0; }
+.routine-card .origin.official { background: var(--ink-2); color: var(--text-2); border: 1px solid var(--line-soft); }
+.routine-card .origin.own { background: var(--accent-soft); color: var(--accent); }
+.routine-card.create { border-style: dashed; justify-content: center; color: var(--accent); font-size: 13px; font-weight: 700; gap: 8px; }
+
+/* ── Sesión activa ── */
+.session-header { display: flex; align-items: center; justify-content: space-between; margin: 12px 0 18px; }
+.session-header .name span { font-size: 11.5px; color: var(--text-2); display: block; }
+.session-header .name b { font-size: 16px; }
+.session-elapsed { font-family: var(--font-mono); font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+
+.rest-timer-card {
+  position: relative;
+  background: linear-gradient(180deg, var(--accent-soft), transparent 60%), var(--ink-1);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center;
+}
+.rest-ring { width: 92px; height: 92px; border-radius: 50%; background: conic-gradient(var(--accent) 0deg 245deg, var(--line-soft) 245deg 360deg); display: flex; align-items: center; justify-content: center; position: relative; }
+.rest-ring::before { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: var(--ink-1); }
+.rest-ring span { position: relative; z-index: 1; font-family: var(--font-mono); font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rest-timer-card .label { font-size: 12.5px; color: var(--text-1); margin: 0; }
+.rest-timer-card .label b { color: var(--text-0); }
+.rest-controls { display: flex; gap: 8px; width: 100%; }
+
+.rest-edit-btn {
+  position: absolute; top: 12px; right: 12px;
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  background: var(--ink-2); border: 1px solid var(--line); color: var(--text-1);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.rest-edit-btn svg { width: 14px; height: 14px; }
+.rest-edit-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rest-edit-panel { width: 100%; }
+.rest-edit-panel .chip-row { justify-content: center; padding-bottom: 10px; overflow: visible; flex-wrap: wrap; }
+.chip-row { display: flex; gap: 7px; }
+.chip {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--text-1);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+
+.session-checklist { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+.session-checklist app-item-dropdown { display: block; }
+
+.add-outside {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  width: 100%;
+  padding: 12px; border: 1px dashed var(--line); border-radius: var(--radius-md);
+  background: none; color: var(--text-1); font-size: 12.5px; margin-bottom: 18px; cursor: pointer;
+}
+
+.end-session-btn { width: 100%; background: var(--danger); color: #fff; margin-bottom: 4px; }
+
+/* Picker de ejercicio ("Registrar otro ejercicio") — overlay simple sobre
+   toda la pantalla, mismo LibraryComponent en modo picker (ver
+   library.page.ts). Sin ModalController: el contrato de salida
+   (picked/pickerMode) ya alcanza, un overlay condicional es más simple que
+   coordinar un modal real con un @Output(). */
+.picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--ink-0);
+  display: flex;
+  flex-direction: column;
+}
+.picker-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line-soft); flex-shrink: 0; }
+.picker-header h3 { font-size: 15px; margin: 0; }
+.picker-header button { background: none; border: none; color: var(--text-2); display: flex; cursor: pointer; }
+.picker-overlay app-library { flex: 1; min-height: 0; display: flex; flex-direction: column; }
