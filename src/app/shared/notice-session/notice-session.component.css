@@ -1,9 +1,9 @@
 .session-bar {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: var(--space-3);
   width: 100%;
-  padding: 10px 14px;
+  padding: var(--space-3) var(--space-4);
   background: linear-gradient(180deg, var(--accent-soft), transparent 75%), var(--ink-1);
   border: none;
   border-top: 1px solid var(--accent);

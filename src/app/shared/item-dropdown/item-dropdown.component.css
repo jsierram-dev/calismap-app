@@ -1,9 +1,9 @@
-.session-item { background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md); margin-bottom: 9px; }
+.session-item { background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md); margin-bottom: var(--space-3); }
 .session-item:last-child { margin-bottom: 0; }
 .session-item.active { border-color: var(--accent); }
 .session-item.done .item-row { opacity: 0.6; }
 
-.item-row { display: flex; align-items: center; gap: 10px; padding: 11px 13px; cursor: pointer; }
+.item-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); cursor: pointer; }
 
 .ex-thumb {
   width: 34px;
