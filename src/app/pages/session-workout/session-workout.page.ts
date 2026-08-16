@@ -143,6 +143,39 @@ export class SessionWorkoutPage implements OnInit {
     await this.load();
   }
 
+  // ─── Hallazgos #5 y #10 de pruebas reales en móvil (16/08/2026, ver
+  //     ROADMAP-calismap.md) — el círculo de ItemDropdownComponent togglea
+  //     TODAS las series de un ejercicio de una, y cada serie ya registrada
+  //     se puede deshacer individualmente sin tocar las demás. ─────────────
+  async onCheckAll(exerciseId: string, events: SetDoneEvent[]): Promise<void> {
+    const session = this.active();
+    if (!session || !events.length) return;
+    for (const event of events) {
+      await this.workoutLog.logSet({
+        sessionId: session.id,
+        exerciseId,
+        value: event.value,
+        addedWeightKg: event.addedWeightKg,
+        bodyWeightAtLog: this.userProfile.getBodyWeightKg(),
+      });
+    }
+    this.startRest(); // mismo criterio que onSetDone — una sola vez, no una por serie
+    await this.load();
+  }
+
+  async onUncheckAll(item: ChecklistItem): Promise<void> {
+    const doneIds = item.sets.filter((s) => s.done && s.id).map((s) => s.id!);
+    for (const id of doneIds) {
+      await this.workoutLog.remove(id);
+    }
+    await this.load();
+  }
+
+  async onUndoSet(logId: string): Promise<void> {
+    await this.workoutLog.remove(logId);
+    await this.load();
+  }
+
   onExercisePicked(exercise: Exercise): void {
     this.manualExtras.update((set) => new Set(set).add(exercise.id));
     this.pickerOpen.set(false);
@@ -238,7 +271,7 @@ export class SessionWorkoutPage implements OnInit {
       const exercise = await this.exerciseLibrary.getById(entry.exerciseId);
       if (!exercise) continue;
       const exerciseLogs = logs.filter((l) => l.exerciseId === entry.exerciseId);
-      const doneSets: SetEntry[] = exerciseLogs.map((l) => ({ value: l.value, addedWeightKg: l.addedWeightKg, done: true }));
+      const doneSets: SetEntry[] = exerciseLogs.map((l) => ({ id: l.id, value: l.value, addedWeightKg: l.addedWeightKg, done: true }));
       const pendingCount = Math.max(0, entry.targetSets - doneSets.length);
       const pendingSets: SetEntry[] = Array.from({ length: pendingCount }, () => ({
         value: entry.targetValue,

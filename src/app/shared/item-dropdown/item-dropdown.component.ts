@@ -3,6 +3,10 @@ import { FormsModule } from '@angular/forms';
 import { RepUnit } from '../../models/exercise.model';
 
 export interface SetEntry {
+  // id real del WorkoutLog — solo en series YA registradas (done), permite
+  // deshacer una marca puntual sin ambigüedad de a cuál se refiere
+  // (hallazgo #5 de pruebas reales en móvil, ver ROADMAP-calismap.md).
+  id?: string;
   value: number | null;
   addedWeightKg: number;
   done: boolean;
@@ -39,6 +43,17 @@ export class ItemDropdownComponent implements OnChanges {
   // Modo logging
   @Input() sets: SetEntry[] = [];
   @Output() setDone = new EventEmitter<SetDoneEvent>();
+  // Hallazgos #5 y #10 de pruebas reales en móvil (16/08/2026, ver
+  // ROADMAP-calismap.md) — el círculo entre la foto y el nombre ahora
+  // togglea TODAS las series de una: checkAll con los valores actuales de
+  // cada serie pendiente (mismo criterio que markDone, uno por serie) si
+  // todavía falta alguna; uncheckAll (borra los WorkoutLog reales, vuelve
+  // todo a pendiente) si ya estaban todas hechas. undoSet deshace una serie
+  // puntual sin tocar el resto — el checkmark estático de una serie hecha
+  // pasa a ser un botón real.
+  @Output() checkAll = new EventEmitter<SetDoneEvent[]>();
+  @Output() uncheckAll = new EventEmitter<void>();
+  @Output() undoSet = new EventEmitter<string>();
 
   // Modo prescripción
   @Input() targetSets = 3;
@@ -90,6 +105,27 @@ export class ItemDropdownComponent implements OnChanges {
       value: this.draftValue[index] ?? 0,
       addedWeightKg: this.draftWeight[index] ?? 0,
     });
+  }
+
+  /** Click en el círculo — togglea según el estado ACTUAL, nunca los dos a la vez. */
+  onCheckClick(event: Event): void {
+    event.stopPropagation(); // no debe también expandir/colapsar la fila
+    if (this.allDone) {
+      this.uncheckAll.emit();
+    } else {
+      const events: SetDoneEvent[] = [];
+      this.sets.forEach((set, index) => {
+        if (!set.done) {
+          events.push({ setIndex: index, value: this.draftValue[index] ?? 0, addedWeightKg: this.draftWeight[index] ?? 0 });
+        }
+      });
+      this.checkAll.emit(events);
+    }
+  }
+
+  onUndoSet(id: string | undefined, event: Event): void {
+    event.stopPropagation();
+    if (id) this.undoSet.emit(id);
   }
 
   stepWeight(index: number, delta: number): void {

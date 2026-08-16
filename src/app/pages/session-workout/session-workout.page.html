@@ -47,6 +47,9 @@
           [customBadge]="!!item.exercise.userId"
           [sets]="item.sets"
           (setDone)="onSetDone(item.exercise.id, $event)"
+          (checkAll)="onCheckAll(item.exercise.id, $event)"
+          (uncheckAll)="onUncheckAll(item)"
+          (undoSet)="onUndoSet($event)"
         />
       }
     </div>
