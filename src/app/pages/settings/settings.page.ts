@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ModalController } from '@ionic/angular/standalone';
 import { Rating } from '../../models/exercise.model';
 import { UserProfile } from '../../models/user-profile.model';
@@ -25,7 +26,7 @@ const KG_PER_LB = 0.453592;
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './settings.page.html',
   styleUrl: './settings.page.css',
 })
