@@ -8,6 +8,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { ThemeService } from './core/services/theme.service';
+import { RoadmapService } from './services/roadmap.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -50,9 +51,30 @@ export const appConfig: ApplicationConfig = {
     // ThemeService también se instancia acá (no en un componente) para que
     // el tema quede aplicado antes del primer paint, sin flash — su propio
     // constructor ya lo aplica, este initializer solo fuerza la creación.
-    provideAppInitializer(() => {
+    //
+    // Precarga de Roadmaps agregada el 16/08/2026 (ver ROADMAP-calismap.md
+    // "Pantalla de carga inicial") — Angular no reemplaza el contenido de
+    // <app-root> (el splash de index.html) hasta que ESTE initializer
+    // resuelve, así que agregar acá el mismo fetch que hace RoadmapsPage
+    // (la pantalla de inicio, ver app.routes.ts) hace que la app recién
+    // aparezca con la lista YA poblada, en vez de mostrar el splash,
+    // reemplazarlo por una pantalla de Roadmaps vacía, y recién ahí
+    // poblarla. El resultado (roadmaps[]) se descarta a propósito — lo que
+    // importa es el efecto secundario de dejar tibios el cache de la lista
+    // de roadmaps y el del catálogo de ejercicios (ambos con promesa en
+    // vuelo compartida, ver CatalogCache/ExerciseLibraryService), así que
+    // cuando RoadmapsPage pida lo mismo en su propio ngOnInit lo recibe
+    // prácticamente al instante. Un error acá (offline en el primer
+    // arranque) no debe tumbar el arranque de la app entera — RoadmapsPage
+    // ya maneja mostrar una lista vacía si esto termina fallando.
+    provideAppInitializer(async () => {
       inject(ThemeService);
-      return inject(AuthService).ensureSession();
+      await inject(AuthService).ensureSession();
+      try {
+        await inject(RoadmapService).getAllRoadmaps();
+      } catch {
+        // sin red en el primer arranque — se sigue igual, RoadmapsPage reintenta sola
+      }
     }),
   ],
 };

@@ -5,6 +5,7 @@ import { RoadmapService, RoadmapSummary } from '../../services/roadmap.service';
 import { WorkoutSessionService } from '../../services/workout-session.service';
 import { SearchComponent } from '../../shared/search/search.component';
 import { FilterComponent } from '../../shared/filter/filter.component';
+import { PathLoaderComponent } from '../../shared/path-loader/path-loader.component';
 
 // Pantalla 01 — RoadmapListComponent (ver COMPONENTES-calismap.md): header +
 // racha (sesiones de ESTA SEMANA CALENDARIO, lunes a hoy — "¿entrenaste
@@ -16,11 +17,19 @@ import { FilterComponent } from '../../shared/filter/filter.component';
 @Component({
   selector: 'app-roadmaps',
   standalone: true,
-  imports: [RouterLink, SearchComponent, FilterComponent],
+  imports: [RouterLink, SearchComponent, FilterComponent, PathLoaderComponent],
   templateUrl: './roadmaps.page.html',
   styleUrl: './roadmaps.page.css',
 })
 export class RoadmapsPage implements OnInit {
+  // true solo hasta el PRIMER load() — de ahí en más ionViewWillEnter()
+  // refresca en segundo plano sin volver a tapar la lista ya visible (ver
+  // load(), solo se pone en false, nunca de nuevo en true). Con la
+  // precarga agregada en app.config.ts (ver ese archivo, "Precarga de
+  // Roadmaps") esto casi nunca llega a mostrarse en un arranque tibio —
+  // sigue haciendo falta para el primer arranque en frío real y para
+  // cuando falle la precarga (sin red).
+  loading = signal(true);
   roadmaps = signal<RoadmapSummary[]>([]);
   weeklySessionCount = signal(0);
   query = signal('');
@@ -78,6 +87,7 @@ export class RoadmapsPage implements OnInit {
       this.workoutSessionService.getAll(),
     ]);
     this.roadmaps.set(roadmaps);
+    this.loading.set(false);
 
     const weekStart = new Date();
     weekStart.setHours(0, 0, 0, 0);
