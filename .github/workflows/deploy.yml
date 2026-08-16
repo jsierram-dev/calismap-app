@@ -1,0 +1,53 @@
+# Build + deploy a GitHub Pages (ver ROADMAP-calismap.md, "Despliegue") —
+# mismo patrón ya probado con mudanza-app. Project site (vive en
+# /calismap-app/, no en la raíz), de ahí el --base-href. Sin efecto hasta
+# habilitar "Settings → Pages → Source: GitHub Actions" en el repo (paso
+# manual, no lo hace este workflow) y hasta que el repo sea público (Pages
+# gratis no sirve repos privados).
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx ng build --configuration production --base-href /calismap-app/
+      # GitHub Pages no sabe nada del router de Angular (routing por path, no
+      # hash) — sin esto, refrescar o entrar directo a una URL como
+      # /calismap-app/roadmaps/x da 404 en vez de dejar que el router la
+      # resuelva del lado del cliente. Truco estándar de SPA en Pages: servir
+      # el mismo shell como 404.html.
+      - run: cp dist/calismap-app/browser/index.html dist/calismap-app/browser/404.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/calismap-app/browser
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

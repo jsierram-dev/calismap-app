@@ -61,6 +61,18 @@ npm start        # ng serve, port 4200
 
 Needs the rest of the stack running to show real data: `jp-back-auth` (port 4001) and `calismap-back` (port 4004). Both URLs, plus the Google OAuth Client ID, live in `src/environments/environment.ts`.
 
+### Deploy
+
+Same proven pattern as this author's `mudanza-app`: GitHub Pages for this repo, Render for the backend — see [`calismap-back`](../../jp-back/calismap-back)'s README for its side. `jp-back-auth` is **not** redeployed for this — it's already live in production, shared with this author's other apps, and `environment.prod.ts` already points at it.
+
+`.github/workflows/deploy.yml` builds with `--configuration production` (swaps in `environment.prod.ts` via `angular.json`'s `fileReplacements`) and `--base-href /calismap-app/`, copies `index.html` to `404.html` (GitHub Pages doesn't know about Angular's router — without this, a direct link or refresh on any inner route 404s instead of letting the client-side router resolve it), and deploys to Pages on every push to `main`.
+
+Two one-time manual steps this workflow can't do by itself:
+1. Make this repo public (GitHub Pages' free tier doesn't serve private repos).
+2. `Settings → Pages → Source: GitHub Actions`, then re-run the workflow if the first push happened before enabling it.
+
+Login with Google isn't wired up in the UI yet (see `LoginComponent` in "What this repo does" — not built), so `googleClientId` is intentionally empty for this first deploy; the app works fully as a guest without it. Live URL once Pages is enabled: `https://jsierram-dev.github.io/calismap-app/`.
+
 ### Related repos
 
 - `../../jp-back/calismap-back` — catalog (roadmaps/exercises/routines) and the local-first sync endpoint this app talks to.
@@ -124,6 +136,18 @@ npm start        # ng serve, puerto 4200
 ```
 
 Necesita el resto del stack corriendo para mostrar datos reales: `jp-back-auth` (puerto 4001) y `calismap-back` (puerto 4004). Ambas URLs, más el Client ID de Google OAuth, están en `src/environments/environment.ts`.
+
+### Despliegue
+
+Mismo patrón ya probado con `mudanza-app`, de este mismo autor: GitHub Pages para este repo, Render para el backend — ver el README de [`calismap-back`](../../jp-back/calismap-back) para su parte. `jp-back-auth` **no** se despliega de nuevo para esto — ya está en producción, compartido con otras apps de este mismo autor, y `environment.prod.ts` ya apunta ahí.
+
+`.github/workflows/deploy.yml` compila con `--configuration production` (pisa `environment.prod.ts` vía `fileReplacements` de `angular.json`) y `--base-href /calismap-app/`, copia `index.html` a `404.html` (GitHub Pages no sabe nada del router de Angular — sin esto, un link directo o un refresh en cualquier ruta interna da 404 en vez de dejar que el router del cliente la resuelva), y despliega a Pages en cada push a `main`.
+
+Dos pasos manuales de una sola vez que este workflow no puede hacer solo:
+1. Hacer público este repo (el tier gratis de GitHub Pages no sirve repos privados).
+2. `Settings → Pages → Source: GitHub Actions`, y volver a correr el workflow si el primer push pasó antes de habilitarlo.
+
+El login con Google todavía no está conectado en la interfaz (ver `LoginComponent` en "Qué hace este repo" — sin construir), así que `googleClientId` queda vacío a propósito para este primer deploy; la app funciona completa como invitado sin él. URL en vivo una vez habilitado Pages: `https://jsierram-dev.github.io/calismap-app/`.
 
 ### Repos relacionados
 

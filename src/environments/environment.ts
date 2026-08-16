@@ -1,7 +1,6 @@
-// Deploy queda deliberadamente fuera de esta fase (ver ROADMAP-calismap.md,
-// "Pendiente") — todavía no hay environment.prod.ts ni file replacement en
-// angular.json, se agrega recién cuando se retome el deploy. Puertos locales
-// del resto de los backends del mismo autor: 4001=jp-back-auth,
+// Config de DESARROLLO — ver environment.prod.ts para producción (deploy
+// real armado 16/08/2026, ver ROADMAP-calismap.md "Despliegue"). Puertos
+// locales del resto de los backends del mismo autor: 4001=jp-back-auth,
 // 4002=similart-room, 4003=mudanza-back, 4004=calismap-back.
 export const environment = {
   production: false,
