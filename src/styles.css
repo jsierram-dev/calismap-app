@@ -79,6 +79,13 @@
      la página, no el viewport real, por el transform-context que Ionic le
      pone a .ion-page para sus transiciones). */
   --navbar-height: 66px;
+
+  /* Altura real de NoticeSessionComponent cuando está visible, medida por
+     ResizeObserver (16/08/2026, hallazgo #12 de pruebas reales en móvil, ver
+     ROADMAP-calismap.md/notice-session.component.ts) — 0 acá es solo el
+     valor de arranque antes de que el componente termine de montar/medir; en
+     los hechos, siempre gana el valor real seteado en <html> por JS. */
+  --notice-session-height: 0px;
 }
 
 @media (prefers-color-scheme: light) {

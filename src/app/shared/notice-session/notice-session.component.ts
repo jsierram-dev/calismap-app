@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActiveSessionIndicatorService } from '../../core/services/active-session-indicator.service';
 
@@ -16,6 +16,7 @@ import { ActiveSessionIndicatorService } from '../../core/services/active-sessio
 })
 export class NoticeSessionComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
+  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private now = signal(Date.now());
 
   constructor(
@@ -39,6 +40,25 @@ export class NoticeSessionComponent implements OnInit {
     // pausarlo.
     const id = setInterval(() => this.now.set(Date.now()), 1000);
     this.destroyRef.onDestroy(() => clearInterval(id));
+
+    // Mide la altura real del propio host (16/08/2026, hallazgo #12 de
+    // pruebas reales en móvil, ver ROADMAP-calismap.md) — FilterComponent
+    // necesita saber cuánto espacio extra reservar además de la navbar
+    // cuando esta barra TAMBIÉN está visible (offcanvas cerrado asomando un
+    // poco encima de la navbar en medio de una sesión). 0 cuando no hay
+    // sesión activa, porque el @if interno de esta plantilla no renderiza
+    // nada y el host queda sin contenido. Altura orgánica (texto+padding),
+    // no un número fijo — un ResizeObserver evita que se desincronice si el
+    // contenido cambia.
+    const observer = new ResizeObserver((entries) => {
+      const height = entries[0]?.contentRect.height ?? 0;
+      document.documentElement.style.setProperty('--notice-session-height', `${height}px`);
+    });
+    observer.observe(this.elementRef.nativeElement);
+    this.destroyRef.onDestroy(() => {
+      observer.disconnect();
+      document.documentElement.style.setProperty('--notice-session-height', '0px');
+    });
   }
 
   goToSession(): void {

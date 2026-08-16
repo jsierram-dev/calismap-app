@@ -1,3 +1,8 @@
+/* block, no el inline por defecto de un elemento custom sin estilo — hace
+   falta para que el ResizeObserver del host (ver notice-session.component.ts)
+   mida una altura real y no la de una caja inline degenerada. */
+:host { display: block; }
+
 .session-bar {
   display: flex;
   align-items: center;

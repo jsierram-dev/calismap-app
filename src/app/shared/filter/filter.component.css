@@ -39,7 +39,15 @@
      tapar hasta el borde de la página, dejando una tira del sheet
      flotando visible encima de la navbar en todo momento, no solo al
      abrirlo. pointer-events ya cubre el click; esto cubre lo visual. */
-  transform: translateY(calc(100% + var(--navbar-height)));
+  /* + var(--notice-session-height) agregado 16/08/2026 (hallazgo #12 de
+     pruebas reales en móvil, ver ROADMAP-calismap.md) — con una sesión
+     activa, NoticeSessionComponent agrega OTRA franja entre el .ion-page y
+     la navbar (mismo .app-shell, ver app.html) que este cálculo no
+     contemplaba: el sheet cerrado quedaba corto exactamente por esa altura,
+     asomando un poco encima de la navbar en Roadmaps/Biblioteca. 0px cuando
+     no hay sesión activa (ver notice-session.component.ts), sin cambiar
+     nada en ese caso. */
+  transform: translateY(calc(100% + var(--navbar-height) + var(--notice-session-height)));
 }
 .sheet.open { transform: translateY(0); pointer-events: auto; }
 
