@@ -170,6 +170,18 @@ html, body {
 ::selection { background: var(--accent-soft); }
 button, input, textarea { font-family: inherit; }
 
+/* Evita el zoom automático de iOS Safari al enfocar un campo (16/08/2026,
+   hallazgo #3 de pruebas reales en móvil, ver ROADMAP-calismap.md) — es un
+   umbral duro del navegador, no un bug de un campo puntual: cualquier
+   input/textarea/select con font-size < 16px dispara el zoom al enfocarlo,
+   y como no hay "zoom de página" propio que restaurar después, se siente
+   como que la página entera se descuadra. Cada página define su propio
+   .text-input/.input con su propio font-size (13.5-14px, todos por debajo
+   del umbral) — !important a propósito acá, para no tener que ir a tocar
+   cada archivo por separado y arriesgarse a que un cambio futuro reintroduzca
+   el problema en un lugar nuevo. */
+input, textarea, select { font-size: 16px !important; }
+
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
