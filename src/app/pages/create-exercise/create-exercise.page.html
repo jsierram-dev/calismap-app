@@ -1,5 +1,5 @@
 <div class="page-content">
-  <h1 class="screen-title">Nuevo ejercicio</h1>
+  <h1 class="screen-title">{{ editingId() ? 'Editar ejercicio' : 'Nuevo ejercicio' }}</h1>
 
   <div class="media-upload-row">
     <button class="media-upload-tile" type="button" disabled aria-label="Añadir foto — próximamente">
@@ -73,5 +73,24 @@
     Agregar paso
   </button>
 
-  <button class="btn btn-primary" type="button" style="width:100%" [disabled]="!canSave" (click)="save()">Guardar ejercicio</button>
+  @if (isAdminMode) {
+    <label class="form-label" for="ex-regression">Regresión sugerida (opcional)</label>
+    <select id="ex-regression" class="text-input" [ngModel]="regressionExerciseId()" (ngModelChange)="regressionExerciseId.set($event)">
+      <option value="">— ninguna —</option>
+      @for (e of catalogExercises(); track e.id) {
+        @if (e.id !== editingId()) { <option [value]="e.id">{{ e.name }}</option> }
+      }
+    </select>
+
+    <label class="form-label" for="ex-video">Video URL (opcional, ya hosteado en otro lado)</label>
+    <input id="ex-video" class="text-input" type="url" placeholder="https://..." [ngModel]="videoUrl()" (ngModelChange)="videoUrl.set($event)" />
+  }
+
+  <button class="btn btn-primary" type="button" style="width:100%" [disabled]="!canSave || saving()" (click)="save()">
+    {{ saving() ? 'Guardando...' : (editingId() ? 'Guardar cambios' : 'Guardar ejercicio') }}
+  </button>
+
+  @if (isAdminMode && editingId()) {
+    <button class="btn btn-danger" type="button" style="width:100%;margin-top:8px" (click)="remove()">Eliminar ejercicio</button>
+  }
 </div>

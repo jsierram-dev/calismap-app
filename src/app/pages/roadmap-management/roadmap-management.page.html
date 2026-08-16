@@ -1,0 +1,83 @@
+<div class="page-content">
+  <h1 class="screen-title">{{ editingId() ? 'Editar roadmap' : 'Nuevo roadmap' }}</h1>
+  <p class="screen-sub">{{ editingId() ? name() : 'Definí la ruta y sus pasos' }}</p>
+
+  <div class="field">
+    <label for="rm-name">Nombre</label>
+    <input id="rm-name" class="input" type="text" [ngModel]="name()" (ngModelChange)="name.set($event)" placeholder="Ej: Muscle Up" />
+  </div>
+
+  <div class="field">
+    <label for="rm-desc">Descripción</label>
+    <textarea id="rm-desc" class="input" [ngModel]="description()" (ngModelChange)="description.set($event)" rows="2"></textarea>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="rm-cat">Categoría</label>
+      <select id="rm-cat" class="input" [ngModel]="category()" (ngModelChange)="category.set($event)">
+        @for (c of categories; track c) { <option [value]="c">{{ c }}</option> }
+      </select>
+    </div>
+    <div class="field">
+      <label for="rm-target-rating">Rating para desbloquear el objetivo</label>
+      <select id="rm-target-rating" class="input" [ngModel]="targetRatingRequired()" (ngModelChange)="targetRatingRequired.set($event)">
+        @for (r of ratings; track r) { <option [value]="r">{{ r }}</option> }
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="rm-target">Ejercicio objetivo</label>
+    <select id="rm-target" class="input" [ngModel]="targetExerciseId()" (ngModelChange)="targetExerciseId.set($event)">
+      @for (e of exercises(); track e.id) { <option [value]="e.id">{{ e.name }}</option> }
+    </select>
+  </div>
+
+  <h5 class="section-label">Pasos de la ruta, en orden</h5>
+
+  @for (step of steps(); track $index) {
+    <div class="step-row">
+      <div class="step-no">{{ $index + 1 }}</div>
+      <div class="step-fields">
+        <select class="input sm" [ngModel]="step.exerciseId" (ngModelChange)="updateStepExercise($index, $event)">
+          @for (e of exercises(); track e.id) { <option [value]="e.id">{{ e.name }}</option> }
+        </select>
+        @if ($index === 0) {
+          <span class="unlocked-note">Siempre desbloqueado (paso 1)</span>
+        } @else {
+          <select class="input sm" [ngModel]="step.minRatingRequired ?? ''" (ngModelChange)="updateStepRating($index, $event)">
+            @for (r of ratings; track r) { <option [value]="r">Requiere {{ r }} en el paso anterior</option> }
+          </select>
+        }
+      </div>
+      <div class="step-actions">
+        <button type="button" class="icon-btn" [disabled]="$index === 0" (click)="moveStep($index, -1)" aria-label="Subir">
+          <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><path d="m18 15-6-6-6 6" /></svg>
+        </button>
+        <button type="button" class="icon-btn" [disabled]="$index === steps().length - 1" (click)="moveStep($index, 1)" aria-label="Bajar">
+          <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+        <button type="button" class="icon-btn danger" (click)="removeStep($index)" aria-label="Quitar paso">
+          <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+        </button>
+      </div>
+    </div>
+  }
+
+  <button type="button" class="add-step-btn" (click)="addStep()">
+    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+    Agregar paso
+  </button>
+
+  <p class="hint">El ejercicio objetivo ({{ exerciseName(targetExerciseId()) }}) se agrega solo al final de la ruta — no hace falta incluirlo como paso.</p>
+
+  <div class="actions">
+    @if (editingId()) {
+      <button type="button" class="btn btn-danger" (click)="remove()">Eliminar roadmap</button>
+    }
+    <button type="button" class="btn btn-primary" [disabled]="!canSave || saving()" (click)="save()">
+      {{ saving() ? 'Guardando...' : (editingId() ? 'Guardar cambios' : 'Crear roadmap') }}
+    </button>
+  </div>
+</div>

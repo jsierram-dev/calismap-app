@@ -3,7 +3,15 @@ import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Exercise, ExerciseCategory, RATING_ORDER, Rating } from '../models/exercise.model';
-import { Roadmap, RoadmapDetailViewModel, RoadmapExercise, RoadmapStepViewModel } from '../models/roadmap.model';
+import {
+  Roadmap,
+  RoadmapDetailRaw,
+  RoadmapDetailViewModel,
+  RoadmapExercise,
+  RoadmapExerciseInput,
+  RoadmapInput,
+  RoadmapStepViewModel,
+} from '../models/roadmap.model';
 import { effectiveValue } from '../models/workout-log.model';
 import { CatalogCache } from '../core/utils/catalog-cache';
 import { LocalStorageService } from '../core/services/local-storage.service';
@@ -133,6 +141,64 @@ export class RoadmapService {
   async getAllCategories(): Promise<ExerciseCategory[]> {
     const roadmaps = await this.listCache.getAll();
     return Array.from(new Set(roadmaps.map((r) => r.category)));
+  }
+
+  // ─── Escritura de CATÁLOGO — solo admin, ver core/guards/admin.guard.ts.
+  //     RoadmapManagementComponent llama a esto directo (no pasa por la
+  //     vista enriquecida de getRoadmapDetail — acá solo hace falta el dato
+  //     crudo). refresh() del listCache al final de cada escritura para que
+  //     Roadmaps/el propio panel vean el cambio sin esperar el próximo pull
+  //     en background. ─────────────────────────────────────────────────────
+  async adminGetRaw(roadmapId: string): Promise<RoadmapDetailRaw | null> {
+    try {
+      return await firstValueFrom(this.http.get<RoadmapDetailRaw>(`${environment.apiUrl}/roadmaps/${roadmapId}`));
+    } catch {
+      return null;
+    }
+  }
+
+  async adminCreate(input: RoadmapInput): Promise<Roadmap> {
+    const created = await firstValueFrom(this.http.post<Roadmap>(`${environment.apiUrl}/roadmaps`, input));
+    await this.listCache.refresh();
+    return created;
+  }
+
+  async adminUpdate(id: string, input: Partial<RoadmapInput>): Promise<Roadmap> {
+    const updated = await firstValueFrom(this.http.put<Roadmap>(`${environment.apiUrl}/roadmaps/${id}`, input));
+    await this.listCache.refresh();
+    return updated;
+  }
+
+  async adminDelete(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${environment.apiUrl}/roadmaps/${id}`));
+    await this.listCache.refresh();
+  }
+
+  async adminAddStep(roadmapId: string, input: RoadmapExerciseInput): Promise<RoadmapExercise> {
+    return firstValueFrom(this.http.post<RoadmapExercise>(`${environment.apiUrl}/roadmaps/${roadmapId}/steps`, input));
+  }
+
+  async adminDeleteStep(roadmapId: string, stepId: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${environment.apiUrl}/roadmaps/${roadmapId}/steps/${stepId}`));
+  }
+
+  // Reemplaza TODOS los pasos de un roadmap por la lista nueva (borra los
+  // viejos, crea los nuevos en el orden dado) — más simple y robusto que
+  // diffear qué paso cambió de cuál, aceptable para un panel de admin donde
+  // "Guardar" siempre manda la lista completa (mismo criterio que
+  // mergeListLastWriteWins en el resto de la app: la unidad que se
+  // sincroniza/reemplaza es la lista entera, no cada fila suelta).
+  async adminReplaceSteps(
+    roadmapId: string,
+    currentStepIds: string[],
+    newSteps: RoadmapExerciseInput[],
+  ): Promise<void> {
+    for (const stepId of currentStepIds) {
+      await this.adminDeleteStep(roadmapId, stepId);
+    }
+    for (const step of newSteps) {
+      await this.adminAddStep(roadmapId, step);
+    }
   }
 
   private async buildSummary(roadmap: Roadmap): Promise<RoadmapSummary | null> {

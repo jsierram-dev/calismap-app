@@ -1,8 +1,13 @@
 <div class="page-content">
-  <h1 class="screen-title">Nueva rutina</h1>
+  <h1 class="screen-title">{{ editingId() ? 'Editar rutina' : (isAdminMode ? 'Nueva rutina' : 'Crear tu rutina') }}</h1>
 
   <label class="form-label" for="routine-name">Nombre</label>
   <input id="routine-name" class="text-input title" type="text" placeholder="Ej. Empuje — Intermedio" [(ngModel)]="name" />
+
+  @if (isAdminMode) {
+    <label class="form-label" for="routine-desc">Descripción</label>
+    <textarea id="routine-desc" class="text-input" rows="2" [(ngModel)]="description"></textarea>
+  }
 
   <label class="form-label">Ejercicios ({{ items().length }})</label>
   <div class="session-checklist">
@@ -26,7 +31,13 @@
     Agregar ejercicio
   </button>
 
-  <button class="btn btn-primary" type="button" style="width:100%" [disabled]="!canSave" (click)="save()">Guardar rutina</button>
+  <button class="btn btn-primary" type="button" style="width:100%" [disabled]="!canSave || saving()" (click)="save()">
+    {{ saving() ? 'Guardando...' : (editingId() ? 'Guardar cambios' : 'Guardar rutina') }}
+  </button>
+
+  @if (isAdminMode && editingId()) {
+    <button class="btn btn-danger" type="button" style="width:100%;margin-top:8px" (click)="remove()">Eliminar rutina</button>
+  }
 </div>
 
 @if (pickerOpen()) {

@@ -189,6 +189,13 @@ button, input, textarea { font-family: inherit; }
 }
 .btn-primary { background: var(--accent); color: var(--accent-ink); flex: 1; }
 .btn-ghost { background: var(--ink-2); color: var(--text-1); border: 1px solid var(--line); }
+/* Agregado 16/08/2026 para las acciones "Eliminar" del panel de admin
+   (RoadmapManagementComponent, ExerciseManagementComponent/RoutineManagement
+   en modo admin) — mismo patrón que btn-ghost pero con texto/hover en
+   --danger, nunca relleno sólido: es destructivo pero no debe competir
+   visualmente con btn-primary. */
+.btn-danger { background: none; color: var(--danger); border: 1px solid var(--line); }
+.btn-danger:hover { background: var(--danger-soft); border-color: var(--danger); }
 .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Wrapper de contenido de página — mismo scroll+padding en las 9 pantallas

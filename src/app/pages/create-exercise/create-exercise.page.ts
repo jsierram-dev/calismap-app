@@ -1,8 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ModalController } from '@ionic/angular/standalone';
-import { ExerciseCategory, Level, MuscleGroup, RatingThresholds, RepUnit } from '../../models/exercise.model';
+import { Exercise, ExerciseCategory, Level, MuscleGroup, RatingThresholds, RepUnit } from '../../models/exercise.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
 import { LoginComponent } from '../../shared/login/login.component';
@@ -55,6 +55,16 @@ const TIERS: (keyof RatingThresholds)[] = ['SILVER', 'GOLD', 'PLATINUM', 'DIAMON
 // al guardar (ver ExerciseLibraryService.createOwn). Foto/video quedan como
 // placeholder honesto (Fase 3, contenido real, pendiente) — mismo criterio
 // que el carrusel de ExerciseInfoComponent.
+//
+// Modo admin (agregado 16/08/2026, ver ROADMAP-calismap.md "Panel de
+// administración"): mismo componente reusado — pedido explícito del
+// usuario — para /admin/exercises/new y /admin/exercises/:id/edit (route
+// data `{ admin: true }`, ver app.routes.ts). En modo admin: guarda contra
+// el catálogo real (adminCreate/adminUpdate, requireAdmin en el backend)
+// en vez de crear un ejercicio propio del usuario actual, suma
+// regressionExerciseId/videoUrl (campos de curación editorial que no le
+// corresponden a un ejercicio propio — ver ROADMAP-calismap.md, "Ejercicios
+// personalizados") y habilita edición de uno ya existente además de crear.
 @Component({
   selector: 'app-create-exercise',
   standalone: true,
@@ -62,11 +72,15 @@ const TIERS: (keyof RatingThresholds)[] = ['SILVER', 'GOLD', 'PLATINUM', 'DIAMON
   templateUrl: './create-exercise.page.html',
   styleUrl: './create-exercise.page.css',
 })
-export class CreateExercisePage {
+export class CreateExercisePage implements OnInit {
   levels = LEVELS;
   categories = CATEGORIES;
   muscles = MUSCLES;
   tiers = TIERS;
+
+  isAdminMode = false;
+  editingId = signal<string | null>(null);
+  catalogExercises = signal<Exercise[]>([]); // para el select de regresión, solo en modo admin
 
   name = signal('');
   description = signal('');
@@ -76,13 +90,41 @@ export class CreateExercisePage {
   repUnit = signal<RepUnit>('reps');
   thresholds = signal<RatingThresholds>({ SILVER: 5, GOLD: 10, PLATINUM: 15, DIAMOND: 20 });
   steps = signal<string[]>(['']);
+  videoUrl = signal('');
+  regressionExerciseId = signal('');
+
+  saving = signal(false);
 
   constructor(
     private library: ExerciseLibraryService,
     private auth: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private modalCtrl: ModalController,
   ) {}
+
+  async ngOnInit(): Promise<void> {
+    this.isAdminMode = this.route.snapshot.data['admin'] === true;
+    if (!this.isAdminMode) return;
+
+    this.catalogExercises.set((await this.library.getAll()).filter((e) => !e.userId));
+
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) return;
+    this.editingId.set(id);
+    const existing = await this.library.getById(id);
+    if (!existing) return;
+    this.name.set(existing.name);
+    this.description.set(existing.description);
+    this.level.set(existing.level);
+    this.category.set(existing.category);
+    this.selectedMuscles.set(new Set(existing.muscleGroups));
+    this.repUnit.set(existing.repUnit);
+    this.thresholds.set(existing.ratingThresholds);
+    this.steps.set(existing.steps.length ? existing.steps : ['']);
+    this.videoUrl.set(existing.videoUrl ?? '');
+    this.regressionExerciseId.set(existing.regressionExerciseId ?? '');
+  }
 
   isSelected(muscle: MuscleGroup): boolean {
     return this.selectedMuscles().has(muscle);
@@ -115,7 +157,33 @@ export class CreateExercisePage {
   }
 
   async save(): Promise<void> {
-    if (!this.canSave) return;
+    if (!this.canSave || this.saving()) return;
+
+    if (this.isAdminMode) {
+      this.saving.set(true);
+      try {
+        const input = {
+          name: this.name().trim(),
+          description: this.description().trim(),
+          level: this.level(),
+          category: this.category(),
+          muscleGroups: Array.from(this.selectedMuscles()),
+          steps: this.steps().map((s) => s.trim()).filter(Boolean),
+          repUnit: this.repUnit(),
+          ratingThresholds: this.thresholds(),
+          videoUrl: this.videoUrl().trim() || undefined,
+          regressionExerciseId: this.regressionExerciseId() || undefined,
+        };
+        const id = this.editingId();
+        if (id) await this.library.adminUpdate(id, input);
+        else await this.library.adminCreate(input);
+        this.router.navigateByUrl('/admin/exercises');
+      } finally {
+        this.saving.set(false);
+      }
+      return;
+    }
+
     const userId = this.auth.user()?.id;
     if (!userId) return; // no debería pasar — ensureSession() ya garantiza algún usuario (invitado o real)
 
@@ -141,5 +209,13 @@ export class CreateExercisePage {
       await modal.present();
     }
     this.router.navigateByUrl('/library');
+  }
+
+  async remove(): Promise<void> {
+    const id = this.editingId();
+    if (!id) return;
+    if (!confirm(`¿Borrar el ejercicio "${this.name()}"? Esta acción no se puede deshacer.`)) return;
+    await this.library.adminDelete(id);
+    this.router.navigateByUrl('/admin/exercises');
   }
 }

@@ -1,0 +1,58 @@
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-2);
+}
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ink-2);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.info { flex: 1; min-width: 0; }
+.info h4 { margin: 0 0 2px; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.info p { margin: 0; font-size: 11px; color: var(--text-2); }
+
+.badges { display: flex; gap: 5px; flex-shrink: 0; }
+.pill {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--ink-2);
+  color: var(--text-2);
+  border: 1px solid var(--line-soft);
+}
+.pill-accent { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.pill-admin { background: color-mix(in srgb, var(--gold) 20%, transparent); color: var(--gold); border-color: transparent; }
+
+.load-more-btn {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--ink-2);
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.load-more-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.empty-note { font-size: 13px; color: var(--text-2); }
