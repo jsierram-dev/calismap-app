@@ -5,7 +5,11 @@ export interface UserRoutineExerciseEntry {
   exerciseId: string;
   order: number;
   targetSets: number;
-  targetValue: number | null;
+  // Un valor por serie, no uno solo repetido (16/08/2026, hallazgo #9 de
+  // pruebas reales en móvil, ver ROADMAP-calismap.md) — mismo cambio de
+  // forma que RoutineExercise, acá sin migración porque ya era JSONB
+  // opaco. Longitud siempre === targetSets.
+  targetValues: (number | null)[];
 }
 
 // Rutina PROPIA del usuario — local-first + sync, no catálogo. El listado de

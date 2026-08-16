@@ -16,7 +16,10 @@ import { LibraryPage } from '../library/library.page';
 interface DraftItem {
   exercise: Exercise;
   targetSets: number;
-  targetValue: number | null;
+  // Un valor por serie, no uno solo repetido (hallazgo #9 de pruebas reales
+  // en móvil, 16/08/2026, ver ROADMAP-calismap.md) — longitud siempre ===
+  // targetSets, mantenida así por updateTargetSets() de acá abajo.
+  targetValues: (number | null)[];
 }
 
 // Pantalla 08 — RoutineManagementComponent (ver COMPONENTES-calismap.md):
@@ -78,7 +81,7 @@ export class CreateRoutinePage implements OnInit {
     for (const row of sorted) {
       const exercise = await this.exerciseLibrary.getById(row.exerciseId);
       if (!exercise) continue;
-      draftItems.push({ exercise, targetSets: row.targetSets, targetValue: row.targetValue });
+      draftItems.push({ exercise, targetSets: row.targetSets, targetValues: row.targetValues });
     }
     this.items.set(draftItems);
   }
@@ -86,15 +89,26 @@ export class CreateRoutinePage implements OnInit {
   onExercisePicked(exercise: Exercise): void {
     this.pickerOpen.set(false);
     if (this.items().some((it) => it.exercise.id === exercise.id)) return;
-    this.items.update((list) => [...list, { exercise, targetSets: 3, targetValue: exercise.repUnit === 'reps' ? 10 : 30 }]);
+    const defaultValue = exercise.repUnit === 'reps' ? 10 : 30;
+    this.items.update((list) => [...list, { exercise, targetSets: 3, targetValues: [defaultValue, defaultValue, defaultValue] }]);
   }
 
+  /** Crece/achica targetValues junto con la cantidad de series, para que siempre midan lo mismo (hallazgo #9, ver ROADMAP-calismap.md). */
   updateTargetSets(index: number, value: number): void {
-    this.items.update((list) => list.map((it, i) => (i === index ? { ...it, targetSets: value } : it)));
+    this.items.update((list) =>
+      list.map((it, i) => {
+        if (i !== index) return it;
+        const values = it.targetValues.slice(0, value);
+        while (values.length < value) {
+          values.push(values.at(-1) ?? (it.exercise.repUnit === 'reps' ? 10 : 30)); // fila nueva: repite la última, no arranca en blanco
+        }
+        return { ...it, targetSets: value, targetValues: values };
+      }),
+    );
   }
 
-  updateTargetValue(index: number, value: number | null): void {
-    this.items.update((list) => list.map((it, i) => (i === index ? { ...it, targetValue: value } : it)));
+  updateTargetValues(index: number, values: (number | null)[]): void {
+    this.items.update((list) => list.map((it, i) => (i === index ? { ...it, targetValues: values } : it)));
   }
 
   removeItem(index: number): void {
@@ -119,7 +133,7 @@ export class CreateRoutinePage implements OnInit {
           exerciseId: it.exercise.id,
           stepOrder: i + 1,
           targetSets: it.targetSets,
-          targetValue: it.targetValue,
+          targetValues: it.targetValues,
         }));
         await this.routineService.adminReplaceExercises(routineId, this.currentExerciseRowIds(), exerciseInputs);
 
@@ -134,7 +148,7 @@ export class CreateRoutinePage implements OnInit {
       exerciseId: it.exercise.id,
       order,
       targetSets: it.targetSets,
-      targetValue: it.targetValue,
+      targetValues: it.targetValues,
     }));
     await this.userRoutineService.create(this.name().trim(), exercises);
 

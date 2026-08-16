@@ -57,9 +57,12 @@ export class ItemDropdownComponent implements OnChanges {
 
   // Modo prescripción
   @Input() targetSets = 3;
-  @Input() targetValue: number | null = null;
+  // Un valor objetivo POR SERIE, no uno solo repetido para todas (hallazgo
+  // #9 de pruebas reales en móvil, 16/08/2026, ver ROADMAP-calismap.md) —
+  // ej. pirámide 12/10/8. Longitud siempre === targetSets.
+  @Input() targetValues: (number | null)[] = [];
   @Output() targetSetsChange = new EventEmitter<number>();
-  @Output() targetValueChange = new EventEmitter<number | null>();
+  @Output() targetValuesChange = new EventEmitter<(number | null)[]>();
   @Output() removed = new EventEmitter<void>();
 
   expanded = signal(false);
@@ -69,10 +72,16 @@ export class ItemDropdownComponent implements OnChanges {
   // una serie ya registrada es inmutable (ver WorkoutLog en el modelo).
   draftValue: (number | null)[] = [];
   draftWeight: number[] = [];
+  // Mismo criterio, para el modo prescripción — clonado de @Input()
+  // targetValues, se emite el array completo actualizado en cada cambio
+  // (sin botón "guardar" propio, RoutineManagementComponent guarda todo
+  // junto al tocar "Guardar rutina").
+  draftTargetValues: (number | null)[] = [];
 
   ngOnChanges(): void {
     this.draftValue = this.sets.map((s) => s.value);
     this.draftWeight = this.sets.map((s) => s.addedWeightKg);
+    this.draftTargetValues = this.targetValues.slice();
   }
 
   toggle(): void {
@@ -94,9 +103,17 @@ export class ItemDropdownComponent implements OnChanges {
   get subtitle(): string {
     const unit = this.repUnit === 'reps' ? 'reps' : 'seg';
     if (this.mode === 'logging') {
-      return this.targetValue ? `${this.sets.length} series × ${this.targetValue} ${unit}` : `${this.sets.length} series`;
+      return `${this.sets.length} series`;
     }
-    return this.targetValue ? `${this.targetSets} series × ${this.targetValue} ${unit}` : `${this.targetSets} series · las que puedas`;
+    const values = this.targetValues.filter((v): v is number => v !== null);
+    if (!values.length) return `${this.targetSets} series · las que puedas`;
+    // Mismo valor en todas las series (el caso de siempre) vs. variable por
+    // serie (pirámide 12/10/8) — hallazgo #9 de pruebas reales en móvil, ver
+    // ROADMAP-calismap.md.
+    const allSame = values.length === this.targetSets && values.every((v) => v === values[0]);
+    return allSame
+      ? `${this.targetSets} series × ${values[0]} ${unit}`
+      : `${this.targetSets} series · ${this.targetValues.map((v) => v ?? '–').join('/')} ${unit}`;
   }
 
   markDone(index: number): void {
@@ -136,8 +153,12 @@ export class ItemDropdownComponent implements OnChanges {
     this.targetSetsChange.emit(Math.max(1, this.targetSets + delta));
   }
 
-  stepTargetValue(delta: number): void {
-    this.targetValueChange.emit(Math.max(0, (this.targetValue ?? 0) + delta));
+  /** Cambia el objetivo de UNA serie puntual — hallazgo #9, ver ROADMAP-calismap.md. */
+  stepTargetValueAt(index: number, delta: number): void {
+    const next = [...this.draftTargetValues];
+    next[index] = Math.max(0, (next[index] ?? 0) + delta);
+    this.draftTargetValues = next;
+    this.targetValuesChange.emit(next);
   }
 
   onRowClick(event: Event): void {

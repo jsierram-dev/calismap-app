@@ -10,14 +10,19 @@ export interface Routine {
   description: string;
 }
 
-// targetValue null = "las que puedas", sin objetivo prescrito.
+// targetValues: un valor por serie (ej. pirámide 12/10/8), no uno solo
+// repetido para todas — cambiado el 16/08/2026 (hallazgo #9 de pruebas
+// reales en móvil, ver ROADMAP-calismap.md; migración real en
+// calismap-back, migrations/002_routine_exercise_target_values.sql). Cada
+// posición null = "las que puedas" para esa serie puntual. Longitud
+// siempre === targetSets.
 export interface RoutineExercise {
   id: string;
   routineId: string;
   exerciseId: string;
   stepOrder: number;
   targetSets: number;
-  targetValue: number | null;
+  targetValues: (number | null)[];
 }
 
 export interface RoutineDetail extends Routine {
@@ -36,5 +41,5 @@ export interface RoutineExerciseInput {
   exerciseId: string;
   stepOrder: number;
   targetSets?: number;
-  targetValue?: number | null;
+  targetValues?: (number | null)[];
 }

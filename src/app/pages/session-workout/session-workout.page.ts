@@ -19,7 +19,6 @@ import { LibraryPage } from '../library/library.page';
 
 interface ChecklistItem {
   exercise: Exercise;
-  targetValue: number | null;
   sets: SetEntry[];
 }
 
@@ -240,13 +239,18 @@ export class SessionWorkoutPage implements OnInit {
       return;
     }
 
-    let prescribed: { exerciseId: string; targetSets: number; targetValue: number | null }[] = [];
+    // targetValues: un valor POR SERIE, no uno solo repetido para todas
+    // (hallazgo #9 de pruebas reales en móvil, 16/08/2026, ver
+    // ROADMAP-calismap.md) — ej. pirámide 12/10/8. Rutinas oficiales y
+    // propias ya guardan el array real cada una (ver RoutineExercise/
+    // UserRoutineExerciseEntry), acá solo se combinan al mismo shape.
+    let prescribed: { exerciseId: string; targetSets: number; targetValues: (number | null)[] }[] = [];
     if (session.routineId) {
       const detail = await this.routineService.getDetail(session.routineId);
-      prescribed = detail?.exercises.map((e) => ({ exerciseId: e.exerciseId, targetSets: e.targetSets, targetValue: e.targetValue })) ?? [];
+      prescribed = detail?.exercises.map((e) => ({ exerciseId: e.exerciseId, targetSets: e.targetSets, targetValues: e.targetValues })) ?? [];
     } else if (session.userRoutineId) {
       const userRoutine = await this.userRoutineService.getById(session.userRoutineId);
-      prescribed = userRoutine?.exercises.map((e) => ({ exerciseId: e.exerciseId, targetSets: e.targetSets, targetValue: e.targetValue })) ?? [];
+      prescribed = userRoutine?.exercises.map((e) => ({ exerciseId: e.exerciseId, targetSets: e.targetSets, targetValues: e.targetValues })) ?? [];
     }
 
     const logs = await this.workoutLog.getForSession(session.id);
@@ -261,9 +265,9 @@ export class SessionWorkoutPage implements OnInit {
       ...extraLoggedIds.map((exerciseId) => ({
         exerciseId,
         targetSets: logs.filter((l) => l.exerciseId === exerciseId).length,
-        targetValue: null as number | null,
+        targetValues: [] as (number | null)[],
       })),
-      ...extraManualIds.map((exerciseId) => ({ exerciseId, targetSets: DEFAULT_TARGET_SETS, targetValue: null as number | null })),
+      ...extraManualIds.map((exerciseId) => ({ exerciseId, targetSets: DEFAULT_TARGET_SETS, targetValues: [] as (number | null)[] })),
     ];
 
     const items: ChecklistItem[] = [];
@@ -273,12 +277,15 @@ export class SessionWorkoutPage implements OnInit {
       const exerciseLogs = logs.filter((l) => l.exerciseId === entry.exerciseId);
       const doneSets: SetEntry[] = exerciseLogs.map((l) => ({ id: l.id, value: l.value, addedWeightKg: l.addedWeightKg, done: true }));
       const pendingCount = Math.max(0, entry.targetSets - doneSets.length);
-      const pendingSets: SetEntry[] = Array.from({ length: pendingCount }, () => ({
-        value: entry.targetValue,
+      // El índice real de cada pendiente sigue después de las ya hechas —
+      // una pirámide 12/10/8 con la serie 1 ya registrada debe proponer 10
+      // para la próxima, no volver a arrancar en 12.
+      const pendingSets: SetEntry[] = Array.from({ length: pendingCount }, (_, i) => ({
+        value: entry.targetValues[doneSets.length + i] ?? null,
         addedWeightKg: 0,
         done: false,
       }));
-      items.push({ exercise, targetValue: entry.targetValue, sets: [...doneSets, ...pendingSets] });
+      items.push({ exercise, sets: [...doneSets, ...pendingSets] });
     }
     this.checklist.set(items);
 

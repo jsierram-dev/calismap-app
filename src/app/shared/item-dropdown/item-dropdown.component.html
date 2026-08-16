@@ -90,14 +90,20 @@
             <button type="button" class="step-btn" (click)="stepTargetSets(1)">+</button>
           </div>
         </div>
-        <div class="prescription-row">
-          <label>{{ repUnit === 'reps' ? 'Reps objetivo' : 'Tiempo objetivo (seg)' }}</label>
-          <div class="stepper sm">
-            <button type="button" class="step-btn" (click)="stepTargetValue(-1)">−</button>
-            <input type="text" inputmode="numeric" [ngModel]="targetValue ?? 0" readonly />
-            <button type="button" class="step-btn" (click)="stepTargetValue(1)">+</button>
+        <!-- Hallazgo #9 de pruebas reales en móvil, ver ROADMAP-calismap.md
+             — un objetivo por serie (ej. pirámide 12/10/8), no un único
+             valor repetido para todas. Mismo patrón .prescription-row que
+             "Series objetivo" arriba, uno por serie. -->
+        @for (value of draftTargetValues; track $index; let i = $index) {
+          <div class="prescription-row">
+            <label>Serie {{ i + 1 }} ({{ repUnit === 'reps' ? 'reps' : 'seg' }})</label>
+            <div class="stepper sm">
+              <button type="button" class="step-btn" (click)="stepTargetValueAt(i, -1)">−</button>
+              <input type="text" inputmode="numeric" [ngModel]="value ?? 0" readonly />
+              <button type="button" class="step-btn" (click)="stepTargetValueAt(i, 1)">+</button>
+            </div>
           </div>
-        </div>
+        }
       }
     </div>
   }
