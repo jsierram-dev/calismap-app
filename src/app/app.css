@@ -1,8 +1,7 @@
-/* Shell de la app — columna a toda la altura del viewport: el
-   router-outlet ocupa el espacio disponible (Ionic posiciona cada página
-   activada en .ion-page, absolute+inset:0, dentro de esta caja — ver
-   app.ts), NoticeSessionComponent/NavbarComponent quedan como hermanos
-   siguientes en flujo normal, siempre al fondo. */
+/* Shell de la app — columna a toda la altura del viewport: .outlet-wrap
+   ocupa el espacio disponible (flex: 1), NoticeSessionComponent/
+   NavbarComponent quedan como hermanos siguientes en flujo normal,
+   siempre al fondo. */
 .app-shell {
   display: flex;
   flex-direction: column;
@@ -10,7 +9,28 @@
   height: 100dvh;
   background: var(--ink-0);
 }
-ion-router-outlet {
+
+/* Ionic posiciona cada página activada en .ion-page como
+   `position: absolute; inset: 0` (CSS propio de @ionic/angular, no
+   nuestro) — eso saca a ion-router-outlet del flujo flex por completo,
+   ya que `flex` no tiene ningún efecto sobre un elemento absolutely
+   positioned. Poner `flex: 1` directo en ion-router-outlet (como estaba
+   antes) es CSS muerto: el outlet terminaba resolviendo su containing
+   block más arriba (ion-app), así que cada página ocupaba el VIEWPORT
+   ENTERO, tapando la fila completa de la navbar con una capa transparente
+   que se comía todos los taps — invisible porque ahí no pinta nada
+   encima, pero bloqueaba la navegación por completo (bug real, ver sesión
+   del 16/08/2026: "no puedo hacer nada" era esto, no falta de datos).
+   Fix: .outlet-wrap es un div plano (sin CSS de Ionic) que SÍ participa
+   del flex normalmente y se vuelve el containing block del outlet — el
+   outlet queda acotado a esa caja en vez de al viewport entero, sin
+   hardcodear la altura de la navbar en ningún lado. */
+.outlet-wrap {
   flex: 1;
   min-height: 0;
+  position: relative;
+}
+ion-router-outlet {
+  position: absolute;
+  inset: 0;
 }

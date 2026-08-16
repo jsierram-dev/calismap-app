@@ -51,6 +51,15 @@
   --radius-lg: 20px;
   --radius-md: 14px;
   --radius-sm: 9px;
+
+  /* Altura real de NavbarComponent (ver .tabbar en navbar.component.css) —
+     variable compartida en vez de repetir el número: la usan tanto la
+     navbar (para definirse) como cualquier `position: fixed` que necesite
+     saber cuánto reservar/despejar en la parte de abajo del viewport (ver
+     .sheet en filter.component.css — su containing block termina siendo
+     la página, no el viewport real, por el transform-context que Ionic le
+     pone a .ion-page para sus transiciones). */
+  --navbar-height: 66px;
 }
 
 @media (prefers-color-scheme: light) {
