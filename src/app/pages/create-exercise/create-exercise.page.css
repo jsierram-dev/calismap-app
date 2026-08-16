@@ -1,0 +1,78 @@
+.icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.media-upload-row { display: flex; gap: 10px; margin-bottom: 8px; }
+.media-upload-tile {
+  flex: 1;
+  aspect-ratio: 1/1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px;
+  background: var(--ink-1);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-md);
+  cursor: not-allowed;
+  opacity: 0.6;
+  font: inherit;
+  color: var(--text-1);
+}
+.media-upload-tile .tile-icon {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--ink-2);
+  color: var(--text-2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.media-upload-tile .tile-icon svg { width: 18px; height: 18px; }
+.media-upload-tile .tile-label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; }
+.upload-caption { font-size: 11px; color: var(--text-2); margin: 0 0 20px; }
+
+.form-label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); margin: 0 0 8px; display: block; }
+.text-input {
+  width: 100%; background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md);
+  padding: 11px 13px; font-size: 13.5px; color: var(--text-0); margin-bottom: 18px;
+}
+.text-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+textarea.text-input { resize: none; font-family: inherit; }
+
+.chip-select-row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 20px; }
+.chip-select {
+  font-family: var(--font-mono); font-size: 11px; padding: 8px 13px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--text-1); background: none; cursor: pointer;
+}
+.chip-select.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.chip-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.segmented { display: flex; background: var(--ink-2); border-radius: 8px; padding: 2px; width: fit-content; }
+.segmented button { border: none; background: none; font-family: var(--font-mono); font-size: 11px; padding: 6px 12px; border-radius: 6px; color: var(--text-1); cursor: pointer; }
+.segmented button.on { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+
+.threshold-list { border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 20px; }
+.threshold-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 13px; border-bottom: 1px solid var(--line-soft); }
+.threshold-row:last-child { border-bottom: none; }
+.threshold-row input { width: 60px; background: var(--ink-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 7px; text-align: center; font-family: var(--font-mono); font-size: 13px; color: var(--text-0); }
+.threshold-row input:disabled { opacity: 0.6; }
+
+.step-input-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.step-input-row .num { font-family: var(--font-mono); font-size: 11px; color: var(--accent); flex-shrink: 0; width: 18px; height: 18px; border: 1px solid var(--line); border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+.step-input-row input { flex: 1; }
+.add-step-btn { display: flex; align-items: center; gap: 6px; color: var(--accent); font-size: 12.5px; font-weight: 700; background: none; border: none; cursor: pointer; padding: 4px 0 18px; }
+
+.rating-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 5px;
+  text-transform: uppercase;
+}
+.rating-badge.bronze { background: color-mix(in srgb, var(--bronze) 22%, transparent); color: var(--bronze); }
+.rating-badge.silver { background: color-mix(in srgb, var(--silver) 22%, transparent); color: var(--silver); }
+.rating-badge.gold { background: color-mix(in srgb, var(--gold) 22%, transparent); color: var(--gold); }
+.rating-badge.platinum { background: color-mix(in srgb, var(--platinum) 22%, transparent); color: var(--platinum); }
+.rating-badge.diamond {
+  background: linear-gradient(120deg, color-mix(in srgb, var(--diamond) 30%, transparent), color-mix(in srgb, var(--diamond-2) 30%, transparent));
+  color: var(--diamond);
+}
+
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }

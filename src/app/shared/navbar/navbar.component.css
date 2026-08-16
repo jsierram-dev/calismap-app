@@ -1,0 +1,55 @@
+.tabbar {
+  height: 66px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-top: 1px solid var(--line-soft);
+  background: var(--ink-1);
+  padding-bottom: 8px;
+}
+
+.tab,
+.tab-session-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
+.tab.active,
+.tab-session-btn.active {
+  color: var(--accent);
+}
+
+/* Sin insignia de color propia para el estado "corriendo" — el usuario
+   pidió que se vea igual que el resto de los tabs (ver ROADMAP-calismap.md,
+   "undécima pasada"), la barra flotante de NoticeSessionComponent ya es el
+   indicador principal; el puntito de acá es secundario, discreto. */
+.icon-wrap {
+  position: relative;
+  display: flex;
+}
+
+.dot-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}

@@ -1,0 +1,33 @@
+.icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.form-label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); margin: 0 0 8px; display: block; }
+.text-input {
+  width: 100%; background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md);
+  padding: 11px 13px; font-size: 13.5px; color: var(--text-0); margin-bottom: 4px;
+}
+.text-input.title { font-size: 15px; font-weight: 700; margin-bottom: 18px; }
+.text-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.session-checklist { display: flex; flex-direction: column; gap: 9px; margin-bottom: 12px; }
+.session-checklist app-item-dropdown { display: block; }
+
+.add-exercise-btn {
+  display: flex; align-items: center; justify-content: center; gap: 7px; padding: 13px;
+  border: 1px dashed var(--line); border-radius: var(--radius-md); color: var(--accent);
+  font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 20px; width: 100%; background: none;
+}
+
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--ink-0);
+  display: flex;
+  flex-direction: column;
+}
+.picker-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line-soft); flex-shrink: 0; }
+.picker-header h3 { font-size: 15px; margin: 0; }
+.picker-header button { background: none; border: none; color: var(--text-2); display: flex; cursor: pointer; }
+.picker-overlay app-library { flex: 1; min-height: 0; display: flex; flex-direction: column; }

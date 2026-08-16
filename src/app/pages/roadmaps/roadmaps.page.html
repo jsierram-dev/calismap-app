@@ -1,50 +1,45 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>CalisMap</ion-title>
-  </ion-toolbar>
-</ion-header>
+<div class="page-content">
+  <h1 class="screen-title">Roadmaps</h1>
+  <p class="screen-sub">Tu progresión de calistenia</p>
 
-<ion-content>
-  <!-- Category filter -->
-  <div class="filter-bar">
-    @for (cat of categories(); track cat) {
-      <button
-        class="filter-chip"
-        [class.active]="activeFilter() === cat"
-        (click)="setFilter(cat)"
-      >
-        {{ cat }}
-      </button>
-    }
+  <div class="streak-strip">
+    <svg class="icon streak-flame" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2c1 3-3 4-3 7a3 3 0 0 0 6 0c1.5 1 2 3 2 4.5a5.5 5.5 0 0 1-11 0C6 9 9 7 12 2z" />
+    </svg>
+    <div><strong>{{ weeklySessionCount() }}</strong> <span class="d">sesiones esta semana</span></div>
   </div>
 
-  <div class="cards">
-    @for (card of filtered(); track card.roadmap.id) {
-      <a class="roadmap-card" [routerLink]="['/roadmaps', card.roadmap.id]">
-        <!-- Glow ring -->
-        <div class="card-glow" [class]="'glow-' + card.category.toLowerCase()"></div>
+  <app-search
+    placeholder="Buscar roadmap…"
+    [query]="query()"
+    [filterCount]="selectedMuscles().length"
+    (queryChange)="onQueryChange($event)"
+    (filterClick)="filterOpen.set(true)"
+  />
 
-        <div class="card-inner">
-          <div class="card-top">
-            <div>
-              <p class="card-category">{{ card.category }}</p>
-              <h2 class="card-name">{{ card.roadmap.name }}</h2>
-              <p class="card-goal">Goal: {{ card.targetExercise.name }}</p>
-            </div>
-            <ion-badge class="level-badge" [class]="'level-' + card.targetExercise.level.toLowerCase()">
-              {{ card.targetExercise.level }}
-            </ion-badge>
-          </div>
-
-          <p class="card-desc">{{ card.roadmap.description }}</p>
-
-          <div class="progress-row">
-            <span>{{ card.completedCount }} / {{ card.totalCount }} steps</span>
-            <span class="pct">{{ (progress(card) * 100) | number: '1.0-0' }}%</span>
-          </div>
-          <ion-progress-bar [value]="progress(card)" color="primary" />
+  @for (card of filtered(); track card.roadmap.id) {
+    <a class="roadmap-card" [routerLink]="['/roadmaps', card.roadmap.id]">
+      <div class="roadmap-card-top">
+        <div>
+          <span class="tag">{{ card.roadmap.category }}</span>
+          <h3 style="margin-top:8px">{{ card.roadmap.name }}</h3>
+          <p class="target">Objetivo: {{ card.targetExercise.name }}</p>
         </div>
-      </a>
-    }
-  </div>
-</ion-content>
+        <span class="progress-frac">{{ card.completedCount }}&nbsp;/&nbsp;{{ card.totalCount }}</span>
+      </div>
+      <div class="path-preview">
+        @for (dot of dotsFor(card); track $index; let last = $last) {
+          <div class="path-dot" [class.done]="dot === 'done'" [class.current]="dot === 'current'"></div>
+          @if (!last) {
+            <div class="path-line" [class.done]="dot === 'done'"></div>
+          }
+        }
+      </div>
+      <p class="card-note">{{ card.cardNote }}</p>
+    </a>
+  } @empty {
+    <p class="screen-sub">No encontramos ninguna ruta con ese criterio.</p>
+  }
+</div>
+
+<app-filter [open]="filterOpen()" (closed)="filterOpen.set(false)" (applied)="onMusclesApplied($event)" />

@@ -1,18 +1,26 @@
 import { Injectable } from '@angular/core';
-import { Exercise, RATING_ORDER, Rating, RatingThresholds } from '../models/exercise.model';
+import { RATING_ORDER, Rating, RatingThresholds } from '../models/exercise.model';
 
 const REFERENCE_BODYWEIGHT = 75; // kg
 
 @Injectable({ providedIn: 'root' })
 export class RatingCalculatorService {
   /**
-   * Calculates a rating given actual reps, user body weight, and the exercise thresholds.
-   * effectiveReps = reps × (bodyWeight / 75kg) — heavier users get credit for the extra load.
+   * effectiveValue = value × (bodyWeight + addedWeight) / 75 — mismo cálculo
+   * que la columna generada de Postgres en calismap-back (ver
+   * migrations/001_init.sql y models/workout-log.model.ts). addedWeight
+   * puede ser NEGATIVO a propósito (asistencia real con banda/máquina para
+   * variantes que todavía no se pueden a peso completo) — la fórmula lo
+   * resuelve sin casos especiales.
+   *
+   * Corregido 15 de agosto de 2026: la versión anterior no sumaba
+   * addedWeight — quedó desalineada quedó el día que se agregó ese campo al
+   * modelo (ver ROADMAP-calismap.md).
    */
-  calculate(reps: number, bodyWeight: number, thresholds: RatingThresholds): Rating {
-    if (reps <= 0) return 'BRONZE';
+  calculate(value: number, bodyWeight: number, addedWeight: number, thresholds: RatingThresholds): Rating {
+    if (value <= 0) return 'BRONZE';
 
-    const effective = reps * (bodyWeight / REFERENCE_BODYWEIGHT);
+    const effective = (value * (bodyWeight + addedWeight)) / REFERENCE_BODYWEIGHT;
 
     if (effective >= thresholds.DIAMOND) return 'DIAMOND';
     if (effective >= thresholds.PLATINUM) return 'PLATINUM';
@@ -21,30 +29,29 @@ export class RatingCalculatorService {
     return 'BRONZE';
   }
 
-  /** Returns the minimum reps needed (at the given bodyWeight) to reach the target rating. */
-  repsNeededFor(targetRating: Rating, bodyWeight: number, thresholds: RatingThresholds): number {
-    const threshold = thresholds[targetRating as keyof RatingThresholds] ?? 1;
-    const actual = Math.ceil(threshold * (REFERENCE_BODYWEIGHT / bodyWeight));
-    return actual;
+  /** Rating derivado del MEJOR effectiveValue ya calculado (ver workout-log.model.ts). */
+  ratingForEffectiveValue(effective: number, thresholds: RatingThresholds): Rating {
+    if (effective >= thresholds.DIAMOND) return 'DIAMOND';
+    if (effective >= thresholds.PLATINUM) return 'PLATINUM';
+    if (effective >= thresholds.GOLD) return 'GOLD';
+    if (effective >= thresholds.SILVER) return 'SILVER';
+    return 'BRONZE';
   }
 
-  /** True if ratingA >= ratingB in the progression order. */
+  /** Valor mínimo (reps/segundos, sin peso agregado) para llegar al rating pedido, a este peso corporal. */
+  valueNeededFor(targetRating: Rating, bodyWeight: number, thresholds: RatingThresholds): number {
+    const threshold = thresholds[targetRating as keyof RatingThresholds] ?? 1;
+    return Math.ceil((threshold * REFERENCE_BODYWEIGHT) / bodyWeight);
+  }
+
+  /** True si ratingA >= ratingB en el orden de progresión. */
   meetsOrExceeds(ratingA: Rating, ratingB: Rating): boolean {
     return RATING_ORDER.indexOf(ratingA) >= RATING_ORDER.indexOf(ratingB);
   }
 
-  /** Returns the exercise threshold for a given rating (null for BRONZE = 1 rep). */
+  /** Umbral de la tabla para un rating dado (null/BRONZE = 1). */
   getThresholdFor(rating: Rating, thresholds: RatingThresholds): number {
     if (rating === 'BRONZE') return 1;
     return thresholds[rating as keyof RatingThresholds];
-  }
-
-  /** Live preview: given the reps typed so far, return what rating they would achieve. */
-  preview(reps: number, bodyWeight: number, exercise: Exercise): { rating: Rating; nextRating: Rating | null; repsToNext: number | null } {
-    const rating = this.calculate(reps, bodyWeight, exercise.ratingThresholds);
-    const nextIndex = RATING_ORDER.indexOf(rating) + 1;
-    const nextRating = nextIndex < RATING_ORDER.length ? RATING_ORDER[nextIndex] : null;
-    const repsToNext = nextRating ? this.repsNeededFor(nextRating, bodyWeight, exercise.ratingThresholds) - reps : null;
-    return { rating, nextRating, repsToNext: repsToNext && repsToNext > 0 ? repsToNext : null };
   }
 }

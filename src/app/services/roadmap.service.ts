@@ -1,263 +1,114 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Exercise, ExerciseCategory, Rating } from '../models/exercise.model';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { Exercise, ExerciseCategory, RATING_ORDER, Rating } from '../models/exercise.model';
 import { Roadmap, RoadmapDetailViewModel, RoadmapExercise, RoadmapStepViewModel } from '../models/roadmap.model';
+import { effectiveValue } from '../models/workout-log.model';
+import { CatalogCache } from '../core/utils/catalog-cache';
+import { LocalStorageService } from '../core/services/local-storage.service';
+import { ExerciseLibraryService } from './exercise-library.service';
 import { RatingCalculatorService } from './rating-calculator.service';
-import { UserExerciseService } from './user-exercise.service';
 import { UserProfileService } from './user-profile.service';
+import { WorkoutLogService } from './workout-log.service';
 
-// ─── Mock exercises ───────────────────────────────────────────────────────────
+const LIST_KEY = 'calismap_roadmaps';
 
-const EXERCISES: Exercise[] = [
-  {
-    id: 'ex-1',
-    name: 'Australian Pull-up',
-    description: 'A horizontal pulling movement performed with a bar at waist height. Keep your body in a straight line and pull your chest to the bar.',
-    level: 'BEGINNER',
-    category: 'PULL',
-    muscleGroups: ['Back', 'Biceps', 'Core'],
-    repUnit: 'reps',
-    ratingThresholds: { SILVER: 10, GOLD: 20, PLATINUM: 30, DIAMOND: 40 },
-    steps: [
-      'Set a bar at waist height (smith machine, barbell on rack, or rings).',
-      'Hang under the bar with straight arms, body in a straight line from heels to head.',
-      'Pull your chest to the bar, squeezing your shoulder blades together at the top.',
-      'Lower yourself with control back to the starting position.',
-    ],
-  },
-  {
-    id: 'ex-2',
-    name: 'Pull-up',
-    description: 'A vertical pulling movement. Hang from a bar with an overhand grip and pull yourself up until your chin clears the bar.',
-    level: 'INTERMEDIATE',
-    category: 'PULL',
-    muscleGroups: ['Back', 'Biceps', 'Core'],
-    repUnit: 'reps',
-    ratingThresholds: { SILVER: 5, GOLD: 10, PLATINUM: 15, DIAMOND: 20 },
-    steps: [
-      'Hang from a bar with an overhand grip, slightly wider than shoulder-width.',
-      'Retract your shoulder blades and engage your core.',
-      'Pull yourself up until your chin is above the bar.',
-      'Lower with control — do not drop suddenly.',
-    ],
-  },
-  {
-    id: 'ex-3',
-    name: 'Chest-to-Bar Pull-up',
-    description: 'A pull-up variation where you pull higher until your chest touches the bar, building the lat and upper-back strength needed for Muscle Ups.',
-    level: 'ADVANCED',
-    category: 'PULL',
-    muscleGroups: ['Back', 'Biceps', 'Core', 'Shoulders'],
-    repUnit: 'reps',
-    ratingThresholds: { SILVER: 3, GOLD: 7, PLATINUM: 12, DIAMOND: 15 },
-    steps: [
-      'Start in a dead hang with overhand grip.',
-      'Pull explosively, driving your elbows down and back.',
-      'Continue pulling until your chest contacts the bar.',
-      'Lower with full control back to dead hang.',
-    ],
-  },
-  {
-    id: 'ex-4',
-    name: 'Muscle Up',
-    description: 'The king of pulling exercises. Combine a pull-up with a dip to get from below the bar to above it in one fluid movement.',
-    level: 'EXPERT',
-    category: 'PULL',
-    muscleGroups: ['Back', 'Biceps', 'Triceps', 'Core', 'Shoulders'],
-    repUnit: 'reps',
-    ratingThresholds: { SILVER: 2, GOLD: 5, PLATINUM: 8, DIAMOND: 12 },
-    steps: [
-      'Start with a false grip on the bar (wrists draped over, not under).',
-      'Generate a slight kip to build momentum.',
-      'Pull explosively — think chest-to-bar with maximum aggression.',
-      'At the top of the pull, shoot your hips forward and transition your torso above the bar.',
-      'Push into a straight-arm support position and lock out.',
-    ],
-  },
-  {
-    id: 'ex-5',
-    name: 'Pike Push-up',
-    description: 'A push-up in a pike position (hips high). Mimics the pressing angle of a handstand push-up, building shoulder strength safely.',
-    level: 'BEGINNER',
-    category: 'PUSH',
-    muscleGroups: ['Shoulders', 'Triceps', 'Core'],
-    repUnit: 'reps',
-    ratingThresholds: { SILVER: 8, GOLD: 15, PLATINUM: 25, DIAMOND: 35 },
-    steps: [
-      'Start in a push-up position. Walk your feet towards your hands until your hips are high in the air.',
-      'Your body should form an inverted V shape, head looking towards your feet.',
-      'Bend your elbows to lower your head towards the floor between your hands.',
-      'Push back up to the starting position by straightening your arms.',
-    ],
-  },
-  {
-    id: 'ex-6',
-    name: 'Wall Handstand Hold',
-    description: 'Build handstand balance and shoulder stability against a wall. Essential for developing the body tension for handstand push-ups.',
-    level: 'INTERMEDIATE',
-    category: 'STATIC',
-    muscleGroups: ['Shoulders', 'Core', 'Forearms'],
-    repUnit: 'seconds',
-    ratingThresholds: { SILVER: 15, GOLD: 30, PLATINUM: 60, DIAMOND: 90 },
-    steps: [
-      'Face the wall and place your hands 10–15 cm from the base.',
-      'Kick up into a handstand with your chest facing the wall.',
-      'Stack your hips over your shoulders and ankles over your hips.',
-      'Squeeze your glutes, core and quads hard. Hold for time.',
-    ],
-  },
-  {
-    id: 'ex-7',
-    name: 'Handstand Push-up',
-    description: 'A vertical pressing movement performed in a handstand. Requires maximum shoulder strength and body control.',
-    level: 'ADVANCED',
-    category: 'PUSH',
-    muscleGroups: ['Shoulders', 'Triceps', 'Core'],
-    repUnit: 'reps',
-    ratingThresholds: { SILVER: 3, GOLD: 7, PLATINUM: 10, DIAMOND: 15 },
-    steps: [
-      'Kick up into a wall handstand with hands about 15 cm from the wall.',
-      'Lower your head towards the floor with control, elbows tracking slightly forward.',
-      'Stop when the top of your head lightly touches the floor.',
-      'Press back up to full lockout and repeat.',
-    ],
-  },
-  {
-    id: 'ex-8',
-    name: 'Squat',
-    description: 'The foundational lower-body movement. Builds leg strength, joint mobility, and coordination as a base for all advanced leg work.',
-    level: 'BEGINNER',
-    category: 'LEGS',
-    muscleGroups: ['Quads', 'Glutes', 'Core'],
-    repUnit: 'reps',
-    ratingThresholds: { SILVER: 20, GOLD: 40, PLATINUM: 60, DIAMOND: 100 },
-    steps: [
-      'Stand with feet shoulder-width apart, toes pointing slightly outward.',
-      'Brace your core and keep your chest tall throughout.',
-      'Push your knees out in line with your toes as you lower your hips.',
-      'Descend until your thighs are at least parallel to the floor.',
-      'Drive through your heels to return to standing.',
-    ],
-  },
-  {
-    id: 'ex-9',
-    name: 'Bulgarian Split Squat',
-    description: 'A single-leg squat with the rear foot elevated. Builds unilateral leg strength and reveals any left-right imbalances.',
-    level: 'INTERMEDIATE',
-    category: 'LEGS',
-    muscleGroups: ['Quads', 'Glutes', 'Core'],
-    repUnit: 'reps',
-    ratingThresholds: { SILVER: 8, GOLD: 15, PLATINUM: 25, DIAMOND: 35 },
-    steps: [
-      'Stand 60–90 cm in front of a bench and place your rear foot on it.',
-      'Lower your back knee towards the floor, keeping your front shin as vertical as possible.',
-      'Your front knee should track over your middle toe.',
-      'Press through your front heel to return to the start. Complete all reps then switch legs.',
-    ],
-  },
-  {
-    id: 'ex-10',
-    name: 'Pistol Squat',
-    description: 'A full single-leg squat with the non-working leg extended forward. The ultimate test of leg strength, balance, and ankle mobility.',
-    level: 'EXPERT',
-    category: 'LEGS',
-    muscleGroups: ['Quads', 'Glutes', 'Core', 'Ankle'],
-    repUnit: 'reps',
-    ratingThresholds: { SILVER: 3, GOLD: 7, PLATINUM: 12, DIAMOND: 20 },
-    steps: [
-      'Stand on one leg, extending the other leg straight out in front of you.',
-      'Lower your hips by bending your standing knee, keeping your heel firmly on the floor.',
-      'Keep your extended leg parallel to the floor and your torso as upright as possible.',
-      'Go as deep as possible without the heel lifting.',
-      'Drive through your heel to stand back up. Switch legs.',
-    ],
-  },
-];
+interface RoadmapDetailDto extends Roadmap {
+  steps: RoadmapExercise[];
+}
 
-// ─── Mock roadmaps ────────────────────────────────────────────────────────────
+export interface RoadmapSummary {
+  roadmap: Roadmap;
+  targetExercise: Exercise;
+  completedCount: number;
+  totalCount: number;
+  // Texto tipo "coach note" para la tarjeta de la pantalla 01 (ver
+  // ROADMAP-calismap.md, "coach note con el cálculo real, no texto
+  // genérico") — sobre el paso actual (primero sin completar), o un mensaje
+  // de ruta terminada si no queda ninguno.
+  cardNote: string;
+}
 
-const ROADMAPS: Roadmap[] = [
-  { id: 'rm-1', name: 'Muscle Up', description: 'Progress from horizontal rows to the king of bar movements.', targetExerciseId: 'ex-4', category: 'PULL' },
-  { id: 'rm-2', name: 'Handstand Push-up', description: 'Build the shoulder strength and body control for vertical pressing.', targetExerciseId: 'ex-7', category: 'PUSH' },
-  { id: 'rm-3', name: 'Pistol Squat', description: 'Develop unilateral leg strength, balance, and full-range mobility.', targetExerciseId: 'ex-10', category: 'LEGS' },
-];
-
-// minRatingRequired: rating needed on the PREVIOUS step to unlock THIS step.
-// null = step 1, always accessible.
-const ROADMAP_EXERCISES: RoadmapExercise[] = [
-  { id: 're-1', roadmapId: 'rm-1', exerciseId: 'ex-1', stepOrder: 1, minRatingRequired: null },
-  { id: 're-2', roadmapId: 'rm-1', exerciseId: 'ex-2', stepOrder: 2, minRatingRequired: 'SILVER' },
-  { id: 're-3', roadmapId: 'rm-1', exerciseId: 'ex-3', stepOrder: 3, minRatingRequired: 'GOLD' },
-  { id: 're-4', roadmapId: 'rm-2', exerciseId: 'ex-5', stepOrder: 1, minRatingRequired: null },
-  { id: 're-5', roadmapId: 'rm-2', exerciseId: 'ex-6', stepOrder: 2, minRatingRequired: 'SILVER' },
-  { id: 're-6', roadmapId: 'rm-3', exerciseId: 'ex-8', stepOrder: 1, minRatingRequired: null },
-  { id: 're-7', roadmapId: 'rm-3', exerciseId: 'ex-9', stepOrder: 2, minRatingRequired: 'SILVER' },
-];
-
-// ─── Service ──────────────────────────────────────────────────────────────────
-
+/**
+ * Catálogo (Roadmap/RoadmapExercise, admin-curado, pull-and-cache) +
+ * historial real (WorkoutLog, local-first) combinados para derivar el
+ * estado de cada paso — reemplaza por completo la versión anterior con
+ * arrays mock y UserExerciseService (ver ROADMAP-calismap.md, "Sesiones de
+ * entrenamiento vs. ruta de evolución"). El detalle de cada roadmap (con
+ * pasos) se pide fresco cada vez: el catálogo es chico (contenido real
+ * cerrado, ver COMPONENTES-calismap.md) así que no vale la pena otra capa
+ * de cache por id acá.
+ */
 @Injectable({ providedIn: 'root' })
 export class RoadmapService {
+  private listCache: CatalogCache<Roadmap>;
+
   constructor(
-    private userExerciseService: UserExerciseService,
+    private http: HttpClient,
+    storage: LocalStorageService,
+    private exerciseLibrary: ExerciseLibraryService,
+    private workoutLog: WorkoutLogService,
     private ratingCalc: RatingCalculatorService,
-    private userProfileService: UserProfileService,
-  ) {}
-
-  getAllRoadmaps(): { roadmap: Roadmap; targetExercise: Exercise; completedCount: number; totalCount: number; category: ExerciseCategory }[] {
-    const userExerciseMap = this.buildUserExerciseMap();
-
-    return ROADMAPS.map(roadmap => {
-      const steps = this.getStepsForRoadmap(roadmap.id);
-      const targetExercise = EXERCISES.find(e => e.id === roadmap.targetExerciseId)!;
-      const completedCount = steps.filter(s => userExerciseMap.has(s.exerciseId)).length;
-
-      return { roadmap, targetExercise, completedCount, totalCount: steps.length, category: roadmap.category };
-    });
+    private userProfile: UserProfileService,
+  ) {
+    this.listCache = new CatalogCache<Roadmap>(http, storage, LIST_KEY, `${environment.apiUrl}/roadmaps`);
   }
 
-  getRoadmapDetail(roadmapId: string): RoadmapDetailViewModel | null {
-    const roadmap = ROADMAPS.find(r => r.id === roadmapId);
-    if (!roadmap) return null;
+  async getAllRoadmaps(): Promise<RoadmapSummary[]> {
+    const roadmaps = await this.listCache.getAll();
+    const summaries = await Promise.all(roadmaps.map((roadmap) => this.buildSummary(roadmap)));
+    return summaries.filter((s): s is RoadmapSummary => s !== null);
+  }
 
-    const targetExercise = EXERCISES.find(e => e.id === roadmap.targetExerciseId)!;
-    const steps = this.getStepsForRoadmap(roadmapId).sort((a, b) => a.stepOrder - b.stepOrder);
-    const userExerciseMap = this.buildUserExerciseMap();
-    const bodyWeight = this.userProfileService.getBodyWeight();
+  async getRoadmapDetail(roadmapId: string): Promise<RoadmapDetailViewModel | null> {
+    const detail = await this.fetchDetail(roadmapId);
+    if (!detail) return null;
 
-    // Build a helper: given a step, what rating does the user currently have?
-    const getUserRating = (exerciseId: string): Rating | null => {
-      const ue = userExerciseMap.get(exerciseId);
-      if (!ue) return null;
-      const ex = EXERCISES.find(e => e.id === exerciseId)!;
-      return this.ratingCalc.calculate(ue.maxRepetitions, bodyWeight, ex.ratingThresholds);
-    };
+    const targetExercise = await this.exerciseLibrary.getById(detail.targetExerciseId);
+    if (!targetExercise) return null;
 
-    const stepViewModels: RoadmapStepViewModel[] = steps.map((re, index) => {
-      const exercise = EXERCISES.find(e => e.id === re.exerciseId)!;
-      const userExercise = userExerciseMap.get(re.exerciseId) ?? null;
-      const currentRating = getUserRating(re.exerciseId);
-      const isCompleted = currentRating !== null;
+    const steps = [...detail.steps].sort((a, b) => a.stepOrder - b.stepOrder);
+    const stepViewModels: RoadmapStepViewModel[] = [];
 
-      // Step is unlocked if:
-      // - it's step 1 (no minRatingRequired)
-      // - OR the previous step's rating meets minRatingRequired
-      let isUnlocked = re.minRatingRequired === null;
+    for (let index = 0; index < steps.length; index++) {
+      const step = steps[index];
+      const exercise = await this.exerciseLibrary.getById(step.exerciseId);
+      if (!exercise) continue; // catálogo inconsistente — no debería pasar, se salta en vez de romper la pantalla
+
+      const rating = await this.getCurrentRating(step.exerciseId);
+      const bestLog = await this.workoutLog.getBestLog(step.exerciseId);
+
+      // Desbloqueado si es el paso 1 (sin minRatingRequired) o si el rating
+      // actual del paso ANTERIOR alcanza el mínimo pedido.
+      let isUnlocked = step.minRatingRequired === null;
       if (!isUnlocked && index > 0) {
-        const prevRating = getUserRating(steps[index - 1].exerciseId);
-        if (prevRating && re.minRatingRequired) {
-          isUnlocked = this.ratingCalc.meetsOrExceeds(prevRating, re.minRatingRequired);
+        const prevRating = await this.getCurrentRating(steps[index - 1].exerciseId);
+        if (prevRating && step.minRatingRequired) {
+          isUnlocked = this.ratingCalc.meetsOrExceeds(prevRating, step.minRatingRequired);
         }
       }
 
-      return { stepOrder: re.stepOrder, exercise, isTarget: false, isUnlocked, isCompleted, rating: currentRating, userExercise };
-    });
+      stepViewModels.push({
+        stepOrder: step.stepOrder,
+        exercise,
+        isTarget: false,
+        isUnlocked,
+        isCompleted: rating !== null,
+        rating,
+        bestValue: bestLog?.value ?? null,
+        minRatingRequired: step.minRatingRequired,
+      });
+    }
 
-    // Add target exercise as the final node — unlocks when last step reaches GOLD
+    // El nodo objetivo se agrega al final — desbloquea cuando el último paso
+    // llega a Roadmap.targetRatingRequired (dato de catálogo, default GOLD —
+    // NO un 'GOLD' hardcodeado, ver ROADMAP-calismap.md "quinta pasada").
     const lastStep = steps[steps.length - 1];
-    const lastRating = getUserRating(lastStep.exerciseId);
-    const goalUnlocked = lastRating ? this.ratingCalc.meetsOrExceeds(lastRating, 'GOLD') : false;
-    const goalUserExercise = userExerciseMap.get(targetExercise.id) ?? null;
-    const goalRating = getUserRating(targetExercise.id);
+    const lastRating = lastStep ? await this.getCurrentRating(lastStep.exerciseId) : null;
+    const goalUnlocked = lastRating ? this.ratingCalc.meetsOrExceeds(lastRating, detail.targetRatingRequired) : false;
+    const goalRating = await this.getCurrentRating(detail.targetExerciseId);
+    const goalBestLog = await this.workoutLog.getBestLog(detail.targetExerciseId);
 
     stepViewModels.push({
       stepOrder: steps.length + 1,
@@ -266,28 +117,73 @@ export class RoadmapService {
       isUnlocked: goalUnlocked,
       isCompleted: goalRating !== null,
       rating: goalRating,
-      userExercise: goalUserExercise,
+      bestValue: goalBestLog?.value ?? null,
+      minRatingRequired: detail.targetRatingRequired,
     });
 
-    const completedCount = stepViewModels.filter(s => s.isCompleted && !s.isTarget).length;
+    const completedCount = stepViewModels.filter((s) => s.isCompleted && !s.isTarget).length;
 
-    return { roadmap, targetExercise, steps: stepViewModels, completedCount, totalCount: steps.length };
+    return { roadmap: detail, targetExercise, steps: stepViewModels, completedCount, totalCount: steps.length };
   }
 
-  getExerciseById(id: string): Exercise | null {
-    return EXERCISES.find(e => e.id === id) ?? null;
+  async getExerciseById(id: string): Promise<Exercise | null> {
+    return this.exerciseLibrary.getById(id);
   }
 
-  getAllCategories(): ExerciseCategory[] {
-    const cats = new Set(ROADMAPS.map(r => r.category));
-    return Array.from(cats);
+  async getAllCategories(): Promise<ExerciseCategory[]> {
+    const roadmaps = await this.listCache.getAll();
+    return Array.from(new Set(roadmaps.map((r) => r.category)));
   }
 
-  private getStepsForRoadmap(roadmapId: string): RoadmapExercise[] {
-    return ROADMAP_EXERCISES.filter(re => re.roadmapId === roadmapId);
+  private async buildSummary(roadmap: Roadmap): Promise<RoadmapSummary | null> {
+    const detail = await this.getRoadmapDetail(roadmap.id);
+    if (!detail) return null; // catálogo inconsistente — no debería pasar con contenido real cerrado, se omite en vez de romper la pantalla
+
+    const currentStep = detail.steps.find((s) => !s.isCompleted) ?? null;
+    const cardNote = this.buildCardNote(currentStep);
+
+    return {
+      roadmap: detail.roadmap,
+      targetExercise: detail.targetExercise,
+      completedCount: detail.completedCount,
+      totalCount: detail.totalCount,
+      cardNote,
+    };
   }
 
-  private buildUserExerciseMap() {
-    return new Map(this.userExerciseService.getAll().map(ue => [ue.exerciseId, ue]));
+  /** Coach note real para la tarjeta de la pantalla 01 — sobre el primer paso sin completar. */
+  private buildCardNote(step: RoadmapStepViewModel | null): string {
+    if (!step) return '¡Completaste esta ruta!';
+    if (step.bestValue === null) return `${step.exercise.name}: registrá tu primera marca`;
+
+    const currentIndex = RATING_ORDER.indexOf(step.rating ?? 'BRONZE');
+    const nextRating = RATING_ORDER[currentIndex + 1];
+    if (!nextRating) return `${step.exercise.name}: ¡en tu mejor nivel!`;
+
+    const bodyWeightKg = this.userProfile.getBodyWeightKg();
+    const needed = this.ratingCalc.valueNeededFor(nextRating, bodyWeightKg, step.exercise.ratingThresholds);
+    const remaining = needed - step.bestValue;
+    const unit = step.exercise.repUnit === 'reps' ? 'reps' : 'seg';
+    const nextLabel = nextRating.charAt(0) + nextRating.slice(1).toLowerCase();
+
+    if (remaining <= 0) return `${step.exercise.name}: ¡ya podés avanzar al siguiente paso!`;
+    return `${step.exercise.name}: te faltan ${remaining} ${unit} para ${nextLabel}`;
+  }
+
+  /** Rating actual del usuario en un ejercicio — derivado de la MEJOR marca histórica (ver workout-log.service.ts, getBestLog), nunca recalculado con datos de hoy. null = sin ninguna marca todavía. */
+  private async getCurrentRating(exerciseId: string): Promise<Rating | null> {
+    const bestLog = await this.workoutLog.getBestLog(exerciseId);
+    if (!bestLog) return null;
+    const exercise = await this.exerciseLibrary.getById(exerciseId);
+    if (!exercise) return null;
+    return this.ratingCalc.ratingForEffectiveValue(effectiveValue(bestLog), exercise.ratingThresholds);
+  }
+
+  private async fetchDetail(roadmapId: string): Promise<RoadmapDetailDto | null> {
+    try {
+      return await firstValueFrom(this.http.get<RoadmapDetailDto>(`${environment.apiUrl}/roadmaps/${roadmapId}`));
+    } catch {
+      return null;
+    }
   }
 }

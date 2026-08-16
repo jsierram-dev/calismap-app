@@ -1,0 +1,42 @@
+<div class="page-content">
+  <h1 class="screen-title">Nueva rutina</h1>
+
+  <label class="form-label" for="routine-name">Nombre</label>
+  <input id="routine-name" class="text-input title" type="text" placeholder="Ej. Empuje — Intermedio" [(ngModel)]="name" />
+
+  <label class="form-label">Ejercicios ({{ items().length }})</label>
+  <div class="session-checklist">
+    @for (item of items(); track item.exercise.id; let i = $index) {
+      <app-item-dropdown
+        mode="prescription"
+        [exerciseName]="item.exercise.name"
+        [repUnit]="item.exercise.repUnit"
+        [customBadge]="!!item.exercise.userId"
+        [targetSets]="item.targetSets"
+        [targetValue]="item.targetValue"
+        (targetSetsChange)="updateTargetSets(i, $event)"
+        (targetValueChange)="updateTargetValue(i, $event)"
+        (removed)="removeItem(i)"
+      />
+    }
+  </div>
+
+  <button class="add-exercise-btn" type="button" (click)="pickerOpen.set(true)">
+    <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+    Agregar ejercicio
+  </button>
+
+  <button class="btn btn-primary" type="button" style="width:100%" [disabled]="!canSave" (click)="save()">Guardar rutina</button>
+</div>
+
+@if (pickerOpen()) {
+  <div class="picker-overlay">
+    <div class="picker-header">
+      <h3>Agregar ejercicio</h3>
+      <button type="button" (click)="pickerOpen.set(false)" aria-label="Cerrar">
+        <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+      </button>
+    </div>
+    <app-library [pickerMode]="true" (picked)="onExercisePicked($event)" />
+  </div>
+}

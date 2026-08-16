@@ -1,96 +1,181 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&display=swap');
+/* ═══════════════════════════════════════════════════════════════════════
+   Design tokens — "training ledger" system, ver ROADMAP-calismap.md
+   ("Diseño de UI") y COMPONENTES-calismap.md para el porqué de cada
+   decisión. Este archivo es SOLO lo que comparten muchos componentes:
+   tokens, el puente a las variables de Ionic, y un reset mínimo. Todo lo
+   que es de una pantalla o componente puntual vive en el .css de ese
+   componente, no acá.
 
-/* ── Color system ───────────────────────────────────────────────────────────── */
+   Reemplaza el sistema anterior (paleta naranja/ámbar "glow", Barlow
+   Condensed vía Google Fonts) — ese era de una exploración de diseño
+   anterior, ya no vigente; el mockup cerrado el 14-15 de agosto de 2026 usa
+   este sistema, no ese.
+
+   3 estados de tema, mismo patrón en todo el proyecto: :root (oscuro,
+   default) → @media (prefers-color-scheme: light) para "Sistema" en claro →
+   [data-theme="light"]/[data-theme="dark"] para la selección explícita del
+   usuario en Ajustes, que gana en cualquier dirección.
+   ═══════════════════════════════════════════════════════════════════════ */
+
 :root {
-  --ion-background-color: #0f0f0f;
-  --ion-background-color-rgb: 15, 15, 15;
+  --ink-0: #0F1113;       /* fondo de página */
+  --ink-1: #1A1D21;       /* fondo de tarjeta */
+  --ink-2: #232730;       /* superficie elevada / anidada */
+  --line: #33383F;
+  --line-soft: #262A30;
+  --text-0: #F2F1EC;      /* texto primario — chalk white cálido, no #fff puro */
+  --text-1: #ABB0B8;      /* texto secundario */
+  --text-2: #6E747C;      /* texto terciario / placeholder */
+  --accent: #55D0E8;      /* chalk-blue — el único color caliente, uso mesurado */
+  --accent-ink: #04262C;  /* texto sobre rellenos de --accent */
+  --accent-soft: rgba(85, 208, 232, 0.14);
+  --danger: #E2685C;
 
-  --ion-card-background: #1a1a1a;
+  --bronze: #C48A55;
+  --silver: #ABB0B6;
+  --gold: #E0B84A;
+  --platinum: #9FCBDD;
+  --diamond: #8FEAF5;
+  --diamond-2: #C9F7FF;
 
-  --ion-toolbar-background: #0f0f0f;
-  --ion-toolbar-color: #ffffff;
-  --ion-toolbar-border-color: #2a2a2a;
+  /* Componentes de foto/video subidos y compartido/global (ver
+     COMPONENTES-calismap.md, leyenda del mapa de componentes) — mismos
+     colores que el mapa, por si algún componente necesita distinguir estas
+     categorías visualmente. */
+  --cf-shared: #E8965A;
+  --cf-global: #B98CF0;
 
-  --ion-text-color: #ffffff;
-  --ion-text-color-rgb: 255, 255, 255;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, monospace;
 
-  /* Primary: orange */
-  --ion-color-primary: #ff5300;
-  --ion-color-primary-rgb: 255, 83, 0;
-  --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #e04a00;
-  --ion-color-primary-tint: #ff6820;
-
-  /* Secondary: amber */
-  --ion-color-secondary: #ff8c00;
-  --ion-color-secondary-rgb: 255, 140, 0;
-  --ion-color-secondary-contrast: #000000;
-
-  --ion-color-success: #00c853;
-  --ion-color-success-rgb: 0, 200, 83;
-  --ion-color-success-contrast: #000;
-
-  --ion-color-warning: #ffd600;
-  --ion-color-warning-rgb: 255, 214, 0;
-  --ion-color-warning-contrast: #000;
-
-  --ion-color-danger: #ff1744;
-  --ion-color-danger-contrast: #fff;
-
-  --ion-color-medium: #666666;
-  --ion-color-medium-rgb: 102, 102, 102;
-  --ion-color-medium-contrast: #fff;
-
-  --ion-color-light: #2a2a2a;
-  --ion-color-light-rgb: 42, 42, 42;
-  --ion-color-light-contrast: #ffffff;
-
-  /* Fonts */
-  --font-heading: 'Barlow Condensed', sans-serif;
-  --font-body: 'Barlow', -apple-system, BlinkMacSystemFont, sans-serif;
-
-  /* Glow palette */
-  --glow-primary:  rgba(255, 83,  0,   0.45);
-  --glow-amber:    rgba(255, 140, 0,   0.40);
-  --glow-green:    rgba(0,   200, 83,  0.40);
-  --glow-gold:     rgba(255, 214, 0,   0.40);
-  --glow-bronze:   rgba(205, 127, 50,  0.40);
-  --glow-silver:   rgba(192, 192, 192, 0.35);
-  --glow-platinum: rgba(0,   188, 212, 0.40);
-  --glow-diamond:  rgba(124, 77,  255, 0.40);
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 9px;
 }
 
-/* ── Base typography ────────────────────────────────────────────────────────── */
-* { font-family: var(--font-body); }
-
-h1, h2, h3, h4,
-ion-title,
-.section-title,
-.card-name,
-.node-name {
-  font-family: var(--font-heading);
-  letter-spacing: 0.03em;
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --ink-0: #E6E9EB;
+    --ink-1: #FFFFFF;
+    --ink-2: #F1F3F4;
+    --line: #D2D7DA;
+    --line-soft: #E1E5E7;
+    --text-0: #1B1D1F;
+    --text-1: #585D63;
+    --text-2: #8B8F92;
+    --accent: #0E93A8;
+    --accent-ink: #F2FCFD;
+    --accent-soft: rgba(14, 147, 168, 0.10);
+    --danger: #C4432F;
+    --bronze: #9C6432;
+    --silver: #797E83;
+    --gold: #96731A;
+    --platinum: #3C7B92;
+    --diamond: #1487A0;
+    --diamond-2: #0E6E82;
+    --cf-shared: #B85A1E;
+    --cf-global: #8A3FA6;
+  }
+}
+:root[data-theme="light"] {
+  --ink-0: #E6E9EB;
+  --ink-1: #FFFFFF;
+  --ink-2: #F1F3F4;
+  --line: #D2D7DA;
+  --line-soft: #E1E5E7;
+  --text-0: #1B1D1F;
+  --text-1: #585D63;
+  --text-2: #8B8F92;
+  --accent: #0E93A8;
+  --accent-ink: #F2FCFD;
+  --accent-soft: rgba(14, 147, 168, 0.10);
+  --danger: #C4432F;
+  --bronze: #9C6432;
+  --silver: #797E83;
+  --gold: #96731A;
+  --platinum: #3C7B92;
+  --diamond: #1487A0;
+  --diamond-2: #0E6E82;
+  --cf-shared: #B85A1E;
+  --cf-global: #8A3FA6;
+}
+:root[data-theme="dark"] {
+  --ink-0: #0F1113; --ink-1: #1A1D21; --ink-2: #232730;
+  --line: #33383F; --line-soft: #262A30;
+  --text-0: #F2F1EC; --text-1: #ABB0B8; --text-2: #6E747C;
+  --accent: #55D0E8; --accent-ink: #04262C; --accent-soft: rgba(85, 208, 232, 0.14);
+  --danger: #E2685C;
+  --bronze: #C48A55; --silver: #ABB0B6; --gold: #E0B84A;
+  --platinum: #9FCBDD; --diamond: #8FEAF5; --diamond-2: #C9F7FF;
+  --cf-shared: #E8965A; --cf-global: #B98CF0;
 }
 
-ion-title {
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+/* ── Puente a las variables de Ionic — los componentes ion-* nativos
+   (IonHeader/IonContent/IonToolbar/IonItem/...) tienen que verse igual de
+   coherentes que los elementos custom del diseño, sin reescribir cada uno a
+   mano. No usamos el toggle de paleta propio de Ionic (ion-palette-dark) —
+   el tema lo maneja [data-theme], estas variables solo siguen a las de
+   arriba. ── */
+:root {
+  --ion-background-color: var(--ink-0);
+  --ion-text-color: var(--text-0);
+  --ion-toolbar-background: var(--ink-0);
+  --ion-toolbar-color: var(--text-0);
+  --ion-toolbar-border-color: var(--line);
+  --ion-item-background: var(--ink-1);
+  --ion-border-color: var(--line);
+  --ion-color-primary: var(--accent);
+  --ion-color-primary-contrast: var(--accent-ink);
+  --ion-color-danger: var(--danger);
 }
 
-/* ── Ionic dark overrides ───────────────────────────────────────────────────── */
-ion-item {
-  --background: #1a1a1a;
-  --color: #ffffff;
-  --border-color: #2a2a2a;
+/* ── Reset mínimo ── */
+* { box-sizing: border-box; }
+html, body {
+  background: var(--ink-0);
+  color: var(--text-0);
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
 }
+::selection { background: var(--accent-soft); }
+button, input, textarea { font-family: inherit; }
 
-ion-list { background: transparent !important; }
-
-ion-content { --background: #0f0f0f; }
-
-/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
+
+/* Variantes de botón genéricas — se repiten en varios componentes
+   (FilterComponent, ItemDropdownComponent, RouteComponent y las páginas de
+   crear rutina/ejercicio), a diferencia de una clase de un solo componente.
+   Ver la regla del 15 de agosto sobre qué va en este archivo. */
+.btn {
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+.btn-primary { background: var(--accent); color: var(--accent-ink); flex: 1; }
+.btn-ghost { background: var(--ink-2); color: var(--text-1); border: 1px solid var(--line); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Wrapper de contenido de página — mismo scroll+padding en las 9 pantallas
+   autenticadas (mockup: .screen-body). Cada página lo pone en su elemento
+   raíz; el shell (app.html) deja el alto disponible vía flex, esto solo
+   maneja el scroll interno + el padding lateral. */
+.page-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 18px 18px;
+  scrollbar-width: none;
+}
+.page-content::-webkit-scrollbar { display: none; }
+
+/* Encabezado título+subtítulo — se repite arriba de las 9 pantallas. */
+.screen-title { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; margin: 14px 0 2px; }
+.screen-sub { font-size: 13px; color: var(--text-1); margin: 0 0 18px; }
