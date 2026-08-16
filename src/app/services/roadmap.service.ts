@@ -43,14 +43,29 @@ export interface RoadmapSummary {
  * historial real (WorkoutLog, local-first) combinados para derivar el
  * estado de cada paso — reemplaza por completo la versión anterior con
  * arrays mock y UserExerciseService (ver ROADMAP-calismap.md, "Sesiones de
- * entrenamiento vs. ruta de evolución"). El detalle de cada roadmap (con
- * pasos) se pide fresco cada vez: el catálogo es chico (contenido real
- * cerrado, ver COMPONENTES-calismap.md) así que no vale la pena otra capa
- * de cache por id acá.
+ * entrenamiento vs. ruta de evolución").
+ *
+ * El detalle de cada roadmap SÍ se cachea en memoria por id (corregido
+ * 16/08/2026 — hallazgo real: "a veces tarda mucho en cargar los ejercicios
+ * de un roadmap", ver ROADMAP-calismap.md). La decisión original decía lo
+ * contrario ("el catálogo es chico, no vale la pena otra capa de cache") —
+ * medido con datos reales, `GET /roadmaps/:id` solo (sin nada del
+ * procesamiento local) tarda 250-900ms bien variable: es Neon (arranque en
+ * frío del compute serverless tras inactividad + latencia de red), no el
+ * procesamiento de esta app. La lista de pasos/umbrales de un roadmap
+ * prácticamente nunca cambia para un usuario normal (solo un admin la
+ * edita) — cachearla es seguro. Con el precalentamiento que ya hace
+ * app.config.ts al arrancar (getAllRoadmaps() de los 6 roadmaps), esto dej
+ * cada detalle tibio ANTES de que el usuario llegue a tocarlo — entrar a un
+ * roadmap se siente instantáneo, el costo de red ya se pagó durante el
+ * splash. Solo en memoria (no localStorage): sobrevive la sesión de la
+ * pestaña, no hace falta más para el problema real reportado.
  */
 @Injectable({ providedIn: 'root' })
 export class RoadmapService {
   private listCache: CatalogCache<Roadmap>;
+  private detailCache = new Map<string, RoadmapDetailDto>();
+  private detailLoadPromises = new Map<string, Promise<RoadmapDetailDto | null>>();
 
   constructor(
     private http: HttpClient,
@@ -165,21 +180,26 @@ export class RoadmapService {
 
   async adminUpdate(id: string, input: Partial<RoadmapInput>): Promise<Roadmap> {
     const updated = await firstValueFrom(this.http.put<Roadmap>(`${environment.apiUrl}/roadmaps/${id}`, input));
+    this.detailCache.delete(id); // sin esto, el propio admin seguiría viendo su versión vieja hasta recargar la app
     await this.listCache.refresh();
     return updated;
   }
 
   async adminDelete(id: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${environment.apiUrl}/roadmaps/${id}`));
+    this.detailCache.delete(id);
     await this.listCache.refresh();
   }
 
   async adminAddStep(roadmapId: string, input: RoadmapExerciseInput): Promise<RoadmapExercise> {
-    return firstValueFrom(this.http.post<RoadmapExercise>(`${environment.apiUrl}/roadmaps/${roadmapId}/steps`, input));
+    const step = await firstValueFrom(this.http.post<RoadmapExercise>(`${environment.apiUrl}/roadmaps/${roadmapId}/steps`, input));
+    this.detailCache.delete(roadmapId);
+    return step;
   }
 
   async adminDeleteStep(roadmapId: string, stepId: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${environment.apiUrl}/roadmaps/${roadmapId}/steps/${stepId}`));
+    this.detailCache.delete(roadmapId);
   }
 
   // Reemplaza TODOS los pasos de un roadmap por la lista nueva (borra los
@@ -246,10 +266,26 @@ export class RoadmapService {
   }
 
   private async fetchDetail(roadmapId: string): Promise<RoadmapDetailDto | null> {
-    try {
-      return await firstValueFrom(this.http.get<RoadmapDetailDto>(`${environment.apiUrl}/roadmaps/${roadmapId}`));
-    } catch {
-      return null;
+    const cached = this.detailCache.get(roadmapId);
+    if (cached) return cached;
+
+    // Promesa en vuelo compartida (mismo patrón que CatalogCache.getAll/
+    // ExerciseLibraryService.ensureCatalogLoaded) — getAllRoadmaps() pide
+    // los 6 roadmaps en paralelo, y puede pedirse dos veces casi juntas
+    // (precalentamiento del arranque + ngOnInit de RoadmapsPage) — sin
+    // esto, ambas llamadas dispararían su propio GET /roadmaps/:id en vez
+    // de esperar el mismo pedido.
+    let promise = this.detailLoadPromises.get(roadmapId);
+    if (!promise) {
+      promise = firstValueFrom(this.http.get<RoadmapDetailDto>(`${environment.apiUrl}/roadmaps/${roadmapId}`))
+        .then((detail) => {
+          this.detailCache.set(roadmapId, detail);
+          return detail;
+        })
+        .catch(() => null)
+        .finally(() => this.detailLoadPromises.delete(roadmapId));
+      this.detailLoadPromises.set(roadmapId, promise);
     }
+    return promise;
   }
 }
