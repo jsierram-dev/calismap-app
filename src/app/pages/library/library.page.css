@@ -1,10 +1,10 @@
 .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
-app-search { display: block; margin-top: 14px; }
+app-search { display: block; margin-top: var(--space-4); }
 
-.filter-facet { margin-bottom: 12px; }
-.facet-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); margin: 0 0 7px; }
-.chip-row { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 4px; }
+.filter-facet { margin-bottom: var(--space-3); }
+.facet-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); margin: 0 0 var(--space-2); }
+.chip-row { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: 4px; }
 .chip {
   flex-shrink: 0;
   font-family: var(--font-mono);
@@ -32,7 +32,7 @@ app-search { display: block; margin-top: 14px; }
   border: 1px solid var(--line-soft);
 }
 
-.ex-card { display: flex; align-items: center; gap: 12px; background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px; margin-bottom: 9px; text-decoration: none; color: inherit; }
+.ex-card { display: flex; align-items: center; gap: var(--space-3); background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-3); margin-bottom: var(--space-3); text-decoration: none; color: inherit; }
 .ex-thumb { width: 46px; height: 46px; border-radius: 10px; background: var(--ink-2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--text-2); }
 .ex-thumb svg { width: 20px; height: 20px; }
 .ex-info { min-width: 0; }
@@ -63,11 +63,11 @@ app-search { display: block; margin-top: 14px; }
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);
   background: none;
   border: 1px dashed var(--line);
   border-radius: var(--radius-md);
-  padding: 14px;
+  padding: var(--space-4);
   color: var(--accent);
   font-size: 13px;
   font-weight: 700;

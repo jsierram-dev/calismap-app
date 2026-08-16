@@ -3,18 +3,18 @@
 .streak-strip {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
   background: var(--ink-1);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  padding: 11px 14px;
-  margin-bottom: 16px;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
 }
 .streak-flame { color: var(--accent); flex-shrink: 0; }
 .streak-strip strong { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .streak-strip span.d { font-size: 12.5px; color: var(--text-1); }
 
-app-search { display: block; margin-top: 14px; }
+app-search { display: block; margin-top: var(--space-4); }
 
 .tag {
   font-family: var(--font-mono);
@@ -35,15 +35,15 @@ app-search { display: block; margin-top: 14px; }
   background: var(--ink-1);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  padding: 16px;
-  margin-bottom: 12px;
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-3);
   text-decoration: none;
   color: inherit;
 }
-.roadmap-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.roadmap-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-3); }
 .roadmap-card h3 { font-size: 16.5px; margin: 0; letter-spacing: -0.005em; }
 .roadmap-card p.target { font-size: 12.5px; color: var(--text-1); margin: 3px 0 0; }
 .progress-frac { font-family: var(--font-mono); font-size: 12px; color: var(--text-1); white-space: nowrap; font-variant-numeric: tabular-nums; }
