@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './core/guards/admin.guard';
 
 // Nombres de ruta en inglés, kebab-case (ver ROADMAP-calismap.md) — /choose-session
 // y /active-session apuntan al MISMO componente (SessionWorkoutPage decide
@@ -45,5 +46,74 @@ export const routes: Routes = [
   {
     path: 'catalog-sources',
     loadComponent: () => import('./pages/catalog-sources/catalog-sources.page').then((m) => m.CatalogSourcesPage),
+  },
+
+  // ── Panel de admin (agregado 16/08/2026) — dentro de la app móvil, no una
+  //    sección de escritorio aparte (decisión del usuario, ver
+  //    ROADMAP-calismap.md "Panel de administración"). adminGuard redirige
+  //    a /roadmaps si auth.isAdmin() es false; la protección real vive en
+  //    el backend (requireAdmin en cada endpoint de escritura). Los
+  //    formularios de crear/editar reusan ExerciseManagementComponent
+  //    (CreateExercisePage) y RoutineManagementComponent (CreateRoutinePage)
+  //    con `data: { admin: true }` en vez de duplicarlos — mismos
+  //    componentes que ya usa un usuario normal para lo propio.
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./pages/admin-home/admin-home.page').then((m) => m.AdminHomePage),
+  },
+  {
+    path: 'admin/roadmaps',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./pages/admin-roadmaps/admin-roadmaps.page').then((m) => m.AdminRoadmapsPage),
+  },
+  {
+    path: 'admin/roadmaps/new',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./pages/roadmap-management/roadmap-management.page').then((m) => m.RoadmapManagementPage),
+  },
+  {
+    path: 'admin/roadmaps/:id/edit',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./pages/roadmap-management/roadmap-management.page').then((m) => m.RoadmapManagementPage),
+  },
+  {
+    path: 'admin/exercises',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./pages/admin-exercises/admin-exercises.page').then((m) => m.AdminExercisesPage),
+  },
+  {
+    path: 'admin/exercises/new',
+    canActivate: [adminGuard],
+    data: { admin: true },
+    loadComponent: () => import('./pages/create-exercise/create-exercise.page').then((m) => m.CreateExercisePage),
+  },
+  {
+    path: 'admin/exercises/:id/edit',
+    canActivate: [adminGuard],
+    data: { admin: true },
+    loadComponent: () => import('./pages/create-exercise/create-exercise.page').then((m) => m.CreateExercisePage),
+  },
+  {
+    path: 'admin/routines',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./pages/admin-routines/admin-routines.page').then((m) => m.AdminRoutinesPage),
+  },
+  {
+    path: 'admin/routines/new',
+    canActivate: [adminGuard],
+    data: { admin: true },
+    loadComponent: () => import('./pages/create-routine/create-routine.page').then((m) => m.CreateRoutinePage),
+  },
+  {
+    path: 'admin/routines/:id/edit',
+    canActivate: [adminGuard],
+    data: { admin: true },
+    loadComponent: () => import('./pages/create-routine/create-routine.page').then((m) => m.CreateRoutinePage),
+  },
+  {
+    path: 'admin/users',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./pages/admin-users/admin-users.page').then((m) => m.AdminUsersPage),
   },
 ];

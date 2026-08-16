@@ -1,0 +1,32 @@
+.admin-menu { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.admin-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  text-decoration: none;
+  color: inherit;
+}
+
+.icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.icon { width: 20px; height: 20px; }
+
+.info { flex: 1; min-width: 0; }
+.info h4 { margin: 0 0 2px; font-size: 14.5px; }
+.info p { margin: 0; font-size: 12px; color: var(--text-2); }
+
+.chevron { width: 18px; height: 18px; color: var(--text-2); flex-shrink: 0; }

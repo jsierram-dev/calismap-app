@@ -23,3 +23,18 @@ export interface RoutineExercise {
 export interface RoutineDetail extends Routine {
   exercises: RoutineExercise[];
 }
+
+// Body de POST/PUT /routines y POST /routines/:id/exercises (admin, ver
+// calismap-back/src/modules/routines/types.ts). Usado solo por el panel de
+// admin (RoutineManagementComponent en modo admin).
+export interface RoutineInput {
+  name: string;
+  description?: string;
+}
+
+export interface RoutineExerciseInput {
+  exerciseId: string;
+  stepOrder: number;
+  targetSets?: number;
+  targetValue?: number | null;
+}

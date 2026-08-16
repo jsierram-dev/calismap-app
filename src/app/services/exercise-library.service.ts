@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Exercise, ExerciseCategory, Level, MuscleGroup } from '../models/exercise.model';
+import { Exercise, ExerciseCategory, Level, MuscleGroup, RatingThresholds, RepUnit } from '../models/exercise.model';
 import { LocalCollection } from '../core/utils/local-collection';
 import { markDeleted, newId, touch } from '../core/utils/sync-meta';
 import { LocalStorageService } from '../core/services/local-storage.service';
@@ -23,6 +23,24 @@ export type OwnExerciseInput = Pick<
   'name' | 'description' | 'level' | 'category' | 'muscleGroups' | 'steps' | 'repUnit' | 'ratingThresholds' | 'photoId'
 >;
 
+// Body de POST/PUT /exercises (admin, catálogo) — ver
+// calismap-back/src/modules/exercises/types.ts (ExerciseInput). No incluye
+// userId ni id: el backend nunca deja setearlos por acá (ver
+// exercises/repository.ts, create()/update() — user_id NULL siempre en esta
+// vía, guardrail explícito).
+export interface AdminExerciseInput {
+  name: string;
+  description?: string;
+  level: Level;
+  category: ExerciseCategory;
+  muscleGroups: MuscleGroup[];
+  steps: string[];
+  repUnit: RepUnit;
+  ratingThresholds: RatingThresholds;
+  videoUrl?: string;
+  regressionExerciseId?: string;
+}
+
 /**
  * Un solo almacén local para todo lo que la Biblioteca necesita mostrar:
  * catálogo admin-curado (userId ausente, pull-and-cache vía GET /exercises,
@@ -40,7 +58,6 @@ export type OwnExerciseInput = Pick<
 @Injectable({ providedIn: 'root' })
 export class ExerciseLibraryService {
   private collection: LocalCollection<Exercise>;
-  private catalogLoaded = false;
 
   constructor(
     private http: HttpClient,
@@ -99,19 +116,60 @@ export class ExerciseLibraryService {
   }
 
   // ─── Pull-and-cache del catálogo ─────────────────────────────────────────
-  private async ensureCatalogLoaded(): Promise<void> {
-    if (this.catalogLoaded) return;
-    this.catalogLoaded = true;
-    try {
-      await this.refreshCatalog();
-    } catch {
-      // Offline en el primer arranque — se sigue con lo que ya haya en el device (o vacío), no es fatal.
+  // Guarda la PROMESA en vuelo, no un booleano — encontrado el 16/08/2026
+  // armando el panel de admin: getAllRoadmaps() dispara varias llamadas a
+  // getById()/getAll() EN PARALELO (Promise.all sobre los roadmaps, cada
+  // uno resolviendo su ejercicio objetivo + los de cada paso). Con un
+  // booleano, la primera llamada marcaba catalogLoaded=true de forma
+  // síncrona y recién DESPUÉS empezaba a esperar el fetch — cualquier
+  // llamada concurrente que llegara en el mismo tick (todas, en ese
+  // Promise.all) veía el flag ya en true y seguía de largo contra una
+  // colección todavía vacía, devolviendo null. Con el catálogo real ya
+  // sembrado, esto hacía que Roadmaps mostrara 0 rutas en el primer arranque
+  // frío de un usuario nuevo (se autocorregía en la siguiente visita, una
+  // vez poblada la colección — por eso no se notaba navegando de a una
+  // pantalla por vez). Guardando la promesa, todos los llamadores
+  // concurrentes esperan el MISMO fetch en vez de carrerear contra él.
+  private catalogLoadPromise: Promise<void> | null = null;
+
+  private ensureCatalogLoaded(): Promise<void> {
+    if (!this.catalogLoadPromise) {
+      this.catalogLoadPromise = this.refreshCatalog().catch(() => {
+        // Offline en el primer arranque — se sigue con lo que ya haya en el device (o vacío), no es fatal.
+        // Sin catch acá, un fallo dejaría catalogLoadPromise resuelto en rechazo para siempre — un reintento
+        // más adelante (ej. reconexión) nunca podría volver a intentarlo.
+        this.catalogLoadPromise = null;
+      });
     }
+    return this.catalogLoadPromise;
   }
 
   /** Público — para un futuro pull-to-refresh en la Biblioteca (paso 6). */
   async refreshCatalog(): Promise<void> {
     const fresh = await firstValueFrom(this.http.get<Exercise[]>(`${environment.apiUrl}/exercises`));
     await this.collection.applyUpdates(fresh); // merge por id — nunca pisa un ejercicio propio sin sincronizar todavía
+  }
+
+  // ─── Escritura de CATÁLOGO — solo admin, ver core/guards/admin.guard.ts.
+  //     Pasa por POST/PUT/DELETE /exercises (requireAdmin en el backend,
+  //     rechaza con 403 a cualquier otro), a diferencia de createOwn/
+  //     deleteOwn de arriba que van por /sync. refreshCatalog() al final de
+  //     cada escritura para que la Biblioteca (y este mismo panel) vean el
+  //     cambio sin esperar el próximo refresh en background. ──────────────
+  async adminCreate(input: AdminExerciseInput): Promise<Exercise> {
+    const created = await firstValueFrom(this.http.post<Exercise>(`${environment.apiUrl}/exercises`, input));
+    await this.refreshCatalog();
+    return created;
+  }
+
+  async adminUpdate(id: string, input: Partial<AdminExerciseInput>): Promise<Exercise> {
+    const updated = await firstValueFrom(this.http.put<Exercise>(`${environment.apiUrl}/exercises/${id}`, input));
+    await this.refreshCatalog();
+    return updated;
+  }
+
+  async adminDelete(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${environment.apiUrl}/exercises/${id}`));
+    await this.refreshCatalog();
   }
 }

@@ -1,0 +1,26 @@
+<div class="page-content">
+  <h1 class="screen-title">Usuarios</h1>
+  <p class="screen-sub">{{ total() }} cuentas registradas · solo lectura</p>
+
+  @for (user of users(); track user.id) {
+    <div class="user-row">
+      <div class="avatar">{{ user.username.slice(0, 2).toUpperCase() }}</div>
+      <div class="info">
+        <h4>{{ user.username }}</h4>
+        <p>{{ user.created_at | date: 'd MMM y' }}</p>
+      </div>
+      <div class="badges">
+        <span class="pill" [class.pill-accent]="!user.is_guest">{{ user.is_guest ? 'Invitado' : 'Google' }}</span>
+        @if (user.is_admin) { <span class="pill pill-admin">Admin</span> }
+      </div>
+    </div>
+  } @empty {
+    <p class="empty-note">No hay usuarios todavía.</p>
+  }
+
+  @if (hasMore) {
+    <button class="load-more-btn" type="button" [disabled]="loading()" (click)="loadMore()">
+      {{ loading() ? 'Cargando...' : 'Cargar más' }}
+    </button>
+  }
+</div>
