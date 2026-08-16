@@ -42,4 +42,8 @@ export const routes: Routes = [
     path: 'create-exercise',
     loadComponent: () => import('./pages/create-exercise/create-exercise.page').then((m) => m.CreateExercisePage),
   },
+  {
+    path: 'catalog-sources',
+    loadComponent: () => import('./pages/catalog-sources/catalog-sources.page').then((m) => m.CatalogSourcesPage),
+  },
 ];

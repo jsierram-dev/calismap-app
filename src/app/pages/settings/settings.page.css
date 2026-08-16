@@ -38,6 +38,7 @@
 .settings-group h5 { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-2); margin: 0 0 var(--space-3); }
 .settings-card { background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
 .settings-row { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--line-soft); }
+a.settings-row { text-decoration: none; color: inherit; }
 .settings-row:last-child { border-bottom: none; }
 .settings-row .label { font-size: 13.5px; }
 .settings-row .sub { font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
