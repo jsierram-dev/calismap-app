@@ -1,8 +1,9 @@
-import { ApplicationConfig, importProvidersFrom, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, inject, isDevMode, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { PreloadAllModules, provideRouter, withPreloading } from '@angular/router';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 import { IonicStorageModule } from '@ionic/storage-angular';
+import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -75,6 +76,22 @@ export const appConfig: ApplicationConfig = {
       } catch {
         // sin red en el primer arranque — se sigue igual, RoadmapsPage reintenta sola
       }
+    }),
+    // Botón de actualización (16/08/2026, ver ROADMAP-calismap.md "Botón de
+    // actualización") — mismo mecanismo ya probado en mudanza-app: sin esto,
+    // el service worker baja una versión nueva en segundo plano pero nunca
+    // la activa para una pestaña ya abierta — quien haya entrado a la app
+    // antes de un deploy a GitHub Pages se queda pegado al bundle viejo
+    // hasta cerrar y volver a abrir (a veces dos veces), en silencio.
+    // `registerWhenStable:30000` (no inmediato): registrar el SW compite por
+    // los mismos recursos que el arranque en frío ya cargado de por sí (ver
+    // "Pantalla de carga inicial") — mejor esperar a que la app esté
+    // estable o a los 30s, lo que pase primero. `isDevMode()` lo desactiva
+    // en `ng serve`: un SW cacheando agresivamente en desarrollo esconde
+    // cambios reales de HMR, no aporta nada ahí.
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
     }),
   ],
 };
