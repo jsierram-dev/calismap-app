@@ -23,13 +23,25 @@
   border-top: 1px solid var(--line);
   border-radius: 22px 22px 0 0;
   box-shadow: 0 -20px 40px -20px rgba(0, 0, 0, 0.5);
-  transform: translateY(100%);
   transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
   z-index: 31;
   display: flex;
   flex-direction: column;
+  pointer-events: none;
+  /* translateY(calc(100% + navbar-height)), no solo translateY(100%):
+     `ion-router-outlet` vive dentro de un `.ion-page` al que Ionic le pone
+     un transform-context propio para sus transiciones de página — eso
+     convierte a `.ion-page` (que ahora termina arriba de la navbar, ver
+     .outlet-wrap en app.css), no al viewport real, en el containing block
+     de este `position: fixed`. "bottom: 0" ya cierra corto por esa cuenta
+     (le faltan exactamente los `--navbar-height` de diferencia); sin el
+     `+ var(--navbar-height)` de acá, translateY(100%) solo alcanza a
+     tapar hasta el borde de la página, dejando una tira del sheet
+     flotando visible encima de la navbar en todo momento, no solo al
+     abrirlo. pointer-events ya cubre el click; esto cubre lo visual. */
+  transform: translateY(calc(100% + var(--navbar-height)));
 }
-.sheet.open { transform: translateY(0); }
+.sheet.open { transform: translateY(0); pointer-events: auto; }
 
 .sheet-grip { width: 36px; height: 4px; background: var(--line); border-radius: 3px; margin: 10px auto 2px; flex-shrink: 0; }
 
