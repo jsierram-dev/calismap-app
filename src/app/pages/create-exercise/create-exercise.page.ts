@@ -1,10 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModalController } from '@ionic/angular/standalone';
 import { Exercise, ExerciseCategory, Level, MuscleGroup, RatingThresholds, RepUnit } from '../../models/exercise.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
+import { PhotoService } from '../../services/photo.service';
 import { LoginComponent } from '../../shared/login/login.component';
 
 const LEVELS: { value: Level; label: string }[] = [
@@ -93,7 +94,31 @@ export class CreateExercisePage implements OnInit {
   videoUrl = signal('');
   regressionExerciseId = signal('');
 
+  // Hallazgo #6 de pruebas reales en móvil (16/08/2026, ver
+  // ROADMAP-calismap.md) — los botones de foto/video estaban deshabilitados
+  // a propósito ("próximamente"), ahora suben de verdad contra
+  // PUT /photos/:id. Preview local INSTANTÁNEO con URL.createObjectURL del
+  // propio archivo elegido (no hay que esperar la subida para mostrar algo)
+  // — se pisa/revoca si el usuario elige otro archivo antes de guardar.
+  photoId = signal<string | undefined>(undefined);
+  videoId = signal<string | undefined>(undefined);
+  photoPreviewUrl = signal<string | null>(null);
+  videoPreviewUrl = signal<string | null>(null);
+  uploadingPhoto = signal(false);
+  uploadingVideo = signal(false);
+  photoUploadError = signal<string | null>(null);
+  videoUploadError = signal<string | null>(null);
+
   saving = signal(false);
+
+  // Hallazgo #7 de pruebas reales en móvil (16/08/2026, ver
+  // ROADMAP-calismap.md) — avisa si ya existe un ejercicio con un nombre
+  // igual o parecido mientras se escribe, en vez de dejar que se creen
+  // duplicados silenciosos. Comparación simple (substring, sin
+  // fuzzy-matching real) — alcanza para v1, ver el hallazgo original.
+  similarExercise = signal<Exercise | null>(null);
+  private nameSearchTimer: ReturnType<typeof setTimeout> | null = null;
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private library: ExerciseLibraryService,
@@ -101,7 +126,40 @@ export class CreateExercisePage implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private modalCtrl: ModalController,
-  ) {}
+    private photos: PhotoService,
+  ) {
+    this.destroyRef.onDestroy(() => {
+      if (this.photoPreviewUrl()) URL.revokeObjectURL(this.photoPreviewUrl()!);
+      if (this.videoPreviewUrl()) URL.revokeObjectURL(this.videoPreviewUrl()!);
+    });
+    effect(() => {
+      const query = this.name().trim();
+      if (this.nameSearchTimer) clearTimeout(this.nameSearchTimer);
+      // Menos de 3 letras es demasiado ruido (casi cualquier cosa "contiene"
+      // 2 letras) y editando uno existente siempre iba a encontrarse a sí
+      // mismo primero — se excluye por id más abajo, pero de entrada ni
+      // vale la pena buscar si el nombre no cambió del original.
+      if (query.length < 3) {
+        this.similarExercise.set(null);
+        return;
+      }
+      this.nameSearchTimer = setTimeout(() => this.checkSimilarName(query), 400);
+    });
+    this.destroyRef.onDestroy(() => {
+      if (this.nameSearchTimer) clearTimeout(this.nameSearchTimer);
+    });
+  }
+
+  private async checkSimilarName(query: string): Promise<void> {
+    const results = await this.library.getAll({ search: query });
+    const match = results.find((e) => e.id !== this.editingId()) ?? null;
+    // La búsqueda es async — si el usuario ya siguió escribiendo, este
+    // resultado quedó viejo, no pisar lo que corresponde a lo que hay
+    // ahora en el campo.
+    if (this.name().trim().toLowerCase().includes(query.toLowerCase())) {
+      this.similarExercise.set(match);
+    }
+  }
 
   async ngOnInit(): Promise<void> {
     this.isAdminMode = this.route.snapshot.data['admin'] === true;
@@ -124,6 +182,46 @@ export class CreateExercisePage implements OnInit {
     this.steps.set(existing.steps.length ? existing.steps : ['']);
     this.videoUrl.set(existing.videoUrl ?? '');
     this.regressionExerciseId.set(existing.regressionExerciseId ?? '');
+
+    // Precarga la miniatura de lo que ya se había subido antes, si había —
+    // GET /photos/:id exige auth, no se puede poner el id directo en un
+    // <img src> (ver PhotoService).
+    this.photoId.set(existing.photoId);
+    this.videoId.set(existing.videoId);
+    if (existing.photoId) this.photoPreviewUrl.set(await this.photos.getObjectUrl(existing.photoId));
+    if (existing.videoId) this.videoPreviewUrl.set(await this.photos.getObjectUrl(existing.videoId));
+  }
+
+  async onPhotoSelected(event: Event): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (this.photoPreviewUrl()) URL.revokeObjectURL(this.photoPreviewUrl()!);
+    this.photoPreviewUrl.set(URL.createObjectURL(file)); // instantáneo, no espera la subida
+    this.photoUploadError.set(null);
+    this.uploadingPhoto.set(true);
+    try {
+      this.photoId.set(await this.photos.upload(file));
+    } catch {
+      this.photoUploadError.set('No se pudo subir la foto — probá de nuevo.');
+    } finally {
+      this.uploadingPhoto.set(false);
+    }
+  }
+
+  async onVideoSelected(event: Event): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (this.videoPreviewUrl()) URL.revokeObjectURL(this.videoPreviewUrl()!);
+    this.videoPreviewUrl.set(URL.createObjectURL(file));
+    this.videoUploadError.set(null);
+    this.uploadingVideo.set(true);
+    try {
+      this.videoId.set(await this.photos.upload(file));
+    } catch {
+      this.videoUploadError.set('No se pudo subir el video — probá de nuevo.');
+    } finally {
+      this.uploadingVideo.set(false);
+    }
   }
 
   isSelected(muscle: MuscleGroup): boolean {
@@ -157,7 +255,14 @@ export class CreateExercisePage implements OnInit {
   // payload ya filtraba los vacíos con .filter(Boolean), así que no hacía
   // falta más que sacar esta condición.
   get canSave(): boolean {
-    return this.name().trim().length > 0 && this.selectedMuscles().size > 0;
+    // uploadingPhoto/uploadingVideo: no guardar mientras el id todavía no
+    // volvió del servidor — se perdería la foto/video recién elegido.
+    return (
+      this.name().trim().length > 0 &&
+      this.selectedMuscles().size > 0 &&
+      !this.uploadingPhoto() &&
+      !this.uploadingVideo()
+    );
   }
 
   async save(): Promise<void> {
@@ -177,6 +282,8 @@ export class CreateExercisePage implements OnInit {
           ratingThresholds: this.thresholds(),
           videoUrl: this.videoUrl().trim() || undefined,
           regressionExerciseId: this.regressionExerciseId() || undefined,
+          photoId: this.photoId(),
+          videoId: this.videoId(),
         };
         const id = this.editingId();
         if (id) await this.library.adminUpdate(id, input);
@@ -201,6 +308,8 @@ export class CreateExercisePage implements OnInit {
         steps: this.steps().map((s) => s.trim()).filter(Boolean),
         repUnit: this.repUnit(),
         ratingThresholds: this.thresholds(),
+        photoId: this.photoId(),
+        videoId: this.videoId(),
       },
       userId,
     );
