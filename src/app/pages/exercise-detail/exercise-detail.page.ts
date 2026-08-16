@@ -57,7 +57,25 @@ export class ExerciseDetailPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.load();
+    // Observa el param, no solo lo lee una vez (hallazgo #4 de pruebas
+    // reales en móvil, ver ROADMAP-calismap.md) — navegar de /exercises/A a
+    // /exercises/B (mismo patrón de ruta, solo cambia el id) hace que
+    // Angular Router REUSE esta misma instancia de componente en vez de
+    // recrearla, así que un load() que solo corriera en ngOnInit/
+    // ionViewWillEnter se quedaría mostrando el ejercicio viejo con la URL
+    // ya cambiada — exactamente el bug reportado ("el botón de regresión no
+    // redirige a ningún lado"). Afecta a cualquier link ejercicio→ejercicio
+    // (el de regresión, y los nuevos de la escalera de roadmap/menciones en
+    // texto).
+    //
+    // El id se pasa DIRECTO desde la emisión del observable, nunca releído
+    // de route.snapshot dentro de load() — probado con logging real: en el
+    // mismo tick en que paramMap ya emitió el id nuevo, route.snapshot
+    // todavía devolvía el viejo (no están perfectamente sincronizados acá),
+    // así que load() terminaba pidiendo el ejercicio equivocado pese a que
+    // la URL sí había cambiado — la app "navegaba" pero mostraba el mismo
+    // contenido de siempre.
+    this.route.paramMap.subscribe((pm) => this.load(pm.get('id')!));
   }
 
   ionViewWillEnter(): void {
@@ -117,8 +135,7 @@ export class ExerciseDetailPage implements OnInit {
     this.restRemaining.set(0);
   }
 
-  private async load(): Promise<void> {
-    const id = this.route.snapshot.paramMap.get('id')!;
+  private async load(id: string = this.route.snapshot.paramMap.get('id')!): Promise<void> {
     const exercise = await this.roadmapService.getExerciseById(id);
     this.exercise.set(exercise);
     if (!exercise) return;
