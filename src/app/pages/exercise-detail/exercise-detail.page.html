@@ -34,8 +34,17 @@
     </div>
 
     <ol class="steps-list">
-      @for (step of ex.steps; track $index) {
-        <li><span class="num">{{ $index + 1 }}</span>{{ step }}</li>
+      @for (segments of stepSegments(); track $index) {
+        <li>
+          <span class="num">{{ $index + 1 }}</span>
+          @for (seg of segments; track $index) {
+            @if (seg.exerciseId) {
+              <a class="step-exercise-link" [routerLink]="['/exercises', seg.exerciseId]">{{ seg.text }}</a>
+            } @else {
+              {{ seg.text }}
+            }
+          }
+        </li>
       }
     </ol>
 

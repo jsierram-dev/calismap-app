@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { Exercise, RATING_ORDER, Rating } from '../../models/exercise.model';
 import { effectiveValue } from '../../models/workout-log.model';
+import { TextSegment, linkifyExerciseNames } from '../../core/utils/linkify-exercise-names';
+import { ExerciseLibraryService } from '../../services/exercise-library.service';
 import { RatingCalculatorService } from '../../services/rating-calculator.service';
 import { RoadmapService } from '../../services/roadmap.service';
 import { UserProfileService } from '../../services/user-profile.service';
@@ -37,6 +39,10 @@ export class ExerciseDetailPage implements OnInit {
   bestValue = signal<number | null>(null);
   rating = signal<Rating | null>(null);
   ladderNodes = signal<RouteNode[]>([]);
+  // Hallazgo #2 de pruebas reales en móvil (16/08/2026, ver
+  // ROADMAP-calismap.md) — un array de segmentos por paso, en vez de armar
+  // HTML a mano: el template itera cada uno con @for, sin [innerHTML].
+  stepSegments = signal<TextSegment[][]>([]);
 
   activeSlide = signal(0);
   repsInput = signal(10);
@@ -52,6 +58,7 @@ export class ExerciseDetailPage implements OnInit {
     private userProfile: UserProfileService,
     private workoutLog: WorkoutLogService,
     private workoutSession: WorkoutSessionService,
+    private exerciseLibrary: ExerciseLibraryService,
   ) {
     this.destroyRef.onDestroy(() => this.clearRestTimer());
   }
@@ -151,6 +158,9 @@ export class ExerciseDetailPage implements OnInit {
     this.repsInput.set(bestLog?.value ?? (exercise.repUnit === 'reps' ? 10 : 30));
 
     this.ladderNodes.set(this.buildLadder(exercise, rating, bestLog?.value ?? null));
+
+    const allExercises = await this.exerciseLibrary.getAll();
+    this.stepSegments.set(exercise.steps.map((step) => linkifyExerciseNames(step, allExercises, exercise.id)));
   }
 
   private buildLadder(exercise: Exercise, currentRating: Rating | null, bestValue: number | null): RouteNode[] {
