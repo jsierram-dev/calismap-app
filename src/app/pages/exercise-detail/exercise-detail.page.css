@@ -67,6 +67,11 @@
   margin-top: 1px;
 }
 
+/* Hallazgo #2 de pruebas reales en móvil, ver ROADMAP-calismap.md — cuando
+   el texto de un paso menciona otro ejercicio real del catálogo. */
+.step-exercise-link { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.step-exercise-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 app-route { display: block; margin-bottom: 16px; }
 
 .log-card { background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px; }

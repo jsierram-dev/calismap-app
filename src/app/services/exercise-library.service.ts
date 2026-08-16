@@ -20,7 +20,16 @@ export interface ExerciseFilters {
 
 export type OwnExerciseInput = Pick<
   Exercise,
-  'name' | 'description' | 'level' | 'category' | 'muscleGroups' | 'steps' | 'repUnit' | 'ratingThresholds' | 'photoId'
+  | 'name'
+  | 'description'
+  | 'level'
+  | 'category'
+  | 'muscleGroups'
+  | 'steps'
+  | 'repUnit'
+  | 'ratingThresholds'
+  | 'photoId'
+  | 'videoId'
 >;
 
 // Body de POST/PUT /exercises (admin, catálogo) — ver
@@ -39,6 +48,12 @@ export interface AdminExerciseInput {
   ratingThresholds: RatingThresholds;
   videoUrl?: string;
   regressionExerciseId?: string;
+  // Blob subido (PUT /photos/:id), distinto de videoUrl (link externo ya
+  // hosteado) — hallazgo #6 de pruebas reales en móvil, ver
+  // ROADMAP-calismap.md. Un admin puede cargar cualquiera de los dos, no
+  // son excluyentes entre sí en el modelo.
+  photoId?: string;
+  videoId?: string;
 }
 
 /**

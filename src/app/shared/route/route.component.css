@@ -11,8 +11,19 @@
 .path-track.mini { padding-left: 26px; }
 .path-track.mini::before { left: 8px; }
 
-.node { position: relative; margin-bottom: 14px; }
+/* <a>, no <div> (16/08/2026, hallazgo #1 de pruebas reales en móvil, ver
+   ROADMAP-calismap.md) — un paso disponible de un roadmap ahora navega a su
+   detalle; display:block + reset de estilos de link porque el navegador
+   trata <a> distinto a <div> por defecto (inline, subrayado). Los nodos
+   bloqueados o sin exerciseId (la escalera de rating, [mini]=true) siguen
+   siendo <a> sin href (routerLink en null) — sin cursor de link, sin hover,
+   indistinguibles de un div para quien los mira o los toca. */
+.node { position: relative; display: block; margin-bottom: 14px; color: inherit; text-decoration: none; }
 .node:last-child { margin-bottom: 0; }
+.node.clickable { cursor: pointer; }
+.node.clickable .node-card:hover,
+.node.clickable:focus-visible .node-card { border-color: var(--accent); }
+.node.clickable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--radius-md); }
 
 .node-dot {
   position: absolute;

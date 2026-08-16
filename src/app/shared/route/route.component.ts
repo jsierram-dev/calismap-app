@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Rating } from '../../models/exercise.model';
 
 export type RouteNodeState = 'done' | 'current' | 'locked';
@@ -13,6 +14,13 @@ export interface RouteNode {
   title: string;
   levelLabel: string;
   state: RouteNodeState;
+  // id del ejercicio real — solo tiene sentido en el uso "pasos de un
+  // roadmap" (hallazgo #1 de pruebas reales en móvil, 16/08/2026, ver
+  // ROADMAP-calismap.md: un paso disponible ahora navega a su
+  // ExerciseInfoComponent). En el uso "escalera de rating" ([mini]=true)
+  // los nodos son TIERS, no ejercicios — ahí queda sin setear a propósito,
+  // nunca se vuelven clickeables.
+  exerciseId?: string;
   stepNumber?: number;
   isTarget?: boolean;
   ratingBadge?: Rating;
@@ -32,6 +40,7 @@ export interface RouteNode {
 @Component({
   selector: 'app-route',
   standalone: true,
+  imports: [RouterLink],
   templateUrl: './route.component.html',
   styleUrl: './route.component.css',
 })
@@ -41,5 +50,10 @@ export class RouteComponent {
 
   ratingLabel(rating: Rating): string {
     return rating.charAt(0) + rating.slice(1).toLowerCase();
+  }
+
+  /** null desactiva el routerLink del todo (sin href, sin navegación) — ver ROADMAP-calismap.md, hallazgo #1. */
+  linkFor(node: RouteNode): string[] | null {
+    return node.exerciseId && node.state !== 'locked' ? ['/exercises', node.exerciseId] : null;
   }
 }

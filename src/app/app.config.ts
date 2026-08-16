@@ -10,6 +10,7 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { ThemeService } from './core/services/theme.service';
 import { RoadmapService } from './services/roadmap.service';
+import { WorkoutSessionService } from './services/workout-session.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -70,6 +71,21 @@ export const appConfig: ApplicationConfig = {
     // ya maneja mostrar una lista vacía si esto termina fallando.
     provideAppInitializer(async () => {
       inject(ThemeService);
+      // Fuerza WorkoutSessionService a instanciarse siempre, no solo cuando
+      // el usuario visita una pantalla que lo inyecta (hallazgo real
+      // encontrado el 16/08/2026 probando de punta a punta el resto de esta
+      // ronda, ver ROADMAP-calismap.md) — su constructor repuebla
+      // ActiveSessionIndicatorService (rehydrateIndicator()) si quedó una
+      // sesión abierta de antes, pero ni NavbarComponent ni
+      // NoticeSessionComponent (los dos que LEEN el indicador) inyectan
+      // este servicio — solo lo hacen de rebote algunas páginas (Roadmaps,
+      // Detalle de ejercicio...). Biblioteca no es una de esas: entrar
+      // directo ahí (link externo, favorito, recargar con esa URL) con una
+      // sesión activa en otro lado dejaba el aviso sin aparecer nunca, sin
+      // que nada lo disparara después. En el uso normal casi no se notaba
+      // (siempre se entra primero por Roadmaps, que sí repuebla) — por eso
+      // no se había encontrado antes.
+      inject(WorkoutSessionService);
       await inject(AuthService).ensureSession();
       try {
         await inject(RoadmapService).getAllRoadmaps();

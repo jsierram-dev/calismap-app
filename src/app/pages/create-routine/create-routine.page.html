@@ -18,9 +18,9 @@
         [repUnit]="item.exercise.repUnit"
         [customBadge]="!!item.exercise.userId"
         [targetSets]="item.targetSets"
-        [targetValue]="item.targetValue"
+        [targetValues]="item.targetValues"
         (targetSetsChange)="updateTargetSets(i, $event)"
-        (targetValueChange)="updateTargetValue(i, $event)"
+        (targetValuesChange)="updateTargetValues(i, $event)"
         (removed)="removeItem(i)"
       />
     }
