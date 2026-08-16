@@ -2,12 +2,108 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>CalismapApp</title>
+  <title>CalisMap</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0F1113">
+  <!--
+    Splash pre-Angular (16/08/2026, ver ROADMAP-calismap.md "Pantalla de
+    carga inicial") — hasta acá la app se quedaba en un fondo liso (bien
+    temado, pero vacío) mientras Angular descargaba/arrancaba y
+    provideAppInitializer esperaba la sesión de invitado + el catálogo
+    (peticiones de red reales, ver app.config.ts). Este bloque es HTML/CSS
+    puro, sin ninguna dependencia de Angular ni de styles.css (que carga
+    DIFERIDO, ver el <link> al final de <head> que el build de Angular
+    inyecta con el truco media="print"/onload) — por eso los tokens de
+    color se repiten acá en vez de solo referenciarse: tienen que estar
+    disponibles para el primer paint, no para cuando termine de llegar la
+    hoja de estilos real. Los valores coinciden con :root/@media de
+    styles.css a propósito — si esa paleta cambia, actualizar acá también.
+    Angular reemplaza el contenido de <app-root> apenas termina de montar
+    (incluido esperar el initializer), así que esto desaparece solo, sin
+    ningún código de limpieza.
+  -->
+  <style>
+    :root {
+      --splash-ink: #0F1113;
+      --splash-text: #F2F1EC;
+      --splash-text-2: #6E747C;
+      --splash-accent: #55D0E8;
+      --splash-line: #33383F;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --splash-ink: #E6E9EB;
+        --splash-text: #1B1D1F;
+        --splash-text-2: #8B8F92;
+        --splash-accent: #0E93A8;
+        --splash-line: #D2D7DA;
+      }
+    }
+    html, body { background: var(--splash-ink); margin: 0; padding: 0; height: 100%; }
+    .splash {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 20px;
+      background: var(--splash-ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .splash-mark { display: flex; align-items: center; gap: 7px; }
+    .splash-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--splash-line); flex-shrink: 0; animation: splash-pulse 1.6s ease-in-out infinite; }
+    .splash-line { width: 22px; height: 2px; background: var(--splash-line); flex-shrink: 0; }
+    .splash-dot:nth-child(1) { animation-delay: 0s; }
+    .splash-dot:nth-child(3) { animation-delay: 0.2s; }
+    .splash-dot:nth-child(5) { animation-delay: 0.4s; }
+    .splash-dot:nth-child(7) { animation-delay: 0.6s; }
+    @keyframes splash-pulse {
+      0%, 100% { background: var(--splash-line); box-shadow: none; }
+      35% { background: var(--splash-accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--splash-accent) 18%, transparent); }
+    }
+    .splash-word { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; color: var(--splash-text); }
+    .splash-word b { color: var(--splash-accent); font-weight: 700; }
+    .splash-status { margin: 0; font-size: 13px; color: var(--splash-text-2); text-align: center; max-width: 260px; min-height: 16px; }
+    @media (prefers-reduced-motion: reduce) {
+      .splash-dot { animation: none; background: var(--splash-accent); }
+    }
+  </style>
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <div class="splash">
+      <div class="splash-mark" aria-hidden="true">
+        <div class="splash-dot"></div><div class="splash-line"></div>
+        <div class="splash-dot"></div><div class="splash-line"></div>
+        <div class="splash-dot"></div><div class="splash-line"></div>
+        <div class="splash-dot"></div>
+      </div>
+      <p class="splash-word">Calis<b>Map</b></p>
+      <p class="splash-status" id="splash-status">Cargando tu progreso…</p>
+    </div>
+  </app-root>
+  <script>
+    // Mensajes progresivos mientras se espera — el back vive en Render
+    // (ver ROADMAP-calismap.md "Despliegue"), así que la primera visita
+    // después de un rato de inactividad puede tardar de verdad (arranque
+    // en frío del servicio, hasta ~50s). Sin esto, esa espera larga se ve
+    // igual que una pantalla colgada. Vanilla JS a propósito: corre antes
+    // de que Angular exista, y de nada serviría como componente — este
+    // <script> nunca llega a ejecutar su setTimeout más largo si Angular
+    // ya montó la app real y reemplazó este nodo antes de tiempo, porque
+    // simplemente deja de haber un #splash-status en el DOM al que escribirle.
+    (function () {
+      var el = document.getElementById('splash-status');
+      var msgs = [
+        [0, 'Cargando tu progreso…'],
+        [4000, 'Despertando el servidor, puede tardar unos segundos…'],
+        [20000, 'Esto está tardando más de lo normal. Podés seguir esperando o recargar la página.'],
+      ];
+      msgs.slice(1).forEach(function (m) {
+        setTimeout(function () {
+          if (document.getElementById('splash-status')) { el.textContent = m[1]; }
+        }, m[0]);
+      });
+    })();
+  </script>
 </body>
 </html>
