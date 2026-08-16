@@ -37,6 +37,7 @@ export class AuthService {
   isLoggedIn = computed(() => this.userSignal() !== null);
   isGuest = computed(() => this.userSignal()?.isGuest ?? true); // sin sesión todavía = tratalo como invitado, nunca como "logueado"
   isAdmin = computed(() => this.userSignal()?.isAdmin ?? false);
+  private refreshPromise: Promise<TokenPair | null> | null = null;
 
   constructor(private http: HttpClient) {}
 
@@ -78,26 +79,59 @@ export class AuthService {
   }
 
   /**
-   * Renueva el access token con el refresh token guardado. Pensado para
-   * dispararse desde auth.interceptor.ts ante un 401 — hoy nada lo dispara
-   * todavía (deuda ya conocida, compartida con mudanza-app/similart-app, ver
-   * ROADMAP-calismap.md "Pendiente" — "Refresh token / expiración de
-   * sesión"), pero el método ya existe para cuando se resuelva ese pendiente.
+   * Renueva la sesión ante un 401 real del backend (access token vencido —
+   * dura 30m, ver jp-back-auth/src/modules/auth/services/auth.service.ts).
+   * Corregido el 16 de agosto de 2026: esto YA estaba escrito y documentado
+   * como "para cuando se resuelva ese pendiente", pero nada lo disparaba
+   * todavía — ver auth.interceptor.ts, que ahora sí lo llama ante un 401.
+   * Síntoma real que causaba: `ensureSession()` solo mira si YA hay un user
+   * guardado en localStorage, nunca si el access token sigue vivo — un
+   * usuario que vuelve a la app más de 30 minutos después de su última
+   * visita mandaba el token muerto en cada pedido, 401 para siempre, sin que
+   * recargar ni borrar site data lo arreglara (el user object sobrevive,
+   * `ensureSession` nunca reautenticaba).
+   *
+   * Primero intenta el refresh token (dura 7 días); si no hay uno guardado o
+   * también falló (vencido/inválido), arranca una sesión de invitado nueva
+   * en su lugar — nunca deja a quien llama sin ningún token que funcione,
+   * salvo estar sin red. Deduplicado con una promesa compartida (mismo
+   * patrón que CatalogCache.getAll / ExerciseLibraryService.
+   * ensureCatalogLoaded): varios pedidos en paralelo pueden pisar un 401 al
+   * mismo tiempo (ej. CatalogCache de roadmaps/exercises/routines juntos) —
+   * sin esto cada uno dispararía su propio refresh o guest-login por
+   * separado.
    */
-  async refresh(): Promise<TokenPair | null> {
+  refresh(): Promise<TokenPair | null> {
+    if (!this.refreshPromise) {
+      this.refreshPromise = this.doRefresh().finally(() => {
+        this.refreshPromise = null;
+      });
+    }
+    return this.refreshPromise;
+  }
+
+  private async doRefresh(): Promise<TokenPair | null> {
     const refreshToken = this.getRefreshToken();
-    if (!refreshToken) return null;
+    if (refreshToken) {
+      try {
+        const tokens = await firstValueFrom(
+          this.http.post<TokenPair>(`${environment.authApiUrl}/auth/refresh`, { refreshToken }),
+        );
+        localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
+        localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+        return tokens;
+      } catch {
+        // Refresh token vencido/inválido — sigue abajo con invitado nuevo en vez de dejar la sesión muerta.
+      }
+    }
 
     try {
-      const tokens = await firstValueFrom(
-        this.http.post<TokenPair>(`${environment.authApiUrl}/auth/refresh`, { refreshToken }),
-      );
-      localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-      localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
-      return tokens;
+      await this.loginAsGuest();
+      const accessToken = this.getAccessToken();
+      const newRefreshToken = this.getRefreshToken();
+      return accessToken && newRefreshToken ? { accessToken, refreshToken: newRefreshToken } : null;
     } catch {
-      await this.logout();
-      return null;
+      return null; // sin red, ni siquiera esto funcionó — el interceptor deja pasar el 401 original
     }
   }
 
