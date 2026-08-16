@@ -72,6 +72,7 @@ export class RoadmapDetailPage implements OnInit {
         levelLabel: step.isTarget ? `${step.exercise.level} · OBJETIVO` : step.exercise.level,
         state,
         isTarget: step.isTarget,
+        exerciseId: step.exercise.id,
       };
       if (state === 'current') node.stepNumber = step.stepOrder;
       if (step.rating) node.ratingBadge = step.rating;

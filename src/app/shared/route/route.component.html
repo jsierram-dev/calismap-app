@@ -1,11 +1,13 @@
 <div class="path-track" [class.mini]="mini">
   @for (node of nodes; track node.title) {
-    <div
+    <a
       class="node"
       [class.done]="node.state === 'done'"
       [class.current]="node.state === 'current'"
       [class.locked]="node.state === 'locked'"
       [class.node-target]="node.isTarget"
+      [class.clickable]="!!linkFor(node)"
+      [routerLink]="linkFor(node)"
     >
       <div class="node-dot">
         @if (node.state === 'done') {
@@ -36,6 +38,6 @@
           <div class="node-bar"><div class="node-bar-fill" [style.width.%]="node.progressPercent"></div></div>
         }
       </div>
-    </div>
+    </a>
   }
 </div>
