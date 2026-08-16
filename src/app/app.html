@@ -4,7 +4,9 @@
     <div class="outlet-wrap">
       <ion-router-outlet />
     </div>
-    <app-notice-session />
+    @if (currentUrl() !== '/active-session' && currentUrl() !== '/choose-session') {
+      <app-notice-session />
+    }
     <app-navbar />
   </div>
 </ion-app>
