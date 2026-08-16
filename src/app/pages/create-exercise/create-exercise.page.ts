@@ -152,8 +152,12 @@ export class CreateExercisePage implements OnInit {
     this.steps.update((list) => [...list, '']);
   }
 
+  // Pasos opcionales (16/08/2026, hallazgo #8 de pruebas reales en móvil,
+  // ver ROADMAP-calismap.md) — antes exigía al menos un paso no vacío; el
+  // payload ya filtraba los vacíos con .filter(Boolean), así que no hacía
+  // falta más que sacar esta condición.
   get canSave(): boolean {
-    return this.name().trim().length > 0 && this.selectedMuscles().size > 0 && this.steps().some((s) => s.trim());
+    return this.name().trim().length > 0 && this.selectedMuscles().size > 0;
   }
 
   async save(): Promise<void> {
