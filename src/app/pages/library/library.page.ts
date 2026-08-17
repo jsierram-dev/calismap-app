@@ -8,6 +8,7 @@ import { RatingCalculatorService } from '../../services/rating-calculator.servic
 import { WorkoutLogService } from '../../services/workout-log.service';
 import { SearchComponent } from '../../shared/search/search.component';
 import { FilterComponent } from '../../shared/filter/filter.component';
+import { PathLoaderComponent } from '../../shared/path-loader/path-loader.component';
 
 type CategoryFilter = ExerciseCategory | 'ALL' | 'MINE';
 
@@ -41,7 +42,7 @@ const CATEGORIES: { value: CategoryFilter; label: string }[] = [
 @Component({
   selector: 'app-library',
   standalone: true,
-  imports: [UpperCasePipe, RouterLink, SearchComponent, FilterComponent],
+  imports: [UpperCasePipe, RouterLink, SearchComponent, FilterComponent, PathLoaderComponent],
   templateUrl: './library.page.html',
   styleUrl: './library.page.css',
 })
@@ -50,6 +51,14 @@ export class LibraryPage implements OnInit {
   @Output() picked = new EventEmitter<Exercise>();
 
   categories = CATEGORIES;
+  // true solo hasta el PRIMER load() — mismo criterio que RoadmapsPage.loading
+  // (ver ese archivo): esta pantalla no tenía NINGÚN indicador de carga
+  // (hallazgo real, 17/08/2026, ver ROADMAP-calismap.md "Segunda ronda de
+  // pulido real") — con el precalentamiento de app.config.ts esto casi
+  // nunca llega a mostrarse, pero cuando esa precarga falla o todavía no
+  // terminó, antes el usuario veía la lista vacía en silencio en vez de un
+  // estado de carga real.
+  loading = signal(true);
   cards = signal<LibraryCard[]>([]);
   query = signal('');
   selectedMuscles = signal<MuscleGroup[]>([]);
@@ -111,5 +120,6 @@ export class LibraryPage implements OnInit {
     // de cada grupo (propios / catálogo) se mantiene el orden original.
     cards.sort((a, b) => Number(!!b.exercise.userId) - Number(!!a.exercise.userId));
     this.cards.set(cards);
+    this.loading.set(false);
   }
 }
