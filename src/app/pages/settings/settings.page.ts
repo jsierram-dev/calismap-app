@@ -5,7 +5,7 @@ import { Rating } from '../../models/exercise.model';
 import { UserProfile } from '../../models/user-profile.model';
 import { effectiveValue } from '../../models/workout-log.model';
 import { AuthService } from '../../core/services/auth.service';
-import { GoogleIdentityService } from '../../core/services/google-identity.service';
+import { GoogleIdentityService, GooglePromptCancelledError } from '../../core/services/google-identity.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { ThemePreference, ThemeService } from '../../core/services/theme.service';
 import { SyncService } from '../../core/services/sync.service';
@@ -76,8 +76,15 @@ export class SettingsPage implements OnInit {
     try {
       const idToken = await this.googleIdentity.promptSignIn();
       await this.auth.loginWithGoogle(idToken);
-    } catch {
-      this.loginError.set(this.i18n.t('settings.loginError'));
+    } catch (err) {
+      // Cerrar/ignorar el prompt de Google no es un error real (pasa todo
+      // el tiempo — el usuario cambió de idea, ya tenía otra pestaña de
+      // Google abierta, etc.) — sin este chequeo, CUALQUIER cierre del
+      // prompt mostraba "No pudimos iniciar sesión", alarmando por algo
+      // normal (ver GoogleIdentityService.promptSignIn()).
+      if (!(err instanceof GooglePromptCancelledError)) {
+        this.loginError.set(this.i18n.t('settings.loginError'));
+      }
     } finally {
       this.loggingIn.set(false);
     }

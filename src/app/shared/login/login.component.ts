@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild, signal } from '@angular/core';
 import { ModalController } from '@ionic/angular/standalone';
 import { AuthService } from '../../core/services/auth.service';
-import { GoogleIdentityService } from '../../core/services/google-identity.service';
+import { GoogleIdentityService, GooglePromptCancelledError } from '../../core/services/google-identity.service';
 import { I18nService } from '../../core/services/i18n.service';
 
 // Pantalla 10 — LoginComponent (ver COMPONENTES-calismap.md): OPCIONAL, se
@@ -41,8 +41,16 @@ export class LoginComponent {
     try {
       const idToken = await this.googleIdentity.promptSignIn();
       await this.handleCredential(idToken);
-    } catch {
-      this.error.set(this.i18n.t('login.errorLoadFailed'));
+    } catch (err) {
+      // Cerrar/ignorar el prompt de Google no es un error real — antes de
+      // que promptSignIn() distinguiera este caso (ver
+      // GoogleIdentityService), la Promise ni resolvía ni rechazaba nunca
+      // con un prompt descartado, así que este catch jamás se disparaba
+      // para ese caso — ahora que sí rechaza, hay que seguir sin mostrar
+      // nada acá tampoco (mismo criterio que SettingsPage.openLogin()).
+      if (!(err instanceof GooglePromptCancelledError)) {
+        this.error.set(this.i18n.t('login.errorLoadFailed'));
+      }
     }
   }
 
