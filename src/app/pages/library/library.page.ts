@@ -106,6 +106,10 @@ export class LibraryPage implements OnInit {
         return { exercise, rating };
       }),
     );
+    // Ejercicios propios (Exercise.userId) primero — pedido explícito del
+    // usuario, 17/08/2026. .sort() es estable en JS moderno, así que dentro
+    // de cada grupo (propios / catálogo) se mantiene el orden original.
+    cards.sort((a, b) => Number(!!b.exercise.userId) - Number(!!a.exercise.userId));
     this.cards.set(cards);
   }
 }
