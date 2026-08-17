@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
@@ -33,6 +33,7 @@ import { RouteComponent, RouteNode, RouteNodeState } from '../../shared/route/ro
 })
 export class ExerciseDetailPage implements OnInit {
   private destroyRef = inject(DestroyRef);
+  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   exercise = signal<Exercise | null>(null);
   regressionExercise = signal<Exercise | null>(null);
@@ -146,6 +147,17 @@ export class ExerciseDetailPage implements OnInit {
     const exercise = await this.roadmapService.getExerciseById(id);
     this.exercise.set(exercise);
     if (!exercise) return;
+
+    // Hallazgo real, 17/08/2026: entrar a un ejercicio a veces arrancaba a
+    // mitad de scroll. `.page-content` (el elemento que de verdad scrollea,
+    // ver styles.css) es la MISMA instancia de DOM al navegar entre dos
+    // ejercicios distintos — Angular Router reusa este componente para
+    // /exercises/:id -> /exercises/:id (ver el comentario de ngOnInit sobre
+    // el hallazgo #4), así que el scroll quedaba donde estaba en el
+    // ejercicio anterior. `setTimeout` para dar lugar a que Angular pinte
+    // el `.page-content` recién creado en la primerísima carga (con
+    // `exercise` todavía en null, el div ni existe en el DOM).
+    setTimeout(() => this.elementRef.nativeElement.querySelector('.page-content')?.scrollTo({ top: 0 }));
 
     this.regressionExercise.set(
       exercise.regressionExerciseId ? await this.roadmapService.getExerciseById(exercise.regressionExerciseId) : null,
