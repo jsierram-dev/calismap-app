@@ -240,7 +240,7 @@ export class RoadmapService {
   /** Coach note real para la tarjeta de la pantalla 01 — sobre el primer paso sin completar. */
   private buildCardNote(step: RoadmapStepViewModel | null): string {
     if (!step) return '¡Completaste esta ruta!';
-    if (step.bestValue === null) return `${step.exercise.name}: registrá tu primera marca`;
+    if (step.bestValue === null) return `${step.exercise.name}: registra tu primera marca`;
 
     const currentIndex = RATING_ORDER.indexOf(step.rating ?? 'BRONZE');
     const nextRating = RATING_ORDER[currentIndex + 1];
@@ -252,7 +252,7 @@ export class RoadmapService {
     const unit = step.exercise.repUnit === 'reps' ? 'reps' : 'seg';
     const nextLabel = nextRating.charAt(0) + nextRating.slice(1).toLowerCase();
 
-    if (remaining <= 0) return `${step.exercise.name}: ¡ya podés avanzar al siguiente paso!`;
+    if (remaining <= 0) return `${step.exercise.name}: ¡ya puedes avanzar al siguiente paso!`;
     return `${step.exercise.name}: te faltan ${remaining} ${unit} para ${nextLabel}`;
   }
 

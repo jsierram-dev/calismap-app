@@ -73,7 +73,7 @@ export class SettingsPage implements OnInit {
       const idToken = await this.googleIdentity.promptSignIn();
       await this.auth.loginWithGoogle(idToken);
     } catch {
-      this.loginError.set('No pudimos iniciar sesión con Google. Probá de nuevo.');
+      this.loginError.set('No pudimos iniciar sesión con Google. Prueba de nuevo.');
     } finally {
       this.loggingIn.set(false);
     }

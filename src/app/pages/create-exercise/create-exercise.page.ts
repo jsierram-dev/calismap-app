@@ -202,7 +202,7 @@ export class CreateExercisePage implements OnInit {
     try {
       this.photoId.set(await this.photos.upload(file));
     } catch {
-      this.photoUploadError.set('No se pudo subir la foto — probá de nuevo.');
+      this.photoUploadError.set('No se pudo subir la foto — prueba de nuevo.');
     } finally {
       this.uploadingPhoto.set(false);
     }
@@ -218,7 +218,7 @@ export class CreateExercisePage implements OnInit {
     try {
       this.videoId.set(await this.photos.upload(file));
     } catch {
-      this.videoUploadError.set('No se pudo subir el video — probá de nuevo.');
+      this.videoUploadError.set('No se pudo subir el video — prueba de nuevo.');
     } finally {
       this.uploadingVideo.set(false);
     }

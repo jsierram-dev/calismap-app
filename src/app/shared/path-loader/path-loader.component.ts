@@ -14,7 +14,7 @@ import { Component, OnDestroy, OnInit, input, signal } from '@angular/core';
 // explicando el porqué.
 const PROGRESSIVE_MESSAGES: [number, string][] = [
   [4000, 'Despertando el servidor, puede tardar unos segundos…'],
-  [20000, 'Esto está tardando más de lo normal. Podés seguir esperando o volver a intentar.'],
+  [20000, 'Esto está tardando más de lo normal. Puedes seguir esperando o volver a intentar.'],
 ];
 
 /**

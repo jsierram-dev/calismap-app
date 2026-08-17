@@ -40,7 +40,7 @@ export class LoginComponent {
       const idToken = await this.googleIdentity.promptSignIn();
       await this.handleCredential(idToken);
     } catch {
-      this.error.set('No pudimos cargar el inicio de sesión de Google. Probá de nuevo más tarde.');
+      this.error.set('No pudimos cargar el inicio de sesión de Google. Prueba de nuevo más tarde.');
     }
   }
 
@@ -55,7 +55,7 @@ export class LoginComponent {
       await this.auth.loginWithGoogle(idToken);
       this.modalCtrl.dismiss(null, 'success');
     } catch {
-      this.error.set('No pudimos iniciar sesión. Probá de nuevo.');
+      this.error.set('No pudimos iniciar sesión. Prueba de nuevo.');
     } finally {
       this.loading.set(false);
     }

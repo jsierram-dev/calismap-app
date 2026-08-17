@@ -196,7 +196,7 @@ export class ExerciseDetailPage implements OnInit {
         node.coachNote =
           bestValue !== null
             ? { headline: `${needed} ${unit} y estás en ${this.tierLabel(tier)}`, sub: `Te faltan ${remaining} desde tu mejor marca (${bestValue})` }
-            : { headline: `${needed} ${unit} y estás en ${this.tierLabel(tier)}`, sub: 'Registrá tu primera marca para arrancar' };
+            : { headline: `${needed} ${unit} y estás en ${this.tierLabel(tier)}`, sub: 'Registra tu primera marca para arrancar' };
       }
       return node;
     });

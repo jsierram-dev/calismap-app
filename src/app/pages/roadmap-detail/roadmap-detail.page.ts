@@ -91,11 +91,11 @@ export class RoadmapDetailPage implements OnInit {
           const remaining = Math.max(0, needed - (step.bestValue ?? 0));
           node.coachNote =
             step.bestValue !== null
-              ? { headline: `${needed} ${unit} y desbloqueás ${next.exercise.name}`, sub: `Te faltan ${remaining} desde tu mejor marca (${step.bestValue})` }
-              : { headline: `${needed} ${unit} y desbloqueás ${next.exercise.name}`, sub: 'Registrá tu primera marca para arrancar' };
+              ? { headline: `${needed} ${unit} y desbloqueas ${next.exercise.name}`, sub: `Te faltan ${remaining} desde tu mejor marca (${step.bestValue})` }
+              : { headline: `${needed} ${unit} y desbloqueas ${next.exercise.name}`, sub: 'Registra tu primera marca para arrancar' };
           node.progressPercent = Math.min(100, Math.round(((step.bestValue ?? 0) / needed) * 100));
         } else {
-          node.metaText = step.bestValue !== null ? `Tu mejor marca: ${step.bestValue} ${unit}` : 'Registrá tu primera marca';
+          node.metaText = step.bestValue !== null ? `Tu mejor marca: ${step.bestValue} ${unit}` : 'Registra tu primera marca';
         }
       } else if (step.minRatingRequired) {
         const prev = detail.steps[index - 1];
