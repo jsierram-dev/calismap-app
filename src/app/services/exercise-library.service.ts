@@ -118,6 +118,11 @@ export class ExerciseLibraryService {
     const exercise: Exercise = touch({
       id: newId(),
       ...input,
+      // Un ejercicio propio no tiene traducción real posible — los tres
+      // campos de nombre son el mismo valor tal cual lo tipeó el usuario
+      // (ver el comentario de estos campos en models/exercise.model.ts).
+      nameSpanish: input.name,
+      nameEnglish: input.name,
       userId,
       updatedAt: '',
       deletedAt: null,

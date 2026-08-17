@@ -34,6 +34,14 @@ export const MUSCLE_GROUPS_BY_REGION: Record<'PUSH' | 'PULL' | 'LEGS' | 'CORE', 
 export interface Exercise {
   id: string;
   name: string;
+  // Siempre presentes, sin importar en qué idioma haya pedido `name` el
+  // cliente (17/08/2026, ver ROADMAP-calismap.md "Traducciones") — para
+  // que la búsqueda pueda encontrar "Pull-up" buscando "dominada" y
+  // viceversa, sin importar el idioma activo de la UI en ese momento (ver
+  // LibraryPage.filtered()). Para un ejercicio PROPIO (sin traducción
+  // real posible) los tres campos terminan siendo idénticos a `name`.
+  nameSpanish: string;
+  nameEnglish: string;
   description: string;
   level: Level;
   category: ExerciseCategory;
