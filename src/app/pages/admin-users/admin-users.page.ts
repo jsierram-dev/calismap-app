@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
 import { AdminUserRow, AdminUsersService } from '../../services/admin-users.service';
+import { I18nService } from '../../core/services/i18n.service';
 
 // Solo lectura por decisión del 16/08/2026 (ver [[admin-panel-component-
 // reuse]] en memoria) — no hay endpoint todavía para cambiar isAdmin de un
@@ -20,7 +21,10 @@ export class AdminUsersPage implements OnInit {
 
   private readonly limit = 20;
 
-  constructor(private adminUsers: AdminUsersService) {}
+  constructor(
+    private adminUsers: AdminUsersService,
+    public i18n: I18nService,
+  ) {}
 
   ngOnInit(): void {
     this.load();

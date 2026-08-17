@@ -9,6 +9,7 @@ import { WorkoutLogService } from '../../services/workout-log.service';
 import { SearchComponent } from '../../shared/search/search.component';
 import { FilterComponent } from '../../shared/filter/filter.component';
 import { PathLoaderComponent } from '../../shared/path-loader/path-loader.component';
+import { I18nService } from '../../core/services/i18n.service';
 
 type CategoryFilter = ExerciseCategory | 'ALL' | 'MINE';
 
@@ -17,16 +18,11 @@ interface LibraryCard {
   rating: Rating | null;
 }
 
-const CATEGORIES: { value: CategoryFilter; label: string }[] = [
-  { value: 'ALL', label: 'Todos' },
-  { value: 'PUSH', label: 'Push' },
-  { value: 'PULL', label: 'Pull' },
-  { value: 'LEGS', label: 'Legs' },
-  { value: 'CORE', label: 'Core' },
-  { value: 'STATIC', label: 'Static' },
-  { value: 'MOBILITY', label: 'Mobility' },
-  { value: 'MINE', label: 'Tus ejercicios' },
-];
+// Sin "label" fijo acá (17/08/2026, ver ROADMAP-calismap.md "Traducciones")
+// — el label se resuelve recién en el template vía i18n.t(), 'ALL'/'MINE'
+// con sus propias claves de página (no son categorías reales de Exercise),
+// el resto reusa enums.category.* (compartido con create-exercise/filter).
+const CATEGORIES: CategoryFilter[] = ['ALL', 'PUSH', 'PULL', 'LEGS', 'CORE', 'STATIC', 'MOBILITY', 'MINE'];
 
 // Pantalla 04 — LibraryComponent (ver COMPONENTES-calismap.md): buscador +
 // filtro por músculo + chips de categoría (incluye "Tus ejercicios",
@@ -82,6 +78,7 @@ export class LibraryPage implements OnInit {
     private library: ExerciseLibraryService,
     private workoutLog: WorkoutLogService,
     private ratingCalc: RatingCalculatorService,
+    public i18n: I18nService,
   ) {}
 
   ngOnInit(): void {

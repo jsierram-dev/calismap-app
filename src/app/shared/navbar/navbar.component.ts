@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ActiveSessionIndicatorService } from '../../core/services/active-session-indicator.service';
+import { I18nService } from '../../core/services/i18n.service';
 
 // Global — vive en el shell de la app (app.html), no se instancia por
 // página. Presente en las 9 pantallas autenticadas, no en Login (ver
@@ -17,5 +18,8 @@ import { ActiveSessionIndicatorService } from '../../core/services/active-sessio
   styleUrl: './navbar.component.css',
 })
 export class NavbarComponent {
-  constructor(public sessionIndicator: ActiveSessionIndicatorService) {}
+  constructor(
+    public sessionIndicator: ActiveSessionIndicatorService,
+    public i18n: I18nService,
+  ) {}
 }

@@ -1,17 +1,17 @@
 <div class="page-content">
-  <h1 class="screen-title">Ajustes</h1>
+  <h1 class="screen-title">{{ i18n.t('settings.title') }}</h1>
 
   @if (!auth.isGuest()) {
     <div class="profile-card">
       <div class="avatar">{{ initials() }}</div>
-      <div><h4>{{ auth.user()?.username }}</h4><p>Cuenta de Google conectada</p></div>
+      <div><h4>{{ auth.user()?.username }}</h4><p>{{ i18n.t('settings.googleConnected') }}</p></div>
     </div>
   } @else {
     <div class="profile-card guest-card">
       <div class="avatar avatar-guest">
         <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
       </div>
-      <div><h4>Invitado</h4><p>Tus datos se guardan solo en este dispositivo</p></div>
+      <div><h4>{{ i18n.t('settings.guestTitle') }}</h4><p>{{ i18n.t('settings.guestDesc') }}</p></div>
     </div>
     <button class="google-btn" type="button" [disabled]="loggingIn()" (click)="openLogin()" style="margin-bottom:22px">
       <svg class="google-g" viewBox="0 0 18 18" width="18" height="18">
@@ -20,7 +20,7 @@
         <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" />
         <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" />
       </svg>
-      {{ loggingIn() ? 'Conectando…' : 'Continuar con Google' }}
+      {{ loggingIn() ? i18n.t('settings.connecting') : i18n.t('settings.continueGoogle') }}
     </button>
     @if (loginError(); as message) {
       <p class="login-inline-error">{{ message }}</p>
@@ -28,7 +28,7 @@
   }
 
   <div class="settings-group">
-    <h5>Tu progreso</h5>
+    <h5>{{ i18n.t('settings.yourProgress') }}</h5>
     <div class="stats-row">
       <div class="stat"><span class="rating-badge silver">Silver</span><b>{{ tierCounts().SILVER }}</b></div>
       <div class="stat"><span class="rating-badge gold">Gold</span><b>{{ tierCounts().GOLD }}</b></div>
@@ -38,39 +38,39 @@
   </div>
 
   <div class="settings-group">
-    <h5>Preferencias</h5>
+    <h5>{{ i18n.t('settings.preferences') }}</h5>
     <div class="settings-card">
       <div class="settings-row">
-        <div class="label">Idioma</div>
+        <div class="label">{{ i18n.t('settings.language') }}</div>
         <div class="segmented">
           <button type="button" [class.on]="profile.profile().language === 'es'" (click)="setLanguage('es')">ES</button>
           <button type="button" [class.on]="profile.profile().language === 'en'" (click)="setLanguage('en')">EN</button>
         </div>
       </div>
       <div class="settings-row-stack">
-        <div class="label">Tema</div>
-        <div class="sub">Sistema sigue el ajuste de tu dispositivo</div>
+        <div class="label">{{ i18n.t('settings.theme') }}</div>
+        <div class="sub">{{ i18n.t('settings.systemHint') }}</div>
         <div class="segmented full">
-          <button type="button" [class.active]="theme.theme() === 'light'" (click)="setTheme('light')">Claro</button>
-          <button type="button" [class.active]="theme.theme() === 'dark'" (click)="setTheme('dark')">Oscuro</button>
-          <button type="button" [class.active]="theme.theme() === 'system'" (click)="setTheme('system')">Sistema</button>
+          <button type="button" [class.active]="theme.theme() === 'light'" (click)="setTheme('light')">{{ i18n.t('settings.light') }}</button>
+          <button type="button" [class.active]="theme.theme() === 'dark'" (click)="setTheme('dark')">{{ i18n.t('settings.dark') }}</button>
+          <button type="button" [class.active]="theme.theme() === 'system'" (click)="setTheme('system')">{{ i18n.t('settings.system') }}</button>
         </div>
       </div>
     </div>
   </div>
 
   <div class="settings-group">
-    <h5>Unidades</h5>
+    <h5>{{ i18n.t('settings.units') }}</h5>
     <div class="settings-card">
       <div class="settings-row">
-        <div><div class="label">Peso corporal</div><div class="sub">Se sigue guardando siempre en kg</div></div>
+        <div><div class="label">{{ i18n.t('settings.bodyWeight') }}</div><div class="sub">{{ i18n.t('settings.keepsKg') }}</div></div>
         <div class="segmented">
           <button type="button" [class.on]="profile.profile().weightUnit === 'kg'" (click)="setWeightUnit('kg')">KG</button>
           <button type="button" [class.on]="profile.profile().weightUnit === 'lbs'" (click)="setWeightUnit('lbs')">LBS</button>
         </div>
       </div>
       <div class="settings-row">
-        <div class="label">Tu peso actual</div>
+        <div class="label">{{ i18n.t('settings.currentWeight') }}</div>
         <input
           class="input"
           type="number"
@@ -85,27 +85,27 @@
   </div>
 
   <div class="settings-group">
-    <h5>Entrenamiento</h5>
+    <h5>{{ i18n.t('settings.training') }}</h5>
     <div class="settings-card">
-      <div class="settings-row"><div class="label">Timer de descanso por defecto</div><span class="tag">90s</span></div>
+      <div class="settings-row"><div class="label">{{ i18n.t('settings.defaultRestTimer') }}</div><span class="tag">90s</span></div>
       <div class="settings-row">
-        <div class="label">Sincronización</div>
+        <div class="label">{{ i18n.t('settings.sync') }}</div>
         @if (sync.syncing()) {
-          <span class="tag" style="color:var(--accent);border-color:var(--accent)">SINCRONIZANDO</span>
+          <span class="tag" style="color:var(--accent);border-color:var(--accent)">{{ i18n.t('settings.syncing') }}</span>
         } @else if (sync.lastError()) {
-          <span class="tag" style="color:var(--danger);border-color:var(--danger)">ERROR</span>
+          <span class="tag" style="color:var(--danger);border-color:var(--danger)">{{ i18n.t('settings.syncError') }}</span>
         } @else {
-          <span class="tag" style="color:var(--accent);border-color:var(--accent)">AL DÍA</span>
+          <span class="tag" style="color:var(--accent);border-color:var(--accent)">{{ i18n.t('settings.syncUpToDate') }}</span>
         }
       </div>
     </div>
   </div>
 
   <div class="settings-group">
-    <h5>Información</h5>
+    <h5>{{ i18n.t('settings.information') }}</h5>
     <div class="settings-card">
       <a class="settings-row" routerLink="/catalog-sources">
-        <div class="label">Sobre el catálogo</div>
+        <div class="label">{{ i18n.t('settings.aboutCatalog') }}</div>
         <svg class="icon" viewBox="0 0 24 24" stroke="var(--text-2)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
       </a>
     </div>
@@ -113,10 +113,10 @@
 
   @if (auth.isAdmin()) {
     <div class="settings-group">
-      <h5>Admin</h5>
+      <h5>{{ i18n.t('settings.admin') }}</h5>
       <div class="settings-card">
         <a class="settings-row" routerLink="/admin">
-          <div class="label">Panel de administración</div>
+          <div class="label">{{ i18n.t('settings.adminPanel') }}</div>
           <svg class="icon" viewBox="0 0 24 24" stroke="var(--text-2)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
         </a>
       </div>
@@ -125,10 +125,10 @@
 
   @if (!auth.isGuest()) {
     <div class="settings-group">
-      <h5>Cuenta</h5>
+      <h5>{{ i18n.t('settings.account') }}</h5>
       <div class="settings-card">
         <button class="settings-row" type="button" style="width:100%;background:none;border:none;font:inherit;cursor:pointer" (click)="logout()">
-          <div class="label danger-text">Cerrar sesión</div>
+          <div class="label danger-text">{{ i18n.t('settings.logout') }}</div>
           <svg class="icon" viewBox="0 0 24 24" stroke="var(--danger)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></svg>
         </button>
       </div>

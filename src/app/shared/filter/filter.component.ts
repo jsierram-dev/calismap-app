@@ -1,14 +1,10 @@
 import { Component, EventEmitter, Input, Output, computed, signal } from '@angular/core';
 import { MuscleGroup } from '../../models/exercise.model';
-
-interface MuscleOption {
-  value: MuscleGroup;
-  label: string;
-}
+import { I18nService } from '../../core/services/i18n.service';
 
 interface MuscleRegion {
-  label: string;
-  muscles: MuscleOption[];
+  regionKey: string;
+  muscles: MuscleGroup[];
 }
 
 // Agrupado por "músculo principal" en vocabulario de gimnasio (Piernas/
@@ -16,54 +12,18 @@ interface MuscleRegion {
 // en exercise.model.ts (esa agrupación, PUSH/PULL/LEGS/CORE, es solo
 // organización interna del código). Ver ROADMAP-calismap.md, "Taxonomía de
 // músculos" y "Corrección de UX en el filtro de músculos".
+//
+// Sin label fijo acá (17/08/2026, ver ROADMAP-calismap.md "Traducciones")
+// — regionKey/cada MuscleGroup se traducen recién en el template vía
+// i18n.t('enums.region.'+regionKey)/i18n.t('enums.muscle.'+muscle), para
+// que cambiar el idioma en Ajustes actualice esta lista sin recargar nada.
 const REGIONS: MuscleRegion[] = [
-  {
-    label: 'Piernas',
-    muscles: [
-      { value: 'CUADRICEPS', label: 'Cuádriceps' },
-      { value: 'ISQUIOTIBIALES', label: 'Isquiotibiales' },
-      { value: 'GLUTEOS', label: 'Glúteos' },
-      { value: 'GEMELOS', label: 'Gemelos' },
-      { value: 'ADUCTORES', label: 'Aductores' },
-    ],
-  },
-  {
-    label: 'Pecho',
-    muscles: [{ value: 'PECTORAL', label: 'Pectoral' }],
-  },
-  {
-    label: 'Espalda',
-    muscles: [
-      { value: 'DORSAL_ANCHO', label: 'Dorsales' },
-      { value: 'TRAPECIO', label: 'Trapecio' },
-      { value: 'ROMBOIDES', label: 'Romboides' },
-      { value: 'LUMBARES', label: 'Lumbares' },
-    ],
-  },
-  {
-    label: 'Hombros',
-    muscles: [
-      { value: 'DELTOIDES_ANTERIOR', label: 'Deltoides anterior' },
-      { value: 'DELTOIDES_POSTERIOR', label: 'Deltoides posterior' },
-    ],
-  },
-  {
-    label: 'Brazos',
-    muscles: [
-      { value: 'BICEPS', label: 'Bíceps' },
-      { value: 'TRICEPS', label: 'Tríceps' },
-      { value: 'ANTEBRAZOS', label: 'Antebrazos' },
-    ],
-  },
-  {
-    label: 'Core',
-    muscles: [
-      { value: 'RECTO_ABDOMINAL', label: 'Abdominales' },
-      { value: 'OBLICUOS', label: 'Oblicuos' },
-      { value: 'TRANSVERSO_ABDOMINAL', label: 'Transverso abdominal' },
-      { value: 'SERRATO_ANTERIOR', label: 'Serrato anterior' },
-    ],
-  },
+  { regionKey: 'legs', muscles: ['CUADRICEPS', 'ISQUIOTIBIALES', 'GLUTEOS', 'GEMELOS', 'ADUCTORES'] },
+  { regionKey: 'chest', muscles: ['PECTORAL'] },
+  { regionKey: 'back', muscles: ['DORSAL_ANCHO', 'TRAPECIO', 'ROMBOIDES', 'LUMBARES'] },
+  { regionKey: 'shoulders', muscles: ['DELTOIDES_ANTERIOR', 'DELTOIDES_POSTERIOR'] },
+  { regionKey: 'arms', muscles: ['BICEPS', 'TRICEPS', 'ANTEBRAZOS'] },
+  { regionKey: 'core', muscles: ['RECTO_ABDOMINAL', 'OBLICUOS', 'TRANSVERSO_ABDOMINAL', 'SERRATO_ANTERIOR'] },
 ];
 
 // Compartido — hermano de SearchComponent, no anidado adentro (corrección
@@ -84,6 +44,8 @@ export class FilterComponent {
   regions = REGIONS;
   private selected = signal<Set<MuscleGroup>>(new Set());
   selectedCount = computed(() => this.selected().size);
+
+  constructor(public i18n: I18nService) {}
 
   isChecked(value: MuscleGroup): boolean {
     return this.selected().has(value);

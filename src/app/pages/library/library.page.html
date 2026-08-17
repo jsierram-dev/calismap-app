@@ -1,13 +1,13 @@
 <div class="page-content">
-  <h1 class="screen-title">Biblioteca</h1>
+  <h1 class="screen-title">{{ i18n.t('library.title') }}</h1>
 
   @if (loading()) {
-    <app-path-loader label="Cargando tus ejercicios…" />
+    <app-path-loader [label]="i18n.t('library.loading')" />
   } @else {
-    <p class="screen-sub">{{ cards().length }} ejercicios del catálogo</p>
+    <p class="screen-sub">{{ i18n.t('library.subtitle', { count: cards().length }) }}</p>
 
     <app-search
-      placeholder="Buscar ejercicio…"
+      [placeholder]="i18n.t('library.searchPlaceholder')"
       [query]="query()"
       [filterCount]="selectedMuscles().length"
       (queryChange)="onQueryChange($event)"
@@ -15,11 +15,11 @@
     />
 
     <div class="filter-facet">
-      <p class="facet-label">Categoría</p>
+      <p class="facet-label">{{ i18n.t('library.categoryLabel') }}</p>
       <div class="chip-row">
-        @for (cat of categories; track cat.value) {
-          <button class="chip" [class.on]="activeCategory() === cat.value" type="button" (click)="activeCategory.set(cat.value)">
-            {{ cat.label | uppercase }}
+        @for (cat of categories; track cat) {
+          <button class="chip" [class.on]="activeCategory() === cat" type="button" (click)="activeCategory.set(cat)">
+            {{ (cat === 'ALL' ? i18n.t('library.categoryAll') : cat === 'MINE' ? i18n.t('library.categoryMine') : i18n.t('enums.category.' + cat)) | uppercase }}
           </button>
         }
       </div>
@@ -34,12 +34,12 @@
           <h4>
             {{ card.exercise.name }}
             @if (card.exercise.userId) {
-              <span class="custom-pill">Personalizado</span>
+              <span class="custom-pill">{{ i18n.t('library.custom') }}</span>
             }
           </h4>
           <div class="tags">
-            <span class="tag">{{ card.exercise.category }}</span>
-            <span class="tag">{{ card.exercise.level }}</span>
+            <span class="tag">{{ i18n.t('enums.category.' + card.exercise.category) }}</span>
+            <span class="tag">{{ i18n.t('enums.level.' + card.exercise.level) }}</span>
             @if (card.rating) {
               <span class="rating-badge" [class]="card.rating.toLowerCase()">{{ card.rating }}</span>
             }
@@ -47,13 +47,13 @@
         </div>
       </a>
     } @empty {
-      <p class="screen-sub">No encontramos ningún ejercicio con ese criterio.</p>
+      <p class="screen-sub">{{ i18n.t('library.empty') }}</p>
     }
   }
 </div>
 
 @if (!pickerMode) {
-  <a class="fab-create" routerLink="/create-exercise" aria-label="Crear ejercicio">
+  <a class="fab-create" routerLink="/create-exercise" [attr.aria-label]="i18n.t('library.createAria')">
     <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
   </a>
 }

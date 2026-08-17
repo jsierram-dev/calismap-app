@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { I18nService } from '../../core/services/i18n.service';
 
 // Menú del panel de admin — pantalla nueva, sin equivalente en el mockup
 // original (COMPONENTES-calismap.md documentaba 10 pantallas de usuario,
@@ -14,4 +15,6 @@ import { RouterLink } from '@angular/router';
   templateUrl: './admin-home.page.html',
   styleUrl: './admin-home.page.css',
 })
-export class AdminHomePage {}
+export class AdminHomePage {
+  constructor(public i18n: I18nService) {}
+}

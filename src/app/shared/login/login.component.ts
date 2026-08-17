@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild, signal } from '@angular/core';
 import { ModalController } from '@ionic/angular/standalone';
 import { AuthService } from '../../core/services/auth.service';
 import { GoogleIdentityService } from '../../core/services/google-identity.service';
+import { I18nService } from '../../core/services/i18n.service';
 
 // Pantalla 10 — LoginComponent (ver COMPONENTES-calismap.md): OPCIONAL, se
 // abre en modal desde 5 lugares (RoadmapComponent al completar el objetivo,
@@ -32,6 +33,7 @@ export class LoginComponent {
     private auth: AuthService,
     private modalCtrl: ModalController,
     private googleIdentity: GoogleIdentityService,
+    public i18n: I18nService,
   ) {}
 
   async continueWithGoogle(): Promise<void> {
@@ -40,7 +42,7 @@ export class LoginComponent {
       const idToken = await this.googleIdentity.promptSignIn();
       await this.handleCredential(idToken);
     } catch {
-      this.error.set('No pudimos cargar el inicio de sesión de Google. Prueba de nuevo más tarde.');
+      this.error.set(this.i18n.t('login.errorLoadFailed'));
     }
   }
 
@@ -55,7 +57,7 @@ export class LoginComponent {
       await this.auth.loginWithGoogle(idToken);
       this.modalCtrl.dismiss(null, 'success');
     } catch {
-      this.error.set('No pudimos iniciar sesión. Prueba de nuevo.');
+      this.error.set(this.i18n.t('login.errorLoginFailed'));
     } finally {
       this.loading.set(false);
     }

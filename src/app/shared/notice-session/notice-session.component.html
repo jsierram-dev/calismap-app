@@ -1,8 +1,8 @@
 @if (sessionIndicator.current(); as session) {
-  <button class="session-bar" type="button" (click)="goToSession()" aria-label="Volver a la sesión en curso">
+  <button class="session-bar" type="button" (click)="goToSession()" [attr.aria-label]="i18n.t('notice.backAria')">
     <span class="dot"></span>
     <span class="info">
-      <span class="label">Sesión activa</span>
+      <span class="label">{{ i18n.t('notice.active') }}</span>
       <span class="name">{{ session.name }}</span>
     </span>
     <span class="time">{{ elapsedLabel() }}</span>

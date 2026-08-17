@@ -14,6 +14,7 @@ import {
 } from '../models/roadmap.model';
 import { effectiveValue } from '../models/workout-log.model';
 import { CatalogCache } from '../core/utils/catalog-cache';
+import { I18nService } from '../core/services/i18n.service';
 import { LocalStorageService } from '../core/services/local-storage.service';
 import { ExerciseLibraryService } from './exercise-library.service';
 import { RatingCalculatorService } from './rating-calculator.service';
@@ -74,8 +75,18 @@ export class RoadmapService {
     private workoutLog: WorkoutLogService,
     private ratingCalc: RatingCalculatorService,
     private userProfile: UserProfileService,
+    private i18n: I18nService,
   ) {
-    this.listCache = new CatalogCache<Roadmap>(http, storage, LIST_KEY, `${environment.apiUrl}/roadmaps`);
+    // URL como función, no string fijo (17/08/2026, ver ROADMAP-calismap.md
+    // "Traducciones") — se resuelve recién en cada fetch real, así que lee
+    // el idioma vigente EN ESE MOMENTO (i18n.lang() puede cambiar después de
+    // construido este servicio, ver setLanguageAndRefreshCatalog() en
+    // SettingsPage) en vez del que hubiera al arrancar la app.
+    this.listCache = new CatalogCache<Roadmap>(http, storage, LIST_KEY, () => this.roadmapsUrl());
+  }
+
+  private roadmapsUrl(): string {
+    return this.i18n.lang() === 'en' ? `${environment.apiUrl}/roadmaps?lang=en` : `${environment.apiUrl}/roadmaps`;
   }
 
   async getAllRoadmaps(): Promise<RoadmapSummary[]> {
@@ -147,6 +158,19 @@ export class RoadmapService {
     const completedCount = stepViewModels.filter((s) => s.isCompleted && !s.isTarget).length;
 
     return { roadmap: detail, targetExercise, steps: stepViewModels, completedCount, totalCount: steps.length };
+  }
+
+  // Cambiar el idioma en Ajustes (17/08/2026, ver ROADMAP-calismap.md
+  // "Traducciones") no alcanza solo con que roadmapsUrl()/fetchDetail()
+  // lean i18n.lang() en el próximo fetch — el catálogo ya está cacheado
+  // (en memoria acá, y en localStorage dentro de CatalogCache) con el texto
+  // del idioma VIEJO. SettingsPage.setLanguage() llama a esto para que el
+  // contenido ya visible se actualice sin esperar un refresh natural (que
+  // podría tardar mucho, ver CatalogCache — solo refetchea si nunca se
+  // pidió antes en esta pestaña).
+  invalidateForLanguageChange(): void {
+    this.detailCache.clear();
+    this.listCache.refresh();
   }
 
   async getExerciseById(id: string): Promise<Exercise | null> {
@@ -239,21 +263,21 @@ export class RoadmapService {
 
   /** Coach note real para la tarjeta de la pantalla 01 — sobre el primer paso sin completar. */
   private buildCardNote(step: RoadmapStepViewModel | null): string {
-    if (!step) return '¡Completaste esta ruta!';
-    if (step.bestValue === null) return `${step.exercise.name}: registra tu primera marca`;
+    if (!step) return this.i18n.t('roadmapService.routeComplete');
+    if (step.bestValue === null) return this.i18n.t('roadmapService.registerFirst', { name: step.exercise.name });
 
     const currentIndex = RATING_ORDER.indexOf(step.rating ?? 'BRONZE');
     const nextRating = RATING_ORDER[currentIndex + 1];
-    if (!nextRating) return `${step.exercise.name}: ¡en tu mejor nivel!`;
+    if (!nextRating) return this.i18n.t('roadmapService.bestLevel', { name: step.exercise.name });
 
     const bodyWeightKg = this.userProfile.getBodyWeightKg();
     const needed = this.ratingCalc.valueNeededFor(nextRating, bodyWeightKg, step.exercise.ratingThresholds);
     const remaining = needed - step.bestValue;
-    const unit = step.exercise.repUnit === 'reps' ? 'reps' : 'seg';
+    const unit = this.i18n.t(step.exercise.repUnit === 'reps' ? 'enums.unit.reps' : 'enums.unit.seconds');
     const nextLabel = nextRating.charAt(0) + nextRating.slice(1).toLowerCase();
 
-    if (remaining <= 0) return `${step.exercise.name}: ¡ya puedes avanzar al siguiente paso!`;
-    return `${step.exercise.name}: te faltan ${remaining} ${unit} para ${nextLabel}`;
+    if (remaining <= 0) return this.i18n.t('roadmapService.canAdvance', { name: step.exercise.name });
+    return this.i18n.t('roadmapService.remaining', { name: step.exercise.name, remaining, unit, tier: nextLabel });
   }
 
   /** Rating actual del usuario en un ejercicio — derivado de la MEJOR marca histórica (ver workout-log.service.ts, getBestLog), nunca recalculado con datos de hoy. null = sin ninguna marca todavía. */
@@ -277,7 +301,8 @@ export class RoadmapService {
     // de esperar el mismo pedido.
     let promise = this.detailLoadPromises.get(roadmapId);
     if (!promise) {
-      promise = firstValueFrom(this.http.get<RoadmapDetailDto>(`${environment.apiUrl}/roadmaps/${roadmapId}`))
+      const url = this.i18n.lang() === 'en' ? `${environment.apiUrl}/roadmaps/${roadmapId}?lang=en` : `${environment.apiUrl}/roadmaps/${roadmapId}`;
+      promise = firstValueFrom(this.http.get<RoadmapDetailDto>(url))
         .then((detail) => {
           this.detailCache.set(roadmapId, detail);
           return detail;

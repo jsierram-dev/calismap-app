@@ -1,6 +1,7 @@
 import { Component, DestroyRef, ElementRef, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActiveSessionIndicatorService } from '../../core/services/active-session-indicator.service';
+import { I18nService } from '../../core/services/i18n.service';
 
 // Global — indicador PRINCIPAL de "hay una sesión activa en otra pantalla"
 // (patrón mini-reproductor tipo Spotify/Strong/Hevy). Flota arriba del
@@ -21,6 +22,7 @@ export class NoticeSessionComponent implements OnInit {
 
   constructor(
     public sessionIndicator: ActiveSessionIndicatorService,
+    public i18n: I18nService,
     private router: Router,
   ) {}
 

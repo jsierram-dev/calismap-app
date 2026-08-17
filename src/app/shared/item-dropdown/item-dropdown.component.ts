@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, OnChanges, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RepUnit } from '../../models/exercise.model';
+import { I18nService } from '../../core/services/i18n.service';
 
 export interface SetEntry {
   // id real del WorkoutLog — solo en series YA registradas (done), permite
@@ -35,6 +36,8 @@ export type ItemDropdownMode = 'logging' | 'prescription';
   styleUrl: './item-dropdown.component.css',
 })
 export class ItemDropdownComponent implements OnChanges {
+  i18n = inject(I18nService);
+
   @Input({ required: true }) mode: ItemDropdownMode = 'logging';
   @Input({ required: true }) exerciseName = '';
   @Input({ required: true }) repUnit: RepUnit = 'reps';
@@ -101,19 +104,23 @@ export class ItemDropdownComponent implements OnChanges {
   }
 
   get subtitle(): string {
-    const unit = this.repUnit === 'reps' ? 'reps' : 'seg';
+    const unit = this.i18n.t(this.repUnit === 'reps' ? 'enums.unit.reps' : 'enums.unit.seconds');
     if (this.mode === 'logging') {
-      return `${this.sets.length} series`;
+      return this.i18n.t('itemDropdown.subtitleLogging', { count: this.sets.length });
     }
     const values = this.targetValues.filter((v): v is number => v !== null);
-    if (!values.length) return `${this.targetSets} series · las que puedas`;
+    if (!values.length) return this.i18n.t('itemDropdown.subtitlePrescriptionAny', { targetSets: this.targetSets });
     // Mismo valor en todas las series (el caso de siempre) vs. variable por
     // serie (pirámide 12/10/8) — hallazgo #9 de pruebas reales en móvil, ver
     // ROADMAP-calismap.md.
     const allSame = values.length === this.targetSets && values.every((v) => v === values[0]);
     return allSame
-      ? `${this.targetSets} series × ${values[0]} ${unit}`
-      : `${this.targetSets} series · ${this.targetValues.map((v) => v ?? '–').join('/')} ${unit}`;
+      ? this.i18n.t('itemDropdown.subtitlePrescriptionUniform', { targetSets: this.targetSets, value: values[0], unit })
+      : this.i18n.t('itemDropdown.subtitlePrescriptionVaried', {
+          targetSets: this.targetSets,
+          values: this.targetValues.map((v) => v ?? '–').join('/'),
+          unit,
+        });
   }
 
   markDone(index: number): void {

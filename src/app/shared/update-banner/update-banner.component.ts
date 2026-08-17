@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
+import { I18nService } from '../../core/services/i18n.service';
 
 /**
  * Global — aviso de "hay una actualización disponible" (16/08/2026, ver
@@ -24,6 +25,7 @@ import { filter } from 'rxjs/operators';
 })
 export class UpdateBannerComponent implements OnInit {
   private swUpdate = inject(SwUpdate);
+  public i18n = inject(I18nService);
   available = signal(false);
   reloading = signal(false);
 

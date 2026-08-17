@@ -1,9 +1,9 @@
 @if (available()) {
   <div class="update-banner" role="status">
     <span class="dot"></span>
-    <span class="msg">Hay una actualización de la app disponible</span>
+    <span class="msg">{{ i18n.t('updateBanner.message') }}</span>
     <button type="button" class="update-btn" (click)="update()" [disabled]="reloading()">
-      {{ reloading() ? 'Actualizando…' : 'Actualizar' }}
+      {{ reloading() ? i18n.t('updateBanner.updating') : i18n.t('updateBanner.update') }}
     </button>
   </div>
 }

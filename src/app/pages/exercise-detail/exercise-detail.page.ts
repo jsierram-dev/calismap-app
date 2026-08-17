@@ -11,6 +11,7 @@ import { RoadmapService } from '../../services/roadmap.service';
 import { UserProfileService } from '../../services/user-profile.service';
 import { WorkoutLogService } from '../../services/workout-log.service';
 import { WorkoutSessionService } from '../../services/workout-session.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { RouteComponent, RouteNode, RouteNodeState } from '../../shared/route/route.component';
 
 // Pantalla 03 — ExerciseInfoComponent (ver COMPONENTES-calismap.md): tag+
@@ -60,6 +61,7 @@ export class ExerciseDetailPage implements OnInit {
     private workoutLog: WorkoutLogService,
     private workoutSession: WorkoutSessionService,
     private exerciseLibrary: ExerciseLibraryService,
+    public i18n: I18nService,
   ) {
     this.destroyRef.onDestroy(() => this.clearRestTimer());
   }
@@ -102,7 +104,7 @@ export class ExerciseDetailPage implements OnInit {
     let session = await this.workoutSession.getActive();
     let ownSession = false;
     if (!session) {
-      session = await this.workoutSession.startSession({ name: 'Registro rápido' });
+      session = await this.workoutSession.startSession({ name: this.i18n.t('exerciseDetail.quickLogName') });
       ownSession = true;
     }
 
@@ -176,7 +178,7 @@ export class ExerciseDetailPage implements OnInit {
   }
 
   private buildLadder(exercise: Exercise, currentRating: Rating | null, bestValue: number | null): RouteNode[] {
-    const unit = exercise.repUnit === 'reps' ? 'reps' : 'seg';
+    const unit = this.i18n.t(exercise.repUnit === 'reps' ? 'enums.unit.reps' : 'enums.unit.seconds');
     const currentIndex = currentRating ? RATING_ORDER.indexOf(currentRating) : -1;
     const bodyWeightKg = this.userProfile.getBodyWeightKg();
 
@@ -195,8 +197,14 @@ export class ExerciseDetailPage implements OnInit {
         const remaining = Math.max(0, needed - (bestValue ?? 0));
         node.coachNote =
           bestValue !== null
-            ? { headline: `${needed} ${unit} y estás en ${this.tierLabel(tier)}`, sub: `Te faltan ${remaining} desde tu mejor marca (${bestValue})` }
-            : { headline: `${needed} ${unit} y estás en ${this.tierLabel(tier)}`, sub: 'Registra tu primera marca para arrancar' };
+            ? {
+                headline: this.i18n.t('exerciseDetail.ladderHeadline', { needed, unit, tier: this.tierLabel(tier) }),
+                sub: this.i18n.t('exerciseDetail.ladderSub', { remaining, bestValue }),
+              }
+            : {
+                headline: this.i18n.t('exerciseDetail.ladderHeadline', { needed, unit, tier: this.tierLabel(tier) }),
+                sub: this.i18n.t('exerciseDetail.ladderSubFallback'),
+              };
       }
       return node;
     });

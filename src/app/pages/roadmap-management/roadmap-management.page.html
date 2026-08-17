@@ -1,26 +1,26 @@
 <div class="page-content">
-  <h1 class="screen-title">{{ editingId() ? 'Editar roadmap' : 'Nuevo roadmap' }}</h1>
-  <p class="screen-sub">{{ editingId() ? name() : 'Definí la ruta y sus pasos' }}</p>
+  <h1 class="screen-title">{{ editingId() ? i18n.t('roadmapManagement.editTitle') : i18n.t('roadmapManagement.newTitle') }}</h1>
+  <p class="screen-sub">{{ editingId() ? name() : i18n.t('roadmapManagement.subtitleDefault') }}</p>
 
   <div class="field">
-    <label for="rm-name">Nombre</label>
-    <input id="rm-name" class="input" type="text" [ngModel]="name()" (ngModelChange)="name.set($event)" placeholder="Ej: Muscle Up" />
+    <label for="rm-name">{{ i18n.t('roadmapManagement.name') }}</label>
+    <input id="rm-name" class="input" type="text" [ngModel]="name()" (ngModelChange)="name.set($event)" [placeholder]="i18n.t('roadmapManagement.namePlaceholder')" />
   </div>
 
   <div class="field">
-    <label for="rm-desc">Descripción</label>
+    <label for="rm-desc">{{ i18n.t('roadmapManagement.description') }}</label>
     <textarea id="rm-desc" class="input" [ngModel]="description()" (ngModelChange)="description.set($event)" rows="2"></textarea>
   </div>
 
   <div class="field-row">
     <div class="field">
-      <label for="rm-cat">Categoría</label>
+      <label for="rm-cat">{{ i18n.t('roadmapManagement.category') }}</label>
       <select id="rm-cat" class="input" [ngModel]="category()" (ngModelChange)="category.set($event)">
-        @for (c of categories; track c) { <option [value]="c">{{ c }}</option> }
+        @for (c of categories; track c) { <option [value]="c">{{ i18n.t('enums.category.' + c) }}</option> }
       </select>
     </div>
     <div class="field">
-      <label for="rm-target-rating">Rating para desbloquear el objetivo</label>
+      <label for="rm-target-rating">{{ i18n.t('roadmapManagement.ratingToUnlock') }}</label>
       <select id="rm-target-rating" class="input" [ngModel]="targetRatingRequired()" (ngModelChange)="targetRatingRequired.set($event)">
         @for (r of ratings; track r) { <option [value]="r">{{ r }}</option> }
       </select>
@@ -28,13 +28,13 @@
   </div>
 
   <div class="field">
-    <label for="rm-target">Ejercicio objetivo</label>
+    <label for="rm-target">{{ i18n.t('roadmapManagement.targetExercise') }}</label>
     <select id="rm-target" class="input" [ngModel]="targetExerciseId()" (ngModelChange)="targetExerciseId.set($event)">
       @for (e of exercises(); track e.id) { <option [value]="e.id">{{ e.name }}</option> }
     </select>
   </div>
 
-  <h5 class="section-label">Pasos de la ruta, en orden</h5>
+  <h5 class="section-label">{{ i18n.t('roadmapManagement.stepsLabel') }}</h5>
 
   @for (step of steps(); track $index) {
     <div class="step-row">
@@ -44,21 +44,21 @@
           @for (e of exercises(); track e.id) { <option [value]="e.id">{{ e.name }}</option> }
         </select>
         @if ($index === 0) {
-          <span class="unlocked-note">Siempre desbloqueado (paso 1)</span>
+          <span class="unlocked-note">{{ i18n.t('roadmapManagement.alwaysUnlocked') }}</span>
         } @else {
           <select class="input sm" [ngModel]="step.minRatingRequired ?? ''" (ngModelChange)="updateStepRating($index, $event)">
-            @for (r of ratings; track r) { <option [value]="r">Requiere {{ r }} en el paso anterior</option> }
+            @for (r of ratings; track r) { <option [value]="r">{{ i18n.t('roadmapManagement.requiresPrev', { rating: r }) }}</option> }
           </select>
         }
       </div>
       <div class="step-actions">
-        <button type="button" class="icon-btn" [disabled]="$index === 0" (click)="moveStep($index, -1)" aria-label="Subir">
+        <button type="button" class="icon-btn" [disabled]="$index === 0" (click)="moveStep($index, -1)" [attr.aria-label]="i18n.t('roadmapManagement.moveUpAria')">
           <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><path d="m18 15-6-6-6 6" /></svg>
         </button>
-        <button type="button" class="icon-btn" [disabled]="$index === steps().length - 1" (click)="moveStep($index, 1)" aria-label="Bajar">
+        <button type="button" class="icon-btn" [disabled]="$index === steps().length - 1" (click)="moveStep($index, 1)" [attr.aria-label]="i18n.t('roadmapManagement.moveDownAria')">
           <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><path d="m6 9 6 6 6-6" /></svg>
         </button>
-        <button type="button" class="icon-btn danger" (click)="removeStep($index)" aria-label="Quitar paso">
+        <button type="button" class="icon-btn danger" (click)="removeStep($index)" [attr.aria-label]="i18n.t('roadmapManagement.removeStepAria')">
           <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
         </button>
       </div>
@@ -67,17 +67,17 @@
 
   <button type="button" class="add-step-btn" (click)="addStep()">
     <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
-    Agregar paso
+    {{ i18n.t('roadmapManagement.addStep') }}
   </button>
 
-  <p class="hint">El ejercicio objetivo ({{ exerciseName(targetExerciseId()) }}) se agrega solo al final de la ruta — no hace falta incluirlo como paso.</p>
+  <p class="hint">{{ i18n.t('roadmapManagement.targetHint', { name: exerciseName(targetExerciseId()) }) }}</p>
 
   <div class="actions">
     @if (editingId()) {
-      <button type="button" class="btn btn-danger" (click)="remove()">Eliminar roadmap</button>
+      <button type="button" class="btn btn-danger" (click)="remove()">{{ i18n.t('roadmapManagement.deleteRoadmap') }}</button>
     }
     <button type="button" class="btn btn-primary" [disabled]="!canSave || saving()" (click)="save()">
-      {{ saving() ? 'Guardando...' : (editingId() ? 'Guardar cambios' : 'Crear roadmap') }}
+      {{ saving() ? i18n.t('roadmapManagement.saving') : (editingId() ? i18n.t('roadmapManagement.saveChanges') : i18n.t('roadmapManagement.saveNew')) }}
     </button>
   </div>
 </div>

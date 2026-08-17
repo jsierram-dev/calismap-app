@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import { Exercise, ExerciseCategory, Level, MuscleGroup, RatingThresholds, RepUnit } from '../models/exercise.model';
 import { LocalCollection } from '../core/utils/local-collection';
 import { markDeleted, newId, touch } from '../core/utils/sync-meta';
+import { I18nService } from '../core/services/i18n.service';
 import { LocalStorageService } from '../core/services/local-storage.service';
 import { SyncService } from '../core/services/sync.service';
 
@@ -78,6 +79,7 @@ export class ExerciseLibraryService {
     private http: HttpClient,
     storage: LocalStorageService,
     private sync: SyncService,
+    private i18n: I18nService,
   ) {
     this.collection = new LocalCollection<Exercise>(storage, KEY);
     this.sync.registerExercises({
@@ -159,9 +161,18 @@ export class ExerciseLibraryService {
     return this.catalogLoadPromise;
   }
 
-  /** Público — para un futuro pull-to-refresh en la Biblioteca (paso 6). */
+  /**
+   * Público — para un futuro pull-to-refresh en la Biblioteca (paso 6), y
+   * para SettingsPage cuando el usuario cambia de idioma (17/08/2026, ver
+   * ROADMAP-calismap.md "Traducciones") — a diferencia de CatalogCache,
+   * esto SIEMPRE refetchea al llamarse (sin promesa memoizada de por
+   * vida), así que alcanza con volver a llamarlo con el idioma nuevo para
+   * que el catálogo ya visible se actualice, sin necesitar un método de
+   * invalidación aparte.
+   */
   async refreshCatalog(): Promise<void> {
-    const fresh = await firstValueFrom(this.http.get<Exercise[]>(`${environment.apiUrl}/exercises`));
+    const url = this.i18n.lang() === 'en' ? `${environment.apiUrl}/exercises?lang=en` : `${environment.apiUrl}/exercises`;
+    const fresh = await firstValueFrom(this.http.get<Exercise[]>(url));
     await this.collection.applyUpdates(fresh); // merge por id — nunca pisa un ejercicio propio sin sincronizar todavía
   }
 

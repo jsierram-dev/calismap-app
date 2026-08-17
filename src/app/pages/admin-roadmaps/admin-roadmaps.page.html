@@ -1,22 +1,22 @@
 <div class="page-content">
-  <h1 class="screen-title">Roadmaps</h1>
-  <p class="screen-sub">{{ roadmaps().length }} roadmaps en el catálogo</p>
+  <h1 class="screen-title">{{ i18n.t('adminRoadmaps.title') }}</h1>
+  <p class="screen-sub">{{ i18n.t('adminRoadmaps.subtitle', { count: roadmaps().length }) }}</p>
 
   <a class="new-btn" routerLink="/admin/roadmaps/new">
     <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
-    Nuevo roadmap
+    {{ i18n.t('adminRoadmaps.newRoadmap') }}
   </a>
 
   @for (roadmap of roadmaps(); track roadmap.id) {
     <a class="roadmap-row" [routerLink]="['/admin/roadmaps', roadmap.id, 'edit']">
       <div class="info">
-        <span class="tag">{{ roadmap.category }}</span>
+        <span class="tag">{{ i18n.t('enums.category.' + roadmap.category) }}</span>
         <h4>{{ roadmap.name }}</h4>
         <p>{{ roadmap.description }}</p>
       </div>
       <svg class="chevron" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
     </a>
   } @empty {
-    <p class="empty-note">No hay roadmaps todavía.</p>
+    <p class="empty-note">{{ i18n.t('adminRoadmaps.empty') }}</p>
   }
 </div>

@@ -6,6 +6,7 @@ import { Exercise } from '../../models/exercise.model';
 import { RoutineExerciseInput } from '../../models/routine.model';
 import { UserRoutineExerciseEntry } from '../../models/user-routine.model';
 import { AuthService } from '../../core/services/auth.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
 import { RoutineService } from '../../services/routine.service';
 import { UserRoutineService } from '../../services/user-routine.service';
@@ -61,6 +62,7 @@ export class CreateRoutinePage implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private modalCtrl: ModalController,
+    public i18n: I18nService,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -165,7 +167,7 @@ export class CreateRoutinePage implements OnInit {
   async remove(): Promise<void> {
     const id = this.editingId();
     if (!id) return;
-    if (!confirm(`¿Borrar la rutina "${this.name()}"? Esta acción no se puede deshacer.`)) return;
+    if (!confirm(this.i18n.t('createRoutine.confirmDelete', { name: this.name() }))) return;
     await this.routineService.adminDelete(id);
     this.router.navigateByUrl('/admin/routines');
   }

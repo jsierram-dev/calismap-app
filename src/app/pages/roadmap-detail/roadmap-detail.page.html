@@ -1,8 +1,8 @@
 @if (detail(); as d) {
   <div class="page-content">
-    <span class="tag">{{ d.roadmap.category }}</span>
+    <span class="tag">{{ i18n.t('enums.category.' + d.roadmap.category) }}</span>
     <h1 class="screen-title">{{ d.roadmap.name }}</h1>
-    <p class="screen-sub">{{ d.completedCount }} de {{ d.totalCount }} pasos completados</p>
+    <p class="screen-sub">{{ i18n.t('roadmapDetail.progress', { completed: d.completedCount, total: d.totalCount }) }}</p>
 
     <app-route [nodes]="nodes()" />
   </div>
