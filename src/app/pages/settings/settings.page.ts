@@ -1,18 +1,17 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ModalController } from '@ionic/angular/standalone';
 import { Rating } from '../../models/exercise.model';
 import { UserProfile } from '../../models/user-profile.model';
 import { effectiveValue } from '../../models/workout-log.model';
 import { AuthService } from '../../core/services/auth.service';
+import { GoogleIdentityService } from '../../core/services/google-identity.service';
 import { ThemePreference, ThemeService } from '../../core/services/theme.service';
 import { SyncService } from '../../core/services/sync.service';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
 import { RatingCalculatorService } from '../../services/rating-calculator.service';
 import { UserProfileService } from '../../services/user-profile.service';
 import { WorkoutLogService } from '../../services/workout-log.service';
-import { LoginComponent } from '../../shared/login/login.component';
 
 const KG_PER_LB = 0.453592;
 
@@ -33,13 +32,15 @@ const KG_PER_LB = 0.453592;
 export class SettingsPage implements OnInit {
   tierCounts = signal<Record<Rating, number>>({ BRONZE: 0, SILVER: 0, GOLD: 0, PLATINUM: 0, DIAMOND: 0 });
   bodyWeightInput = signal(75);
+  loggingIn = signal(false);
+  loginError = signal<string | null>(null);
 
   constructor(
     public auth: AuthService,
     public theme: ThemeService,
     public sync: SyncService,
     public profile: UserProfileService,
-    private modalCtrl: ModalController,
+    private googleIdentity: GoogleIdentityService,
     private exerciseLibrary: ExerciseLibraryService,
     private workoutLog: WorkoutLogService,
     private ratingCalc: RatingCalculatorService,
@@ -58,9 +59,24 @@ export class SettingsPage implements OnInit {
     return name.slice(0, 2).toUpperCase() || '??';
   }
 
+  // Ajustes NO abre el modal de LoginComponent (17/08/2026, ver
+  // GoogleIdentityService) — acá el usuario ya pidió explícitamente iniciar
+  // sesión con Google estando parado en esta pantalla, así que dispara el
+  // prompt de Google directo. El modal sigue vivo para los otros 4 lugares
+  // (completar roadmap, terminar sesión, guardar ejercicio/rutina propia),
+  // donde el login es una sugerencia sobre OTRA acción y necesita su propio
+  // copy explicando el porqué + "Más tarde".
   async openLogin(): Promise<void> {
-    const modal = await this.modalCtrl.create({ component: LoginComponent });
-    await modal.present();
+    this.loginError.set(null);
+    this.loggingIn.set(true);
+    try {
+      const idToken = await this.googleIdentity.promptSignIn();
+      await this.auth.loginWithGoogle(idToken);
+    } catch {
+      this.loginError.set('No pudimos iniciar sesión con Google. Probá de nuevo.');
+    } finally {
+      this.loggingIn.set(false);
+    }
   }
 
   async logout(): Promise<void> {
