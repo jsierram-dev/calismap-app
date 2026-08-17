@@ -3,6 +3,10 @@ import { Exercise, ExerciseCategory, Rating } from './exercise.model';
 export interface Roadmap {
   id: string;
   name: string;
+  // Siempre presentes — mismo criterio que Exercise, ver ese modelo y
+  // ROADMAP-calismap.md "Traducciones".
+  nameSpanish: string;
+  nameEnglish: string;
   description: string;
   targetExerciseId: string;
   category: ExerciseCategory;

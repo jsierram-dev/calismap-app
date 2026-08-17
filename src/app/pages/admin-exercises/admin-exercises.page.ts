@@ -5,6 +5,7 @@ import { ExerciseLibraryService } from '../../services/exercise-library.service'
 import { FilterComponent } from '../../shared/filter/filter.component';
 import { SearchComponent } from '../../shared/search/search.component';
 import { I18nService } from '../../core/services/i18n.service';
+import { matchesNameQuery } from '../../core/utils/name-match';
 
 // Reusa SearchComponent/FilterComponent tal cual (mismos componentes que
 // LibraryComponent, pedido explícito del usuario el 16/08/2026) en vez de
@@ -24,11 +25,11 @@ export class AdminExercisesPage implements OnInit {
   filterOpen = signal(false);
 
   filtered = computed(() => {
-    const q = this.query().toLowerCase().trim();
+    const q = this.query();
     const muscles = this.selectedMuscles();
     return this.all()
       .filter((e) => !e.userId) // catálogo únicamente — el panel de admin no gestiona ejercicios propios de usuarios
-      .filter((e) => !q || e.name.toLowerCase().includes(q))
+      .filter((e) => matchesNameQuery(q, e.name, e.nameSpanish, e.nameEnglish))
       .filter((e) => !muscles.length || e.muscleGroups.some((m) => muscles.includes(m)))
       .sort((a, b) => a.name.localeCompare(b.name));
   });

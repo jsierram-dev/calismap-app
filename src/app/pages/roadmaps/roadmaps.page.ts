@@ -7,6 +7,7 @@ import { SearchComponent } from '../../shared/search/search.component';
 import { FilterComponent } from '../../shared/filter/filter.component';
 import { PathLoaderComponent } from '../../shared/path-loader/path-loader.component';
 import { I18nService } from '../../core/services/i18n.service';
+import { matchesNameQuery } from '../../core/utils/name-match';
 
 // Pantalla 01 — RoadmapListComponent (ver COMPONENTES-calismap.md): header +
 // racha (sesiones de ESTA SEMANA CALENDARIO, lunes a hoy — "¿entrenaste
@@ -38,10 +39,10 @@ export class RoadmapsPage implements OnInit {
   filterOpen = signal(false);
 
   filtered = computed(() => {
-    const q = this.query().trim().toLowerCase();
+    const q = this.query();
     const muscles = this.selectedMuscles();
     return this.roadmaps().filter((r) => {
-      if (q && !r.roadmap.name.toLowerCase().includes(q)) return false;
+      if (!matchesNameQuery(q, r.roadmap.name, r.roadmap.nameSpanish, r.roadmap.nameEnglish)) return false;
       if (muscles.length && !r.targetExercise.muscleGroups.some((m) => muscles.includes(m))) return false;
       return true;
     });

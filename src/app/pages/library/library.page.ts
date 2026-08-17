@@ -10,6 +10,7 @@ import { SearchComponent } from '../../shared/search/search.component';
 import { FilterComponent } from '../../shared/filter/filter.component';
 import { PathLoaderComponent } from '../../shared/path-loader/path-loader.component';
 import { I18nService } from '../../core/services/i18n.service';
+import { matchesNameQuery } from '../../core/utils/name-match';
 
 type CategoryFilter = ExerciseCategory | 'ALL' | 'MINE';
 
@@ -62,11 +63,11 @@ export class LibraryPage implements OnInit {
   filterOpen = signal(false);
 
   filtered = computed(() => {
-    const q = this.query().trim().toLowerCase();
+    const q = this.query();
     const muscles = this.selectedMuscles();
     const category = this.activeCategory();
     return this.cards().filter(({ exercise }) => {
-      if (q && !exercise.name.toLowerCase().includes(q)) return false;
+      if (!matchesNameQuery(q, exercise.name, exercise.nameSpanish, exercise.nameEnglish)) return false;
       if (muscles.length && !exercise.muscleGroups.some((m) => muscles.includes(m))) return false;
       if (category === 'MINE') return !!exercise.userId;
       if (category !== 'ALL') return exercise.category === category;
