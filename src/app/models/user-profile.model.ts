@@ -18,6 +18,11 @@ export interface UserProfile {
 export const DEFAULT_PROFILE: UserProfile = {
   bodyWeightKg: 75,
   weightUnit: 'kg',
-  language: 'es',
+  // Inglés por defecto (17/08/2026, ver ROADMAP-calismap.md "Traducciones") —
+  // pedido explícito del usuario. Este es el ÚNICO lugar donde importa: un
+  // perfil nuevo (invitado recién creado, sin ningún UserProfile.save()
+  // todavía) arranca en 'en'; cualquier usuario que ya haya elegido 'es' en
+  // Ajustes conserva su elección tal cual, esto no la pisa.
+  language: 'en',
   updatedAt: new Date(0).toISOString(), // "nunca actualizado" — cualquier cambio real le gana
 };
