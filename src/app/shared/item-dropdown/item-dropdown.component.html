@@ -15,7 +15,7 @@
         [class.progress]="!allDone && doneCount > 0"
         [style.--pct]="progressDeg + 'deg'"
         (click)="onCheckClick($event)"
-        [attr.aria-label]="allDone ? 'Destildar todas las series de ' + exerciseName : 'Marcar todas las series de ' + exerciseName + ' como hechas'"
+        [attr.aria-label]="allDone ? i18n.t('itemDropdown.uncheckAllAria', { name: exerciseName }) : i18n.t('itemDropdown.checkAllAria', { name: exerciseName })"
       >
         @if (allDone) {
           <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
@@ -27,7 +27,7 @@
       <h4>
         {{ exerciseName }}
         @if (customBadge) {
-          <span class="custom-pill">Personalizado</span>
+          <span class="custom-pill">{{ i18n.t('itemDropdown.custom') }}</span>
         }
       </h4>
       <p>{{ subtitle }}</p>
@@ -36,7 +36,7 @@
     @if (mode === 'logging') {
       <span class="sets-progress">{{ doneCount }}/{{ sets.length }}</span>
     } @else {
-      <button class="remove-btn" type="button" (click)="removed.emit()" aria-label="Quitar ejercicio">
+      <button class="remove-btn" type="button" (click)="removed.emit()" [attr.aria-label]="i18n.t('itemDropdown.removeAria')">
         <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
       </button>
     }
@@ -49,13 +49,13 @@
       @if (mode === 'logging') {
         <div class="set-row-header">
           <span class="set-label"></span>
-          <span class="col-label">{{ repUnit === 'reps' ? 'Reps' : 'Seg' }}</span>
-          <span class="col-label">Peso (kg)</span>
+          <span class="col-label">{{ repUnit === 'reps' ? i18n.t('itemDropdown.colReps') : i18n.t('itemDropdown.colSeconds') }}</span>
+          <span class="col-label">{{ i18n.t('itemDropdown.colWeight') }}</span>
           <span></span>
         </div>
         @for (set of sets; track $index; let i = $index) {
           <div class="set-row" [class.done]="set.done">
-            <span class="set-label">Serie {{ i + 1 }}</span>
+            <span class="set-label">{{ i18n.t('itemDropdown.setN', { n: i + 1 }) }}</span>
             <div class="field-inline">
               <input type="text" inputmode="numeric" [(ngModel)]="draftValue[i]" [disabled]="set.done" />
             </div>
@@ -70,20 +70,20 @@
                    decorativo; ahora deshace ESA serie puntual (borra el
                    WorkoutLog real, ver SessionWorkoutPage.onUndoSet) sin
                    tocar las demás. -->
-              <button class="set-done-btn done" type="button" (click)="onUndoSet(set.id, $event)" aria-label="Deshacer esta serie">
+              <button class="set-done-btn done" type="button" (click)="onUndoSet(set.id, $event)" [attr.aria-label]="i18n.t('itemDropdown.undoSetAria')">
                 <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
               </button>
             } @else {
-              <button class="set-done-btn" type="button" (click)="markDone(i)" aria-label="Marcar serie hecha">
+              <button class="set-done-btn" type="button" (click)="markDone(i)" [attr.aria-label]="i18n.t('itemDropdown.markDoneAria')">
                 <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
               </button>
             }
           </div>
         }
-        <p class="hint">Peso negativo = asistido (banda/máquina)</p>
+        <p class="hint">{{ i18n.t('itemDropdown.negativeWeightHint') }}</p>
       } @else {
         <div class="prescription-row">
-          <label>Series objetivo</label>
+          <label>{{ i18n.t('itemDropdown.targetSets') }}</label>
           <div class="stepper sm">
             <button type="button" class="step-btn" (click)="stepTargetSets(-1)">−</button>
             <input type="text" inputmode="numeric" [ngModel]="targetSets" readonly />
@@ -96,7 +96,7 @@
              "Series objetivo" arriba, uno por serie. -->
         @for (value of draftTargetValues; track $index; let i = $index) {
           <div class="prescription-row">
-            <label>Serie {{ i + 1 }} ({{ repUnit === 'reps' ? 'reps' : 'seg' }})</label>
+            <label>{{ i18n.t('itemDropdown.setNUnit', { n: i + 1, unit: i18n.t(repUnit === 'reps' ? 'enums.unit.reps' : 'enums.unit.seconds') }) }}</label>
             <div class="stepper sm">
               <button type="button" class="step-btn" (click)="stepTargetValueAt(i, -1)">−</button>
               <input type="text" inputmode="numeric" [ngModel]="value ?? 0" readonly />

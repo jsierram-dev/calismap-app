@@ -28,12 +28,21 @@ import { LocalStorageService } from '../services/local-storage.service';
 export class CatalogCache<T> {
   private loadPromise: Promise<T[]> | null = null;
 
+  // `url` puede ser un string fijo (RoutineService, sin variante por
+  // idioma) o una función que se resuelve recién al pedir (RoadmapService,
+  // 17/08/2026 — ver ROADMAP-calismap.md "Traducciones": necesita poder
+  // agregar ?lang=en/leer el idioma ACTUAL en cada fetch, no el que hubiera
+  // al construir el servicio).
   constructor(
     private http: HttpClient,
     private storage: LocalStorageService,
     private key: string,
-    private url: string,
+    private url: string | (() => string),
   ) {}
+
+  private resolveUrl(): string {
+    return typeof this.url === 'function' ? this.url() : this.url;
+  }
 
   getAll(): Promise<T[]> {
     if (!this.loadPromise) {
@@ -52,7 +61,7 @@ export class CatalogCache<T> {
   }
 
   private async fetchAndCache(): Promise<T[]> {
-    const data = await firstValueFrom(this.http.get<T[]>(this.url));
+    const data = await firstValueFrom(this.http.get<T[]>(this.resolveUrl()));
     await this.storage.set(this.key, data);
     return data;
   }

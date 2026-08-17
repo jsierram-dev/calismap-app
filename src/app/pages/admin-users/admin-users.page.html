@@ -1,6 +1,6 @@
 <div class="page-content">
-  <h1 class="screen-title">Usuarios</h1>
-  <p class="screen-sub">{{ total() }} cuentas registradas · solo lectura</p>
+  <h1 class="screen-title">{{ i18n.t('adminUsers.title') }}</h1>
+  <p class="screen-sub">{{ i18n.t('adminUsers.subtitle', { count: total() }) }}</p>
 
   @for (user of users(); track user.id) {
     <div class="user-row">
@@ -10,17 +10,17 @@
         <p>{{ user.created_at | date: 'd MMM y' }}</p>
       </div>
       <div class="badges">
-        <span class="pill" [class.pill-accent]="!user.is_guest">{{ user.is_guest ? 'Invitado' : 'Google' }}</span>
-        @if (user.is_admin) { <span class="pill pill-admin">Admin</span> }
+        <span class="pill" [class.pill-accent]="!user.is_guest">{{ user.is_guest ? i18n.t('adminUsers.guest') : i18n.t('adminUsers.google') }}</span>
+        @if (user.is_admin) { <span class="pill pill-admin">{{ i18n.t('adminUsers.admin') }}</span> }
       </div>
     </div>
   } @empty {
-    <p class="empty-note">No hay usuarios todavía.</p>
+    <p class="empty-note">{{ i18n.t('adminUsers.empty') }}</p>
   }
 
   @if (hasMore) {
     <button class="load-more-btn" type="button" [disabled]="loading()" (click)="loadMore()">
-      {{ loading() ? 'Cargando...' : 'Cargar más' }}
+      {{ loading() ? i18n.t('adminUsers.loading') : i18n.t('adminUsers.loadMore') }}
     </button>
   }
 </div>

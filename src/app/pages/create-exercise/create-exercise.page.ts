@@ -4,49 +4,28 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ModalController } from '@ionic/angular/standalone';
 import { Exercise, ExerciseCategory, Level, MuscleGroup, RatingThresholds, RepUnit } from '../../models/exercise.model';
 import { AuthService } from '../../core/services/auth.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
 import { PhotoService } from '../../services/photo.service';
 import { LoginComponent } from '../../shared/login/login.component';
 
-const LEVELS: { value: Level; label: string }[] = [
-  { value: 'BEGINNER', label: 'Beginner' },
-  { value: 'INTERMEDIATE', label: 'Intermediate' },
-  { value: 'ADVANCED', label: 'Advanced' },
-  { value: 'EXPERT', label: 'Expert' },
-];
-
-const CATEGORIES: { value: ExerciseCategory; label: string }[] = [
-  { value: 'PUSH', label: 'Push' },
-  { value: 'PULL', label: 'Pull' },
-  { value: 'LEGS', label: 'Legs' },
-  { value: 'CORE', label: 'Core' },
-  { value: 'STATIC', label: 'Static' },
-  { value: 'MOBILITY', label: 'Mobility' },
-];
+// Sin "label" fijo (17/08/2026, ver ROADMAP-calismap.md "Traducciones") —
+// se resuelve recién en el template vía i18n.t('enums.level.'+value) /
+// i18n.t('enums.category.'+value) / i18n.t('enums.muscle.'+value), mismas
+// claves que FilterComponent/LibraryPage reusan para no duplicar texto.
+const LEVELS: Level[] = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'];
+const CATEGORIES: ExerciseCategory[] = ['PUSH', 'PULL', 'LEGS', 'CORE', 'STATIC', 'MOBILITY'];
 
 // Mismos 19 valores que FilterComponent, acá en lista plana (sin agrupar
 // por región) — es un formulario de creación, no un filtro, no hace falta
 // la misma jerarquía visual (ver ROADMAP-calismap.md "Taxonomía de músculos").
-const MUSCLES: { value: MuscleGroup; label: string }[] = [
-  { value: 'CUADRICEPS', label: 'Cuádriceps' },
-  { value: 'ISQUIOTIBIALES', label: 'Isquiotibiales' },
-  { value: 'GLUTEOS', label: 'Glúteos' },
-  { value: 'GEMELOS', label: 'Gemelos' },
-  { value: 'ADUCTORES', label: 'Aductores' },
-  { value: 'PECTORAL', label: 'Pectoral' },
-  { value: 'DORSAL_ANCHO', label: 'Dorsales' },
-  { value: 'TRAPECIO', label: 'Trapecio' },
-  { value: 'ROMBOIDES', label: 'Romboides' },
-  { value: 'LUMBARES', label: 'Lumbares' },
-  { value: 'DELTOIDES_ANTERIOR', label: 'Deltoides anterior' },
-  { value: 'DELTOIDES_POSTERIOR', label: 'Deltoides posterior' },
-  { value: 'BICEPS', label: 'Bíceps' },
-  { value: 'TRICEPS', label: 'Tríceps' },
-  { value: 'ANTEBRAZOS', label: 'Antebrazos' },
-  { value: 'RECTO_ABDOMINAL', label: 'Abdominales' },
-  { value: 'OBLICUOS', label: 'Oblicuos' },
-  { value: 'TRANSVERSO_ABDOMINAL', label: 'Transverso abdominal' },
-  { value: 'SERRATO_ANTERIOR', label: 'Serrato anterior' },
+const MUSCLES: MuscleGroup[] = [
+  'CUADRICEPS', 'ISQUIOTIBIALES', 'GLUTEOS', 'GEMELOS', 'ADUCTORES',
+  'PECTORAL',
+  'DORSAL_ANCHO', 'TRAPECIO', 'ROMBOIDES', 'LUMBARES',
+  'DELTOIDES_ANTERIOR', 'DELTOIDES_POSTERIOR',
+  'BICEPS', 'TRICEPS', 'ANTEBRAZOS',
+  'RECTO_ABDOMINAL', 'OBLICUOS', 'TRANSVERSO_ABDOMINAL', 'SERRATO_ANTERIOR',
 ];
 
 const TIERS: (keyof RatingThresholds)[] = ['SILVER', 'GOLD', 'PLATINUM', 'DIAMOND'];
@@ -127,6 +106,7 @@ export class CreateExercisePage implements OnInit {
     private route: ActivatedRoute,
     private modalCtrl: ModalController,
     private photos: PhotoService,
+    public i18n: I18nService,
   ) {
     this.destroyRef.onDestroy(() => {
       if (this.photoPreviewUrl()) URL.revokeObjectURL(this.photoPreviewUrl()!);
@@ -202,7 +182,7 @@ export class CreateExercisePage implements OnInit {
     try {
       this.photoId.set(await this.photos.upload(file));
     } catch {
-      this.photoUploadError.set('No se pudo subir la foto — probá de nuevo.');
+      this.photoUploadError.set(this.i18n.t('createExercise.photoUploadError'));
     } finally {
       this.uploadingPhoto.set(false);
     }
@@ -218,7 +198,7 @@ export class CreateExercisePage implements OnInit {
     try {
       this.videoId.set(await this.photos.upload(file));
     } catch {
-      this.videoUploadError.set('No se pudo subir el video — probá de nuevo.');
+      this.videoUploadError.set(this.i18n.t('createExercise.videoUploadError'));
     } finally {
       this.uploadingVideo.set(false);
     }
@@ -327,7 +307,7 @@ export class CreateExercisePage implements OnInit {
   async remove(): Promise<void> {
     const id = this.editingId();
     if (!id) return;
-    if (!confirm(`¿Borrar el ejercicio "${this.name()}"? Esta acción no se puede deshacer.`)) return;
+    if (!confirm(this.i18n.t('createExercise.confirmDelete', { name: this.name() }))) return;
     await this.library.adminDelete(id);
     this.router.navigateByUrl('/admin/exercises');
   }

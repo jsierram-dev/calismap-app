@@ -5,6 +5,7 @@ import { Exercise, ExerciseCategory, Rating } from '../../models/exercise.model'
 import { RoadmapExerciseInput } from '../../models/roadmap.model';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
 import { RoadmapService } from '../../services/roadmap.service';
+import { I18nService } from '../../core/services/i18n.service';
 
 const CATEGORIES: ExerciseCategory[] = ['PUSH', 'PULL', 'LEGS', 'CORE', 'STATIC', 'MOBILITY'];
 const RATINGS: Rating[] = ['BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND'];
@@ -51,6 +52,7 @@ export class RoadmapManagementPage implements OnInit {
     private exerciseLibrary: ExerciseLibraryService,
     private route: ActivatedRoute,
     private router: Router,
+    public i18n: I18nService,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -80,7 +82,7 @@ export class RoadmapManagementPage implements OnInit {
   }
 
   exerciseName(id: string): string {
-    return this.exercises().find((e) => e.id === id)?.name ?? '(ejercicio no encontrado)';
+    return this.exercises().find((e) => e.id === id)?.name ?? this.i18n.t('roadmapManagement.exerciseNotFound');
   }
 
   addStep(): void {
@@ -147,7 +149,7 @@ export class RoadmapManagementPage implements OnInit {
   async remove(): Promise<void> {
     const id = this.editingId();
     if (!id) return;
-    if (!confirm(`¿Borrar el roadmap "${this.name()}"? Esta acción no se puede deshacer.`)) return;
+    if (!confirm(this.i18n.t('roadmapManagement.confirmDelete', { name: this.name() }))) return;
     await this.roadmapService.adminDelete(id);
     this.router.navigateByUrl('/admin/roadmaps');
   }

@@ -1,57 +1,61 @@
 <div class="page-content">
-  <h1 class="screen-title">Biblioteca</h1>
-  <p class="screen-sub">{{ cards().length }} ejercicios del catálogo</p>
+  <h1 class="screen-title">{{ i18n.t('library.title') }}</h1>
 
-  <app-search
-    placeholder="Buscar ejercicio…"
-    [query]="query()"
-    [filterCount]="selectedMuscles().length"
-    (queryChange)="onQueryChange($event)"
-    (filterClick)="filterOpen.set(true)"
-  />
+  @if (loading()) {
+    <app-path-loader [label]="i18n.t('library.loading')" />
+  } @else {
+    <p class="screen-sub">{{ i18n.t('library.subtitle', { count: cards().length }) }}</p>
 
-  <div class="filter-facet">
-    <p class="facet-label">Categoría</p>
-    <div class="chip-row">
-      @for (cat of categories; track cat.value) {
-        <button class="chip" [class.on]="activeCategory() === cat.value" type="button" (click)="activeCategory.set(cat.value)">
-          {{ cat.label | uppercase }}
-        </button>
-      }
+    <app-search
+      [placeholder]="i18n.t('library.searchPlaceholder')"
+      [query]="query()"
+      [filterCount]="selectedMuscles().length"
+      (queryChange)="onQueryChange($event)"
+      (filterClick)="filterOpen.set(true)"
+    />
+
+    <div class="filter-facet">
+      <p class="facet-label">{{ i18n.t('library.categoryLabel') }}</p>
+      <div class="chip-row">
+        @for (cat of categories; track cat) {
+          <button class="chip" [class.on]="activeCategory() === cat" type="button" (click)="activeCategory.set(cat)">
+            {{ (cat === 'ALL' ? i18n.t('library.categoryAll') : cat === 'MINE' ? i18n.t('library.categoryMine') : i18n.t('enums.category.' + cat)) | uppercase }}
+          </button>
+        }
+      </div>
     </div>
-  </div>
 
-  @for (card of filtered(); track card.exercise.id) {
-    <a class="ex-card" [routerLink]="pickerMode ? null : ['/exercises', card.exercise.id]" (click)="onCardClick($event, card.exercise)">
-      <div class="ex-thumb">
-        <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6M9 6h6M7 12h10l-1 8H8l-1-8Z" /></svg>
-      </div>
-      <div class="ex-info">
-        <h4>
-          {{ card.exercise.name }}
-          @if (card.exercise.userId) {
-            <span class="custom-pill">Personalizado</span>
-          }
-        </h4>
-        <div class="tags">
-          <span class="tag">{{ card.exercise.category }}</span>
-          <span class="tag">{{ card.exercise.level }}</span>
-          @if (card.rating) {
-            <span class="rating-badge" [class]="card.rating.toLowerCase()">{{ card.rating }}</span>
-          }
+    @for (card of filtered(); track card.exercise.id) {
+      <a class="ex-card" [routerLink]="pickerMode ? null : ['/exercises', card.exercise.id]" (click)="onCardClick($event, card.exercise)">
+        <div class="ex-thumb">
+          <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6M9 6h6M7 12h10l-1 8H8l-1-8Z" /></svg>
         </div>
-      </div>
-    </a>
-  } @empty {
-    <p class="screen-sub">No encontramos ningún ejercicio con ese criterio.</p>
-  }
-
-  @if (!pickerMode) {
-    <a class="routine-card create" routerLink="/create-exercise">
-      <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
-      Crear ejercicio
-    </a>
+        <div class="ex-info">
+          <h4>
+            {{ card.exercise.name }}
+            @if (card.exercise.userId) {
+              <span class="custom-pill">{{ i18n.t('library.custom') }}</span>
+            }
+          </h4>
+          <div class="tags">
+            <span class="tag">{{ i18n.t('enums.category.' + card.exercise.category) }}</span>
+            <span class="tag">{{ i18n.t('enums.level.' + card.exercise.level) }}</span>
+            @if (card.rating) {
+              <span class="rating-badge" [class]="card.rating.toLowerCase()">{{ card.rating }}</span>
+            }
+          </div>
+        </div>
+      </a>
+    } @empty {
+      <p class="screen-sub">{{ i18n.t('library.empty') }}</p>
+    }
   }
 </div>
+
+@if (!pickerMode) {
+  <a class="fab-create" routerLink="/create-exercise" [attr.aria-label]="i18n.t('library.createAria')">
+    <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+  </a>
+}
 
 <app-filter [open]="filterOpen()" (closed)="filterOpen.set(false)" (applied)="onMusclesApplied($event)" />

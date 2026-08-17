@@ -1,75 +1,49 @@
 <div class="page-content legal-content">
-  <h1 class="screen-title">Sobre el catálogo</h1>
-  <p class="screen-sub">Cómo armamos los roadmaps y ejercicios</p>
+  <h1 class="screen-title">{{ i18n.t('catalogSources.title') }}</h1>
+  <p class="screen-sub">{{ i18n.t('catalogSources.subtitle') }}</p>
 
-  <p>
-    Los roadmaps y ejercicios de CalisMap no están inventados: siguen progresiones de calistenia
-    reconocidas y usadas por la comunidad, apoyadas en fuentes públicas que podés revisar vos
-    mismo más abajo. Queremos ser igual de claros sobre qué parte es un dato publicado y qué
-    parte es una estimación de diseño nuestra — sin exagerar ninguna de las dos.
-  </p>
+  <p>{{ i18n.t('catalogSources.intro') }}</p>
 
-  <h2>Progresiones y estructura</h2>
-  <p>
-    La secuencia de cada roadmap (por ejemplo, Australian Pull-up → Pull-up → Chest-to-Bar
-    Pull-up → Muscle Up) sigue el orden estándar de dificultad que vas a encontrar en cualquier
-    programa serio de calistenia — no es un orden que hayamos definido a criterio propio.
-    Nos apoyamos especialmente en las progresiones "Big 6" de <strong>Convict Conditioning</strong>
-    (Paul Wade), un método de referencia en el rubro, y en la guía de progresión de planche de
-    GMB (enlace abajo).
-  </p>
+  <h2>{{ i18n.t('catalogSources.structureHeading') }}</h2>
+  <p>{{ i18n.t('catalogSources.structureBodyPre') }}<strong>Convict Conditioning</strong>{{ i18n.t('catalogSources.structureBodyPost') }}</p>
 
-  <h2>Fuentes que usamos</h2>
+  <h2>{{ i18n.t('catalogSources.sourcesHeading') }}</h2>
   <ul class="source-list">
     <li class="source-item">
       <a href="https://spartanlab.app/tools/strength-standards" target="_blank" rel="noopener noreferrer">
-        SpartanLab — Calisthenics Strength Standards
+        {{ i18n.t('catalogSources.source1Title') }}
         <svg class="ext-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><path d="M15 3h6v6" /><path d="M10 14 21 3" /></svg>
       </a>
-      <p class="source-note">Tablas de estándares de fuerza por nivel para varios ejercicios de calistenia.</p>
+      <p class="source-note">{{ i18n.t('catalogSources.source1Note') }}</p>
     </li>
     <li class="source-item">
       <a href="https://fitnessvolt.com/strength-standards/pull-ups/" target="_blank" rel="noopener noreferrer">
-        Fitness Volt — Pull-Up Standards
+        {{ i18n.t('catalogSources.source2Title') }}
         <svg class="ext-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><path d="M15 3h6v6" /><path d="M10 14 21 3" /></svg>
       </a>
-      <p class="source-note">La única tabla de esta lista que respalda directamente uno de nuestros umbrales exactos (12 dominadas = Gold).</p>
+      <p class="source-note">{{ i18n.t('catalogSources.source2Note') }}</p>
     </li>
     <li class="source-item">
       <a href="https://gmb.io/planche/" target="_blank" rel="noopener noreferrer">
-        GMB — Planche Progression
+        {{ i18n.t('catalogSources.source3Title') }}
         <svg class="ext-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><path d="M15 3h6v6" /><path d="M10 14 21 3" /></svg>
       </a>
-      <p class="source-note">Base de la secuencia de nuestro roadmap de Planche (Tuck → Advanced Tuck → Straddle → Full).</p>
+      <p class="source-note">{{ i18n.t('catalogSources.source3Note') }}</p>
     </li>
     <li class="source-item">
       <a href="https://www.bergmovement.com/calisthenics-blog/front-lever-progressions" target="_blank" rel="noopener noreferrer">
-        Berg Movement — Front Lever Progressions
+        {{ i18n.t('catalogSources.source4Title') }}
         <svg class="ext-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><path d="M15 3h6v6" /><path d="M10 14 21 3" /></svg>
       </a>
-      <p class="source-note">Lectura de referencia general sobre progresiones de holds estáticos (el front lever todavía no es un roadmap propio en CalisMap).</p>
+      <p class="source-note">{{ i18n.t('catalogSources.source4Note') }}</p>
     </li>
   </ul>
 
-  <h2>Sobre los números exactos</h2>
-  <p>
-    Acá va la parte importante para no prometer de más: de los cerca de 100 umbrales de
-    repeticiones/tiempo del catálogo (Silver/Gold/Platinum/Diamond × 25 ejercicios), solo uno
-    —las 12 dominadas para Gold— corresponde directamente a un estándar publicado y verificable.
-    El resto son <strong>estimaciones razonables de diseño</strong>, calibradas para que la
-    dificultad suba de forma coherente entre un ejercicio y el siguiente — no son mediciones de
-    laboratorio ni vienen de una tabla externa verificada número por número.
-  </p>
+  <h2>{{ i18n.t('catalogSources.numbersHeading') }}</h2>
+  <p>{{ i18n.t('catalogSources.numbersBodyPre') }}<strong>{{ i18n.t('catalogSources.numbersBodyBold') }}</strong>{{ i18n.t('catalogSources.numbersBodyPost') }}</p>
 
-  <h2>Instrucciones de ejecución</h2>
-  <p>
-    Los pasos de técnica de cada ejercicio describen la forma estándar y correcta del movimiento,
-    tal como se enseña habitualmente en calistenia — no son una traducción literal de ninguna de
-    las fuentes de arriba.
-  </p>
+  <h2>{{ i18n.t('catalogSources.executionHeading') }}</h2>
+  <p>{{ i18n.t('catalogSources.executionBody') }}</p>
 
-  <p class="closing-note">
-    Si algo te parece que está mal calibrado o encontrás una fuente mejor para algún umbral,
-    contanos — el catálogo se sigue ajustando.
-  </p>
+  <p class="closing-note">{{ i18n.t('catalogSources.closing') }}</p>
 </div>

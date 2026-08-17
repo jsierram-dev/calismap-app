@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { RoadmapService } from '../../services/roadmap.service';
 import { RatingCalculatorService } from '../../services/rating-calculator.service';
 import { UserProfileService } from '../../services/user-profile.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { LoginComponent } from '../../shared/login/login.component';
 import { RouteComponent, RouteNode, RouteNodeState } from '../../shared/route/route.component';
 
@@ -34,6 +35,7 @@ export class RoadmapDetailPage implements OnInit {
     private userProfile: UserProfileService,
     private auth: AuthService,
     private modalCtrl: ModalController,
+    public i18n: I18nService,
   ) {}
 
   ngOnInit(): void {
@@ -69,7 +71,7 @@ export class RoadmapDetailPage implements OnInit {
       const state: RouteNodeState = step.isCompleted ? 'done' : step.isUnlocked ? 'current' : 'locked';
       const node: RouteNode = {
         title: step.exercise.name,
-        levelLabel: step.isTarget ? `${step.exercise.level} · OBJETIVO` : step.exercise.level,
+        levelLabel: step.isTarget ? `${step.exercise.level}${this.i18n.t('roadmapDetail.targetSuffix')}` : step.exercise.level,
         state,
         isTarget: step.isTarget,
         exerciseId: step.exercise.id,
@@ -77,29 +79,40 @@ export class RoadmapDetailPage implements OnInit {
       if (state === 'current') node.stepNumber = step.stepOrder;
       if (step.rating) node.ratingBadge = step.rating;
 
-      const unit = step.exercise.repUnit === 'reps' ? 'reps' : 'seg';
+      const unit = this.i18n.t(step.exercise.repUnit === 'reps' ? 'enums.unit.reps' : 'enums.unit.seconds');
       const next = detail.steps[index + 1];
 
       if (state === 'done') {
         node.metaText =
           next && next.minRatingRequired
-            ? `Tu mejor marca: ${step.bestValue} ${unit} — supera el mínimo (${this.ratingLabel(next.minRatingRequired)}) para el siguiente paso`
-            : `Tu mejor marca: ${step.bestValue} ${unit}`;
+            ? this.i18n.t('roadmapDetail.doneWithNext', { value: step.bestValue ?? 0, unit, rating: this.ratingLabel(next.minRatingRequired) })
+            : this.i18n.t('roadmapDetail.doneNoNext', { value: step.bestValue ?? 0, unit });
       } else if (state === 'current') {
         if (next?.minRatingRequired) {
           const needed = this.ratingCalc.valueNeededFor(next.minRatingRequired, bodyWeightKg, step.exercise.ratingThresholds);
           const remaining = Math.max(0, needed - (step.bestValue ?? 0));
           node.coachNote =
             step.bestValue !== null
-              ? { headline: `${needed} ${unit} y desbloqueás ${next.exercise.name}`, sub: `Te faltan ${remaining} desde tu mejor marca (${step.bestValue})` }
-              : { headline: `${needed} ${unit} y desbloqueás ${next.exercise.name}`, sub: 'Registrá tu primera marca para arrancar' };
+              ? {
+                  headline: this.i18n.t('roadmapDetail.currentHeadline', { needed, unit, name: next.exercise.name }),
+                  sub: this.i18n.t('roadmapDetail.currentSub', { remaining, bestValue: step.bestValue }),
+                }
+              : {
+                  headline: this.i18n.t('roadmapDetail.currentHeadline', { needed, unit, name: next.exercise.name }),
+                  sub: this.i18n.t('roadmapDetail.currentSubFallback'),
+                };
           node.progressPercent = Math.min(100, Math.round(((step.bestValue ?? 0) / needed) * 100));
         } else {
-          node.metaText = step.bestValue !== null ? `Tu mejor marca: ${step.bestValue} ${unit}` : 'Registrá tu primera marca';
+          node.metaText =
+            step.bestValue !== null
+              ? this.i18n.t('roadmapDetail.doneNoNext', { value: step.bestValue, unit })
+              : this.i18n.t('roadmapDetail.currentMetaFallback');
         }
       } else if (step.minRatingRequired) {
         const prev = detail.steps[index - 1];
-        node.metaText = `Se desbloquea con ${this.ratingLabel(step.minRatingRequired)}${prev ? ' en ' + prev.exercise.name : ''}`;
+        node.metaText =
+          this.i18n.t('roadmapDetail.lockedMeta', { rating: this.ratingLabel(step.minRatingRequired) }) +
+          (prev ? this.i18n.t('roadmapDetail.lockedMetaWithPrev', { name: prev.exercise.name }) : '');
       }
 
       return node;

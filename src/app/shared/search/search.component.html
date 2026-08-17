@@ -6,7 +6,7 @@
     </svg>
     <input [ngModel]="query" (ngModelChange)="onInput($event)" [placeholder]="placeholder" />
   </div>
-  <button class="filter-btn" [class.active]="filterCount > 0" type="button" (click)="filterClick.emit()" aria-label="Filtrar por músculo">
+  <button class="filter-btn" [class.active]="filterCount > 0" type="button" (click)="filterClick.emit()" [attr.aria-label]="i18n.t('search.filterAria')">
     <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <path d="M4 5h16l-6.5 8.2V19l-3 1.5v-7.3z" />
     </svg>

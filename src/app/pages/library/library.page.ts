@@ -8,6 +8,8 @@ import { RatingCalculatorService } from '../../services/rating-calculator.servic
 import { WorkoutLogService } from '../../services/workout-log.service';
 import { SearchComponent } from '../../shared/search/search.component';
 import { FilterComponent } from '../../shared/filter/filter.component';
+import { PathLoaderComponent } from '../../shared/path-loader/path-loader.component';
+import { I18nService } from '../../core/services/i18n.service';
 
 type CategoryFilter = ExerciseCategory | 'ALL' | 'MINE';
 
@@ -16,16 +18,11 @@ interface LibraryCard {
   rating: Rating | null;
 }
 
-const CATEGORIES: { value: CategoryFilter; label: string }[] = [
-  { value: 'ALL', label: 'Todos' },
-  { value: 'PUSH', label: 'Push' },
-  { value: 'PULL', label: 'Pull' },
-  { value: 'LEGS', label: 'Legs' },
-  { value: 'CORE', label: 'Core' },
-  { value: 'STATIC', label: 'Static' },
-  { value: 'MOBILITY', label: 'Mobility' },
-  { value: 'MINE', label: 'Tus ejercicios' },
-];
+// Sin "label" fijo acá (17/08/2026, ver ROADMAP-calismap.md "Traducciones")
+// — el label se resuelve recién en el template vía i18n.t(), 'ALL'/'MINE'
+// con sus propias claves de página (no son categorías reales de Exercise),
+// el resto reusa enums.category.* (compartido con create-exercise/filter).
+const CATEGORIES: CategoryFilter[] = ['ALL', 'PUSH', 'PULL', 'LEGS', 'CORE', 'STATIC', 'MOBILITY', 'MINE'];
 
 // Pantalla 04 — LibraryComponent (ver COMPONENTES-calismap.md): buscador +
 // filtro por músculo + chips de categoría (incluye "Tus ejercicios",
@@ -41,7 +38,7 @@ const CATEGORIES: { value: CategoryFilter; label: string }[] = [
 @Component({
   selector: 'app-library',
   standalone: true,
-  imports: [UpperCasePipe, RouterLink, SearchComponent, FilterComponent],
+  imports: [UpperCasePipe, RouterLink, SearchComponent, FilterComponent, PathLoaderComponent],
   templateUrl: './library.page.html',
   styleUrl: './library.page.css',
 })
@@ -50,6 +47,14 @@ export class LibraryPage implements OnInit {
   @Output() picked = new EventEmitter<Exercise>();
 
   categories = CATEGORIES;
+  // true solo hasta el PRIMER load() — mismo criterio que RoadmapsPage.loading
+  // (ver ese archivo): esta pantalla no tenía NINGÚN indicador de carga
+  // (hallazgo real, 17/08/2026, ver ROADMAP-calismap.md "Segunda ronda de
+  // pulido real") — con el precalentamiento de app.config.ts esto casi
+  // nunca llega a mostrarse, pero cuando esa precarga falla o todavía no
+  // terminó, antes el usuario veía la lista vacía en silencio en vez de un
+  // estado de carga real.
+  loading = signal(true);
   cards = signal<LibraryCard[]>([]);
   query = signal('');
   selectedMuscles = signal<MuscleGroup[]>([]);
@@ -73,6 +78,7 @@ export class LibraryPage implements OnInit {
     private library: ExerciseLibraryService,
     private workoutLog: WorkoutLogService,
     private ratingCalc: RatingCalculatorService,
+    public i18n: I18nService,
   ) {}
 
   ngOnInit(): void {
@@ -106,6 +112,11 @@ export class LibraryPage implements OnInit {
         return { exercise, rating };
       }),
     );
+    // Ejercicios propios (Exercise.userId) primero — pedido explícito del
+    // usuario, 17/08/2026. .sort() es estable en JS moderno, así que dentro
+    // de cada grupo (propios / catálogo) se mantiene el orden original.
+    cards.sort((a, b) => Number(!!b.exercise.userId) - Number(!!a.exercise.userId));
     this.cards.set(cards);
+    this.loading.set(false);
   }
 }

@@ -1,5 +1,5 @@
 <div class="page-content">
-  <h1 class="screen-title">{{ editingId() ? 'Editar ejercicio' : 'Nuevo ejercicio' }}</h1>
+  <h1 class="screen-title">{{ editingId() ? i18n.t('createExercise.editTitle') : i18n.t('createExercise.newTitle') }}</h1>
 
   <div class="media-upload-row">
     <label class="media-upload-tile" [class.has-media]="photoPreviewUrl()">
@@ -11,7 +11,7 @@
           <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="8.5" cy="10.5" r="1.5" /><path d="m21 15-5-5L5 19" /></svg>
         </span>
       }
-      <span class="tile-label">{{ uploadingPhoto() ? 'Subiendo…' : 'Foto' }}</span>
+      <span class="tile-label">{{ uploadingPhoto() ? i18n.t('createExercise.uploading') : i18n.t('createExercise.photo') }}</span>
     </label>
     <label class="media-upload-tile" [class.has-media]="videoPreviewUrl()">
       <input type="file" accept="video/*" capture="environment" hidden (change)="onVideoSelected($event)" />
@@ -22,52 +22,52 @@
           <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2" /><path d="m16 10 5-3v10l-5-3" /></svg>
         </span>
       }
-      <span class="tile-label">{{ uploadingVideo() ? 'Subiendo…' : 'Video' }}</span>
+      <span class="tile-label">{{ uploadingVideo() ? i18n.t('createExercise.uploading') : i18n.t('createExercise.video') }}</span>
     </label>
   </div>
   @if (photoUploadError() || videoUploadError()) {
     <p class="upload-caption" style="color:var(--danger)">{{ photoUploadError() || videoUploadError() }}</p>
   } @else {
-    <p class="upload-caption">Tocá un recuadro para elegir cámara o almacenamiento</p>
+    <p class="upload-caption">{{ i18n.t('createExercise.uploadHint') }}</p>
   }
 
-  <label class="form-label" for="ex-name">Nombre</label>
-  <input id="ex-name" class="text-input" type="text" placeholder="Ej. Plancha lateral" [(ngModel)]="name" />
+  <label class="form-label" for="ex-name">{{ i18n.t('createExercise.name') }}</label>
+  <input id="ex-name" class="text-input" type="text" [placeholder]="i18n.t('createExercise.namePlaceholder')" [(ngModel)]="name" />
   @if (similarExercise(); as similar) {
-    <p class="name-warning">Ya existe un ejercicio parecido: <b>{{ similar.name }}</b></p>
+    <p class="name-warning">{{ i18n.t('createExercise.similarWarningPrefix') }}<b>{{ similar.name }}</b></p>
   }
 
-  <label class="form-label" for="ex-description">Descripción</label>
+  <label class="form-label" for="ex-description">{{ i18n.t('createExercise.description') }}</label>
   <textarea id="ex-description" class="text-input" rows="2" [(ngModel)]="description"></textarea>
 
-  <label class="form-label">Nivel</label>
+  <label class="form-label">{{ i18n.t('createExercise.level') }}</label>
   <div class="chip-select-row">
-    @for (opt of levels; track opt.value) {
-      <button class="chip-select" [class.on]="level() === opt.value" type="button" (click)="level.set(opt.value)">{{ opt.label }}</button>
+    @for (opt of levels; track opt) {
+      <button class="chip-select" [class.on]="level() === opt" type="button" (click)="level.set(opt)">{{ i18n.t('enums.level.' + opt) }}</button>
     }
   </div>
 
-  <label class="form-label">Categoría</label>
+  <label class="form-label">{{ i18n.t('createExercise.category') }}</label>
   <div class="chip-select-row">
-    @for (opt of categories; track opt.value) {
-      <button class="chip-select" [class.on]="category() === opt.value" type="button" (click)="category.set(opt.value)">{{ opt.label }}</button>
+    @for (opt of categories; track opt) {
+      <button class="chip-select" [class.on]="category() === opt" type="button" (click)="category.set(opt)">{{ i18n.t('enums.category.' + opt) }}</button>
     }
   </div>
 
-  <label class="form-label">Músculos</label>
+  <label class="form-label">{{ i18n.t('createExercise.muscles') }}</label>
   <div class="chip-select-row">
-    @for (opt of muscles; track opt.value) {
-      <button class="chip-select" [class.on]="isSelected(opt.value)" type="button" (click)="toggleMuscle(opt.value)">{{ opt.label }}</button>
+    @for (opt of muscles; track opt) {
+      <button class="chip-select" [class.on]="isSelected(opt)" type="button" (click)="toggleMuscle(opt)">{{ i18n.t('enums.muscle.' + opt) }}</button>
     }
   </div>
 
-  <label class="form-label">Unidad</label>
+  <label class="form-label">{{ i18n.t('createExercise.unit') }}</label>
   <div class="segmented" style="margin-bottom:20px">
-    <button type="button" [class.on]="repUnit() === 'reps'" (click)="repUnit.set('reps')">Reps</button>
-    <button type="button" [class.on]="repUnit() === 'seconds'" (click)="repUnit.set('seconds')">Segundos</button>
+    <button type="button" [class.on]="repUnit() === 'reps'" (click)="repUnit.set('reps')">{{ i18n.t('createExercise.reps') }}</button>
+    <button type="button" [class.on]="repUnit() === 'seconds'" (click)="repUnit.set('seconds')">{{ i18n.t('createExercise.seconds') }}</button>
   </div>
 
-  <label class="form-label">Umbrales de rating</label>
+  <label class="form-label">{{ i18n.t('createExercise.thresholds') }}</label>
   <div class="threshold-list">
     <div class="threshold-row"><span class="rating-badge bronze">Bronze</span><input type="text" value="1" disabled /></div>
     @for (tier of tiers; track tier) {
@@ -78,7 +78,7 @@
     }
   </div>
 
-  <label class="form-label">Pasos</label>
+  <label class="form-label">{{ i18n.t('createExercise.steps') }}</label>
   @for (step of steps(); track $index; let i = $index) {
     <div class="step-input-row">
       <span class="num">{{ i + 1 }}</span>
@@ -87,27 +87,27 @@
   }
   <button class="add-step-btn" type="button" (click)="addStep()">
     <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
-    Agregar paso
+    {{ i18n.t('createExercise.addStep') }}
   </button>
 
   @if (isAdminMode) {
-    <label class="form-label" for="ex-regression">Regresión sugerida (opcional)</label>
+    <label class="form-label" for="ex-regression">{{ i18n.t('createExercise.regressionOptional') }}</label>
     <select id="ex-regression" class="text-input" [ngModel]="regressionExerciseId()" (ngModelChange)="regressionExerciseId.set($event)">
-      <option value="">— ninguna —</option>
+      <option value="">{{ i18n.t('createExercise.none') }}</option>
       @for (e of catalogExercises(); track e.id) {
         @if (e.id !== editingId()) { <option [value]="e.id">{{ e.name }}</option> }
       }
     </select>
 
-    <label class="form-label" for="ex-video">Video URL (opcional, ya hosteado en otro lado)</label>
-    <input id="ex-video" class="text-input" type="url" placeholder="https://..." [ngModel]="videoUrl()" (ngModelChange)="videoUrl.set($event)" />
+    <label class="form-label" for="ex-video">{{ i18n.t('createExercise.videoUrlOptional') }}</label>
+    <input id="ex-video" class="text-input" type="url" [placeholder]="i18n.t('createExercise.urlPlaceholder')" [ngModel]="videoUrl()" (ngModelChange)="videoUrl.set($event)" />
   }
 
   <button class="btn btn-primary" type="button" style="width:100%" [disabled]="!canSave || saving()" (click)="save()">
-    {{ saving() ? 'Guardando...' : (editingId() ? 'Guardar cambios' : 'Guardar ejercicio') }}
+    {{ saving() ? i18n.t('createExercise.saving') : (editingId() ? i18n.t('createExercise.saveChanges') : i18n.t('createExercise.saveNew')) }}
   </button>
 
   @if (isAdminMode && editingId()) {
-    <button class="btn btn-danger" type="button" style="width:100%;margin-top:8px" (click)="remove()">Eliminar ejercicio</button>
+    <button class="btn btn-danger" type="button" style="width:100%;margin-top:8px" (click)="remove()">{{ i18n.t('createExercise.deleteExercise') }}</button>
   }
 </div>

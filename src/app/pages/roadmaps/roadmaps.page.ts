@@ -6,6 +6,7 @@ import { WorkoutSessionService } from '../../services/workout-session.service';
 import { SearchComponent } from '../../shared/search/search.component';
 import { FilterComponent } from '../../shared/filter/filter.component';
 import { PathLoaderComponent } from '../../shared/path-loader/path-loader.component';
+import { I18nService } from '../../core/services/i18n.service';
 
 // Pantalla 01 — RoadmapListComponent (ver COMPONENTES-calismap.md): header +
 // racha (sesiones de ESTA SEMANA CALENDARIO, lunes a hoy — "¿entrenaste
@@ -49,6 +50,7 @@ export class RoadmapsPage implements OnInit {
   constructor(
     private roadmapService: RoadmapService,
     private workoutSessionService: WorkoutSessionService,
+    public i18n: I18nService,
   ) {}
 
   ngOnInit(): void {

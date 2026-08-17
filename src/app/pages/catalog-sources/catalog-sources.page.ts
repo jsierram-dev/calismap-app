@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { I18nService } from '../../core/services/i18n.service';
 
 // Página de contenido estático (mismo patrón que un "Términos y
 // condiciones": texto fijo, sin datos del usuario ni llamadas a servicios)
@@ -15,4 +16,6 @@ import { Component } from '@angular/core';
   templateUrl: './catalog-sources.page.html',
   styleUrl: './catalog-sources.page.css',
 })
-export class CatalogSourcesPage {}
+export class CatalogSourcesPage {
+  constructor(public i18n: I18nService) {}
+}

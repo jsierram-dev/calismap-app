@@ -1,6 +1,6 @@
 @if (exercise(); as ex) {
   <div class="page-content">
-    <span class="tag">{{ ex.category }} · {{ ex.level }}</span>
+    <span class="tag">{{ i18n.t('enums.category.' + ex.category) }} · {{ i18n.t('enums.level.' + ex.level) }}</span>
     <h1 class="screen-title">{{ ex.name }}</h1>
 
     <div class="media-carousel">
@@ -12,24 +12,24 @@
           <div class="photo-icon">
             <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="8.5" cy="10.5" r="1.5" /><path d="m21 15-5-5L5 19" /></svg>
           </div>
-          <span>FOTO PRÓXIMAMENTE</span>
+          <span>{{ i18n.t('exerciseDetail.photoSoon') }}</span>
         </div>
         <div class="media-slide">
           @if (ex.videoUrl) {
-            <a class="play" [href]="ex.videoUrl" target="_blank" rel="noopener" aria-label="Ver video explicativo">
+            <a class="play" [href]="ex.videoUrl" target="_blank" rel="noopener" [attr.aria-label]="i18n.t('exerciseDetail.watchVideoAria')">
               <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
             </a>
-            <span>Ver video</span>
+            <span>{{ i18n.t('exerciseDetail.watchVideo') }}</span>
           } @else {
             <!-- Exercise.videoId (video subido, no link externo) tiene el mismo pendiente que photoId — ver arriba. -->
             <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></div>
-            <span>VIDEO PRÓXIMAMENTE</span>
+            <span>{{ i18n.t('exerciseDetail.videoSoon') }}</span>
           }
         </div>
       </div>
       <div class="media-dots">
-        <button class="media-dot" [class.on]="activeSlide() === 0" type="button" (click)="setSlide(0)" aria-label="Foto del ejercicio"></button>
-        <button class="media-dot" [class.on]="activeSlide() === 1" type="button" (click)="setSlide(1)" aria-label="Video explicativo"></button>
+        <button class="media-dot" [class.on]="activeSlide() === 0" type="button" (click)="setSlide(0)" [attr.aria-label]="i18n.t('exerciseDetail.photoAria')"></button>
+        <button class="media-dot" [class.on]="activeSlide() === 1" type="button" (click)="setSlide(1)" [attr.aria-label]="i18n.t('exerciseDetail.videoAria')"></button>
       </div>
     </div>
 
@@ -37,13 +37,15 @@
       @for (segments of stepSegments(); track $index) {
         <li>
           <span class="num">{{ $index + 1 }}</span>
-          @for (seg of segments; track $index) {
-            @if (seg.exerciseId) {
-              <a class="step-exercise-link" [routerLink]="['/exercises', seg.exerciseId]">{{ seg.text }}</a>
-            } @else {
-              {{ seg.text }}
+          <span class="step-text">
+            @for (seg of segments; track $index) {
+              @if (seg.exerciseId) {
+                <a class="step-exercise-link" [routerLink]="['/exercises', seg.exerciseId]">{{ seg.text }}</a>
+              } @else {
+                {{ seg.text }}
+              }
             }
-          }
+          </span>
         </li>
       }
     </ol>
@@ -51,29 +53,29 @@
     <app-route [nodes]="ladderNodes()" [mini]="true" />
 
     <div class="log-card">
-      <h4>REGISTRAR MARCA</h4>
+      <h4>{{ i18n.t('exerciseDetail.logSectionTitle') }}</h4>
       <div class="log-row">
         <div class="field">
-          <label>{{ ex.repUnit === 'reps' ? 'Repeticiones' : 'Segundos' }}</label>
+          <label>{{ ex.repUnit === 'reps' ? i18n.t('exerciseDetail.reps') : i18n.t('exerciseDetail.seconds') }}</label>
           <input class="input" type="number" inputmode="numeric" [(ngModel)]="repsInput" />
         </div>
         <div class="field">
-          <label>Peso agregado (kg)</label>
+          <label>{{ i18n.t('exerciseDetail.weightAdded') }}</label>
           <input class="input" type="number" inputmode="numeric" [(ngModel)]="weightInput" />
         </div>
       </div>
       <div class="btn-row">
         <button class="btn btn-ghost" type="button" (click)="toggleRestTimer()">
           <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
-          {{ restRemaining() > 0 ? ('Descanso ' + restRemaining() + 's') : 'Descanso 90s' }}
+          {{ restRemaining() > 0 ? i18n.t('exerciseDetail.restLabel', { seconds: restRemaining() }) : i18n.t('exerciseDetail.restDefault') }}
         </button>
-        <button class="btn btn-primary" type="button" (click)="logMark()">Guardar</button>
+        <button class="btn btn-primary" type="button" (click)="logMark()">{{ i18n.t('exerciseDetail.save') }}</button>
       </div>
     </div>
 
     @if (regressionExercise(); as reg) {
       <a class="regression-link" [routerLink]="['/exercises', reg.id]">
-        <div><b>¿Muy difícil?</b>Probá {{ reg.name }}</div>
+        <div><b>{{ i18n.t('exerciseDetail.tooHardQuestion') }}</b>{{ i18n.t('exerciseDetail.tryPrefix', { name: reg.name }) }}</div>
         <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
       </a>
     }

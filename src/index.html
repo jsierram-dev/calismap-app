@@ -78,7 +78,7 @@
         <div class="splash-dot"></div>
       </div>
       <p class="splash-word">Calis<b>Map</b></p>
-      <p class="splash-status" id="splash-status">Cargando tu progreso…</p>
+      <p class="splash-status" id="splash-status">Loading your progress…</p>
     </div>
   </app-root>
   <script>
@@ -91,13 +91,32 @@
     // <script> nunca llega a ejecutar su setTimeout más largo si Angular
     // ya montó la app real y reemplazó este nodo antes de tiempo, porque
     // simplemente deja de haber un #splash-status en el DOM al que escribirle.
+    //
+    // Idioma (17/08/2026, ver ROADMAP-calismap.md "Traducciones") — este
+    // script corre ANTES de que Angular exista, sin forma de esperar la
+    // promesa async de LocalStorageService (IndexedDB) que de verdad guarda
+    // UserProfile.language. UserProfileService mantiene un espejo SÍNCRONO
+    // de ese valor en localStorage['calismap_lang'] (ver ese archivo) —
+    // leíble acá directo. Sin nada guardado todavía (primera vez en este
+    // dispositivo) cae al default nuevo de la app, inglés.
     (function () {
       var el = document.getElementById('splash-status');
-      var msgs = [
-        [0, 'Cargando tu progreso…'],
-        [4000, 'Despertando el servidor, puede tardar unos segundos…'],
-        [20000, 'Esto está tardando más de lo normal. Podés seguir esperando o recargar la página.'],
-      ];
+      var lang = 'en';
+      try { if (localStorage.getItem('calismap_lang') === 'es') lang = 'es'; } catch (e) {}
+      var messagesByLang = {
+        es: [
+          [0, 'Cargando tu progreso…'],
+          [4000, 'Despertando el servidor, puede tardar unos segundos…'],
+          [20000, 'Esto está tardando más de lo normal. Puedes seguir esperando o recargar la página.'],
+        ],
+        en: [
+          [0, 'Loading your progress…'],
+          [4000, 'Waking up the server, this can take a few seconds…'],
+          [20000, 'This is taking longer than usual. You can keep waiting or reload the page.'],
+        ],
+      };
+      var msgs = messagesByLang[lang];
+      if (el) { el.textContent = msgs[0][1]; }
       msgs.slice(1).forEach(function (m) {
         setTimeout(function () {
           if (document.getElementById('splash-status')) { el.textContent = m[1]; }

@@ -4,6 +4,7 @@ import { Exercise, MuscleGroup } from '../../models/exercise.model';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
 import { FilterComponent } from '../../shared/filter/filter.component';
 import { SearchComponent } from '../../shared/search/search.component';
+import { I18nService } from '../../core/services/i18n.service';
 
 // Reusa SearchComponent/FilterComponent tal cual (mismos componentes que
 // LibraryComponent, pedido explícito del usuario el 16/08/2026) en vez de
@@ -32,7 +33,10 @@ export class AdminExercisesPage implements OnInit {
       .sort((a, b) => a.name.localeCompare(b.name));
   });
 
-  constructor(private exerciseLibrary: ExerciseLibraryService) {}
+  constructor(
+    private exerciseLibrary: ExerciseLibraryService,
+    public i18n: I18nService,
+  ) {}
 
   ngOnInit(): void {
     this.load();

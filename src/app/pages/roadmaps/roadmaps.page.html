@@ -1,19 +1,19 @@
 <div class="page-content">
-  <h1 class="screen-title">Roadmaps</h1>
-  <p class="screen-sub">Tu progresión de calistenia</p>
+  <h1 class="screen-title">{{ i18n.t('roadmaps.title') }}</h1>
+  <p class="screen-sub">{{ i18n.t('roadmaps.subtitle') }}</p>
 
   @if (loading()) {
-    <app-path-loader label="Cargando tus roadmaps…" />
+    <app-path-loader [label]="i18n.t('roadmaps.loading')" />
   } @else {
     <div class="streak-strip">
       <svg class="icon streak-flame" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2c1 3-3 4-3 7a3 3 0 0 0 6 0c1.5 1 2 3 2 4.5a5.5 5.5 0 0 1-11 0C6 9 9 7 12 2z" />
       </svg>
-      <div><strong>{{ weeklySessionCount() }}</strong> <span class="d">sesiones esta semana</span></div>
+      <div><strong>{{ weeklySessionCount() }}</strong> <span class="d">{{ i18n.t('roadmaps.sessionsThisWeekLabel') }}</span></div>
     </div>
 
     <app-search
-      placeholder="Buscar roadmap…"
+      [placeholder]="i18n.t('roadmaps.searchPlaceholder')"
       [query]="query()"
       [filterCount]="selectedMuscles().length"
       (queryChange)="onQueryChange($event)"
@@ -24,9 +24,9 @@
       <a class="roadmap-card" [routerLink]="['/roadmaps', card.roadmap.id]">
         <div class="roadmap-card-top">
           <div>
-            <span class="tag">{{ card.roadmap.category }}</span>
+            <span class="tag">{{ i18n.t('enums.category.' + card.roadmap.category) }}</span>
             <h3 style="margin-top:8px">{{ card.roadmap.name }}</h3>
-            <p class="target">Objetivo: {{ card.targetExercise.name }}</p>
+            <p class="target">{{ i18n.t('roadmaps.target', { name: card.targetExercise.name }) }}</p>
           </div>
           <span class="progress-frac">{{ card.completedCount }}&nbsp;/&nbsp;{{ card.totalCount }}</span>
         </div>
@@ -41,7 +41,7 @@
         <p class="card-note">{{ card.cardNote }}</p>
       </a>
     } @empty {
-      <p class="screen-sub">No encontramos ninguna ruta con ese criterio.</p>
+      <p class="screen-sub">{{ i18n.t('roadmaps.empty') }}</p>
     }
   }
 </div>

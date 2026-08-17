@@ -59,17 +59,35 @@ app-search { display: block; margin-top: var(--space-4); }
   color: var(--diamond);
 }
 
-.routine-card.create {
+/* Botón "+" flotante — reemplaza al botón de texto "Crear ejercicio",
+   pedido explícito del usuario, 17/08/2026 (mismo patrón visual que
+   mudanza-app: un solo FAB circular abajo a la derecha, ver
+   ROADMAP-calismap.md). mudanza-app resuelve esto con <ion-fab
+   slot="fixed"> sin CSS propio porque sus páginas viven dentro de
+   <ion-tabs>/<ion-content>; acá las páginas son <div class="page-content">
+   planas (ver exercise-detail.page.css), así que se arma un botón propio
+   con el MISMO mecanismo ya probado por FilterComponent para flotar sobre
+   la navbar: "position: fixed" adentro de esta página queda relativo al
+   .ion-page (Ionic le da su propio transform-context para las
+   transiciones), no al viewport real — por eso "bottom" suma
+   --navbar-height y --notice-session-height en vez de un valor fijo, así
+   nunca se superpone ni con el navbar ni con la barra de sesión activa
+   cuando está presente (ver filter.component.css para el mismo cálculo). */
+.fab-create {
+  position: fixed;
+  right: var(--space-4);
+  bottom: calc(var(--space-4) + var(--navbar-height) + var(--notice-session-height));
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  background: none;
-  border: 1px dashed var(--line);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  color: var(--accent);
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 40%, transparent);
+  z-index: 5;
+  transition: transform 0.15s ease;
 }
+.fab-create:active { transform: scale(0.94); }
+.fab-create .icon { width: 24px; height: 24px; }

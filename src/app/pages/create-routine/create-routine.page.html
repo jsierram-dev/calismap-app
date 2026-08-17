@@ -1,15 +1,15 @@
 <div class="page-content">
-  <h1 class="screen-title">{{ editingId() ? 'Editar rutina' : (isAdminMode ? 'Nueva rutina' : 'Crear tu rutina') }}</h1>
+  <h1 class="screen-title">{{ editingId() ? i18n.t('createRoutine.editTitle') : (isAdminMode ? i18n.t('createRoutine.newTitleAdmin') : i18n.t('createRoutine.newTitleUser')) }}</h1>
 
-  <label class="form-label" for="routine-name">Nombre</label>
-  <input id="routine-name" class="text-input title" type="text" placeholder="Ej. Empuje — Intermedio" [(ngModel)]="name" />
+  <label class="form-label" for="routine-name">{{ i18n.t('createRoutine.name') }}</label>
+  <input id="routine-name" class="text-input title" type="text" [placeholder]="i18n.t('createRoutine.namePlaceholder')" [(ngModel)]="name" />
 
   @if (isAdminMode) {
-    <label class="form-label" for="routine-desc">Descripción</label>
+    <label class="form-label" for="routine-desc">{{ i18n.t('createRoutine.description') }}</label>
     <textarea id="routine-desc" class="text-input" rows="2" [(ngModel)]="description"></textarea>
   }
 
-  <label class="form-label">Ejercicios ({{ items().length }})</label>
+  <label class="form-label">{{ i18n.t('createRoutine.exercisesCount', { count: items().length }) }}</label>
   <div class="session-checklist">
     @for (item of items(); track item.exercise.id; let i = $index) {
       <app-item-dropdown
@@ -28,23 +28,23 @@
 
   <button class="add-exercise-btn" type="button" (click)="pickerOpen.set(true)">
     <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
-    Agregar ejercicio
+    {{ i18n.t('createRoutine.addExercise') }}
   </button>
 
   <button class="btn btn-primary" type="button" style="width:100%" [disabled]="!canSave || saving()" (click)="save()">
-    {{ saving() ? 'Guardando...' : (editingId() ? 'Guardar cambios' : 'Guardar rutina') }}
+    {{ saving() ? i18n.t('createRoutine.saving') : (editingId() ? i18n.t('createRoutine.saveChanges') : i18n.t('createRoutine.saveNew')) }}
   </button>
 
   @if (isAdminMode && editingId()) {
-    <button class="btn btn-danger" type="button" style="width:100%;margin-top:8px" (click)="remove()">Eliminar rutina</button>
+    <button class="btn btn-danger" type="button" style="width:100%;margin-top:8px" (click)="remove()">{{ i18n.t('createRoutine.deleteRoutine') }}</button>
   }
 </div>
 
 @if (pickerOpen()) {
   <div class="picker-overlay">
     <div class="picker-header">
-      <h3>Agregar ejercicio</h3>
-      <button type="button" (click)="pickerOpen.set(false)" aria-label="Cerrar">
+      <h3>{{ i18n.t('createRoutine.addExercise') }}</h3>
+      <button type="button" (click)="pickerOpen.set(false)" [attr.aria-label]="i18n.t('createRoutine.closeAria')">
         <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
       </button>
     </div>

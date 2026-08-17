@@ -7,6 +7,7 @@ import { UserRoutine } from '../../models/user-routine.model';
 import { WorkoutSession } from '../../models/workout-session.model';
 import { ActiveSessionIndicatorService } from '../../core/services/active-session-indicator.service';
 import { AuthService } from '../../core/services/auth.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
 import { RoutineService } from '../../services/routine.service';
 import { UserProfileService } from '../../services/user-profile.service';
@@ -92,6 +93,7 @@ export class SessionWorkoutPage implements OnInit {
     private userRoutineService: UserRoutineService,
     private userProfile: UserProfileService,
     private modalCtrl: ModalController,
+    public i18n: I18nService,
   ) {
     this.nowTimerId = setInterval(() => this.now.set(Date.now()), 1000);
     this.destroyRef.onDestroy(() => {
@@ -111,7 +113,7 @@ export class SessionWorkoutPage implements OnInit {
   // ─── Elegir sesión ────────────────────────────────────────────────────
   async startFree(): Promise<void> {
     this.manualExtras.set(new Set());
-    await this.workoutSession.startSession({ name: 'Sesión libre' });
+    await this.workoutSession.startSession({ name: this.i18n.t('session.freeSessionFallback') });
     await this.load();
   }
 
