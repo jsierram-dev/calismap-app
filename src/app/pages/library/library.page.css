@@ -66,17 +66,26 @@ app-search { display: block; margin-top: var(--space-4); }
    slot="fixed"> sin CSS propio porque sus páginas viven dentro de
    <ion-tabs>/<ion-content>; acá las páginas son <div class="page-content">
    planas (ver exercise-detail.page.css), así que se arma un botón propio
-   con el MISMO mecanismo ya probado por FilterComponent para flotar sobre
-   la navbar: "position: fixed" adentro de esta página queda relativo al
-   .ion-page (Ionic le da su propio transform-context para las
-   transiciones), no al viewport real — por eso "bottom" suma
-   --navbar-height y --notice-session-height en vez de un valor fijo, así
-   nunca se superpone ni con el navbar ni con la barra de sesión activa
-   cuando está presente (ver filter.component.css para el mismo cálculo). */
+   con "position: fixed" adentro de esta página, relativo al .ion-page
+   (Ionic le da su propio transform-context para las transiciones).
+   Corregido 17/08/2026 (pruebas reales en móvil, ronda 2) — el "bottom" NO
+   debe sumar --navbar-height NI --notice-session-height: a diferencia de
+   FilterComponent (que calcula una DISTANCIA de translateY para esconder
+   el sheet por completo fuera de pantalla), acá es una POSICIÓN, y
+   .ion-page/.outlet-wrap (ver app.css) YA excluye tanto la navbar como
+   NoticeSessionComponent de su propia altura — las dos son hermanas de
+   .outlet-wrap en la misma columna flex (ver app.html), así que cuando
+   NoticeSessionComponent aparece, .outlet-wrap se achica solo (mismo
+   mecanismo por el que ya excluye la navbar), sin que este CSS tenga que
+   enterarse. Sumar esas alturas de nuevo las contaba DOS VECES: primero
+   probamos con las dos sumadas (82px de hueco real en vez de 16px),
+   después con solo notice-session-height (69px en vez de 16px con sesión
+   activa) — measurado con Playwright las dos veces antes de confirmar que
+   iba SOLO var(--space-4), sin nada más. */
 .fab-create {
   position: fixed;
   right: var(--space-4);
-  bottom: calc(var(--space-4) + var(--navbar-height) + var(--notice-session-height));
+  bottom: var(--space-4);
   width: 52px;
   height: 52px;
   border-radius: 50%;
