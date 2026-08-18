@@ -1,7 +1,10 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ModalController } from '@ionic/angular/standalone';
+import { AuthService } from '../../core/services/auth.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { SessionAchievementsService, SessionSummary } from '../../services/session-achievements.service';
+import { LoginComponent } from '../../shared/login/login.component';
 import { PathLoaderComponent } from '../../shared/path-loader/path-loader.component';
 import { StreakComponent } from '../../shared/streak/streak.component';
 
@@ -22,7 +25,7 @@ import { StreakComponent } from '../../shared/streak/streak.component';
 @Component({
   selector: 'app-session-summary',
   standalone: true,
-  imports: [RouterLink, StreakComponent, PathLoaderComponent],
+  imports: [StreakComponent, PathLoaderComponent],
   templateUrl: './session-summary.component.html',
   styleUrl: './session-summary.component.css',
 })
@@ -33,11 +36,28 @@ export class SessionSummaryComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private achievements: SessionAchievementsService,
+    private auth: AuthService,
+    private modalCtrl: ModalController,
+    private router: Router,
     public i18n: I18nService,
   ) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => this.load(params.get('sessionId')));
+  }
+
+  // El modal de login de invitado se movió acá (18/08/2026, pedido
+  // explícito del usuario) — antes se disparaba automático al terminar la
+  // sesión (SessionWorkoutPage.endSession()), ahora recién al tocar este
+  // botón. No bloqueante, mismo criterio que los otros 4 lugares que
+  // sugieren login (ver ROADMAP-calismap.md "Login: OPCIONAL") — se
+  // navega igual, invitado o no, el modal solo se suma encima si aplica.
+  async backToRoadmaps(): Promise<void> {
+    if (this.auth.isGuest()) {
+      const modal = await this.modalCtrl.create({ component: LoginComponent });
+      await modal.present();
+    }
+    this.router.navigate(['/roadmaps']);
   }
 
   private async load(sessionId: string | null): Promise<void> {

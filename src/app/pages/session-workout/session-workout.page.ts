@@ -1,12 +1,10 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { ModalController } from '@ionic/angular/standalone';
 import { Exercise } from '../../models/exercise.model';
 import { Routine } from '../../models/routine.model';
 import { UserRoutine } from '../../models/user-routine.model';
 import { WorkoutSession } from '../../models/workout-session.model';
 import { ActiveSessionIndicatorService } from '../../core/services/active-session-indicator.service';
-import { AuthService } from '../../core/services/auth.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
 import { RoutineService } from '../../services/routine.service';
@@ -15,7 +13,6 @@ import { UserRoutineService } from '../../services/user-routine.service';
 import { WorkoutLogService } from '../../services/workout-log.service';
 import { WorkoutSessionService } from '../../services/workout-session.service';
 import { ItemDropdownComponent, SetDoneEvent, SetEntry } from '../../shared/item-dropdown/item-dropdown.component';
-import { LoginComponent } from '../../shared/login/login.component';
 import { LibraryPage } from '../library/library.page';
 
 interface ChecklistItem {
@@ -84,7 +81,6 @@ export class SessionWorkoutPage implements OnInit {
   });
 
   constructor(
-    public auth: AuthService,
     public sessionIndicator: ActiveSessionIndicatorService,
     private workoutSession: WorkoutSessionService,
     private workoutLog: WorkoutLogService,
@@ -92,7 +88,6 @@ export class SessionWorkoutPage implements OnInit {
     private routineService: RoutineService,
     private userRoutineService: UserRoutineService,
     private userProfile: UserProfileService,
-    private modalCtrl: ModalController,
     private router: Router,
     public i18n: I18nService,
   ) {
@@ -201,24 +196,16 @@ export class SessionWorkoutPage implements OnInit {
   // Navega a la pantalla de logros (18/08/2026, ver ROADMAP-calismap.md
   // "Pantalla de logros") en vez de recargar el selector acá mismo — esta
   // página vuelve a mostrar "Elegir sesión" recién cuando el usuario
-  // vuelva por su cuenta (ionViewWillEnter ya la recarga sola).
+  // vuelva por su cuenta (ionViewWillEnter ya la recarga sola). El modal de
+  // login de invitado ya NO se dispara acá (18/08/2026, pedido explícito
+  // del usuario) — se movió al botón de esa misma pantalla
+  // (SessionSummaryComponent.backToRoadmaps()), no automático al terminar.
   async endSession(): Promise<void> {
     const session = this.active();
     if (!session) return;
     await this.workoutSession.endSession(session.id);
     this.clearRest();
-    // La navegación va PRIMERO, esperada — bug real 18/08/2026: antes el
-    // modal de login se presentaba (y se esperaba) antes de navegar, así
-    // que lo primero que veía un invitado al terminar era el prompt de
-    // Google, no el resumen de logros. Terminar la sesión sigue siendo uno
-    // de los 4 momentos con motivo real para pedirle cuenta a un invitado
-    // (ver ROADMAP-calismap.md "Login: OPCIONAL") — ahora el modal se abre
-    // ENCIMA del resumen ya visible, no antes de que aparezca.
     await this.router.navigate(['/session-summary', session.id]);
-    if (this.auth.isGuest()) {
-      const modal = await this.modalCtrl.create({ component: LoginComponent });
-      await modal.present();
-    }
   }
 
   private startRest(): void {
