@@ -24,8 +24,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # v5+ (18/08/2026) — v4 corre sobre Node 20, que GitHub Actions dejó de
+      # soportar (deprecation forzada a Node 24, ver
+      # https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/).
+      # v5 es la primera versión de cada una que corre nativo en Node 24.
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
