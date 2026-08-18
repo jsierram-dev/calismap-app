@@ -143,8 +143,24 @@ a.settings-row { text-decoration: none; color: inherit; }
 .day-cell.selected .day-dot { background: var(--accent-ink); }
 .day-dot { position: absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
 
-.day-detail { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: var(--space-4); }
-.day-detail-session .name { font-size: 13.5px; font-weight: 600; margin-bottom: var(--space-2); }
-.day-detail-session app-item-dropdown { display: block; margin-bottom: var(--space-2); }
-.day-detail-session app-item-dropdown:last-child { margin-bottom: 0; }
+.day-detail { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: var(--space-2); }
+
+/* Lista de sesiones del día, acordeón — a lo sumo una .session-body abierta
+   a la vez (ver ProfilePage.expandedSessionId/toggleSession()). Mismo
+   lenguaje visual que .settings-card/.settings-row del resto de la app. */
+.session-list-item { background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.session-header-row {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: none; border: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.session-header-row .name { font-size: 13.5px; font-weight: 600; }
+.session-header-row .chevron { color: var(--text-2); transition: transform 0.15s ease; }
+.session-list-item.expanded .session-header-row .chevron { transform: rotate(180deg); }
+.session-list-item.expanded .session-header-row { border-bottom: 1px solid var(--line-soft); }
+
+.session-body { padding: var(--space-3) var(--space-4) var(--space-4); }
+.session-body app-item-dropdown { display: block; margin-bottom: var(--space-2); }
+.session-body app-item-dropdown:last-child { margin-bottom: 0; }
 .region-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: var(--space-2); }

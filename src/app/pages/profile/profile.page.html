@@ -91,30 +91,41 @@
         </div>
 
         @if (selectedDayEntries().length) {
+          <!-- Lista de sesiones del día, cada una su propio dropdown — a lo
+               sumo UNA abierta a la vez (18/08/2026, pedido explícito del
+               usuario), ver expandedSessionId/toggleSession(). -->
           <div class="day-detail">
             @for (entry of selectedDayEntries(); track entry.session.id) {
-              <div class="day-detail-session">
-                <div class="name">{{ entry.name }}</div>
-                @if (entry.regionKeys.length) {
-                  <div class="region-pills">
-                    @for (regionKey of entry.regionKeys; track regionKey) {
-                      <span class="tag">{{ i18n.t('enums.region.' + regionKey) }}</span>
+              <div class="session-list-item" [class.expanded]="expandedSessionId() === entry.session.id">
+                <button type="button" class="session-header-row" (click)="toggleSession(entry.session.id)">
+                  <span class="name">{{ entry.name }}</span>
+                  <svg class="icon chevron" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                </button>
+
+                @if (expandedSessionId() === entry.session.id) {
+                  <div class="session-body">
+                    @if (entry.regionKeys.length) {
+                      <div class="region-pills">
+                        @for (regionKey of entry.regionKeys; track regionKey) {
+                          <span class="tag">{{ i18n.t('enums.region.' + regionKey) }}</span>
+                        }
+                      </div>
+                    }
+                    <!-- Mismo componente que la sesión activa (ItemDropdownComponent,
+                         modo logging) — ver ROADMAP-calismap.md "Visor de sesión
+                         histórica": esto es SOLO lectura, sets/checkAll/undoSet
+                         quedan sin conectar a propósito, tocar el círculo o
+                         "deshacer" acá no hace nada (no hay listener). -->
+                    @for (item of checklistFor(entry.session.id); track item.exercise.id) {
+                      <app-item-dropdown
+                        mode="logging"
+                        [exerciseName]="item.exercise.name"
+                        [repUnit]="item.exercise.repUnit"
+                        [customBadge]="!!item.exercise.userId"
+                        [sets]="item.sets"
+                      />
                     }
                   </div>
-                }
-                <!-- Mismo componente que la sesión activa (ItemDropdownComponent,
-                     modo logging) — ver ROADMAP-calismap.md "Visor de sesión
-                     histórica": esto es SOLO lectura, sets/checkAll/undoSet
-                     quedan sin conectar a propósito, tocar el círculo o
-                     "deshacer" acá no hace nada (no hay listener). -->
-                @for (item of checklistFor(entry.session.id); track item.exercise.id) {
-                  <app-item-dropdown
-                    mode="logging"
-                    [exerciseName]="item.exercise.name"
-                    [repUnit]="item.exercise.repUnit"
-                    [customBadge]="!!item.exercise.userId"
-                    [sets]="item.sets"
-                  />
                 }
               </div>
             }
