@@ -207,15 +207,18 @@ export class SessionWorkoutPage implements OnInit {
     if (!session) return;
     await this.workoutSession.endSession(session.id);
     this.clearRest();
-    // Terminar la sesión es uno de los 4 momentos con motivo real para
-    // pedirle cuenta a un invitado (ver ROADMAP-calismap.md "Login:
-    // OPCIONAL") — no bloqueante, la sesión ya se cerró antes de mostrarlo;
-    // queda como overlay encima de la pantalla de logros de abajo.
+    // La navegación va PRIMERO, esperada — bug real 18/08/2026: antes el
+    // modal de login se presentaba (y se esperaba) antes de navegar, así
+    // que lo primero que veía un invitado al terminar era el prompt de
+    // Google, no el resumen de logros. Terminar la sesión sigue siendo uno
+    // de los 4 momentos con motivo real para pedirle cuenta a un invitado
+    // (ver ROADMAP-calismap.md "Login: OPCIONAL") — ahora el modal se abre
+    // ENCIMA del resumen ya visible, no antes de que aparezca.
+    await this.router.navigate(['/session-summary', session.id]);
     if (this.auth.isGuest()) {
       const modal = await this.modalCtrl.create({ component: LoginComponent });
       await modal.present();
     }
-    await this.router.navigate(['/session-summary', session.id]);
   }
 
   private startRest(): void {
@@ -270,9 +273,21 @@ export class SessionWorkoutPage implements OnInit {
 
     const entries = [
       ...prescribed,
+      // Bug real 18/08/2026 (ver ROADMAP-calismap.md): targetSets acá era
+      // logs.filter(...).length a secas — el número de series YA
+      // registradas, no el objetivo real. Un ejercicio agregado a mano
+      // (3 series por defecto, DEFAULT_TARGET_SETS) que pasa de
+      // extraManualIds a ESTE branch en cuanto se marca la PRIMERA serie
+      // (ver el comentario de manualExtras más arriba) recalculaba su
+      // propio objetivo como "1 hecha, entonces el objetivo era 1" — las
+      // otras 2 series pendientes desaparecían del checklist en vez de
+      // seguir mostrándose sin marcar. Math.max con DEFAULT_TARGET_SETS
+      // conserva el objetivo original mientras haya menos marcas que eso,
+      // y crece solo si en algún momento se registran más de las 3 de
+      // partida (nunca se achica).
       ...extraLoggedIds.map((exerciseId) => ({
         exerciseId,
-        targetSets: logs.filter((l) => l.exerciseId === exerciseId).length,
+        targetSets: Math.max(logs.filter((l) => l.exerciseId === exerciseId).length, DEFAULT_TARGET_SETS),
         targetValues: [] as (number | null)[],
       })),
       ...extraManualIds.map((exerciseId) => ({ exerciseId, targetSets: DEFAULT_TARGET_SETS, targetValues: [] as (number | null)[] })),
