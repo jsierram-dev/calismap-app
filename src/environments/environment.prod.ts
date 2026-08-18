@@ -9,10 +9,14 @@ export const environment = {
   // sufijo si el nombre "calismap-back" está tomado (mismo aviso que le
   // pasó a mudanza-back). Actualizar acá y re-desplegar si cambia.
   apiUrl: 'https://calismap-back.onrender.com',
-  // LoginComponent (Google) todavía no está construido en este frontend —
-  // ver ROADMAP-calismap.md, "Login: OPCIONAL", paso 4/6 sin hacer todavía
-  // — así que no hace falta un Client ID real todavía para este deploy. La
-  // app funciona completa como invitado sin él. Completar cuando se
-  // construya ese componente.
-  googleClientId: '',
+  // Bug real 18/08/2026: LoginComponent y el botón de Google en Settings ya
+  // estaban construidos y desplegados, pero este comentario (y el '' de
+  // abajo) seguían de la época en que Google login era un feature futuro —
+  // nadie lo actualizó al construirlo, así que en producción GIS tiraba
+  // "Missing required parameter: client_id." en consola y el login con
+  // Google no arrancaba nunca. Mismo OAuth Client que mudanza-app/
+  // similart-app (ver environment.ts de acá para el porqué completo) —
+  // requiere que la URL real de GitHub Pages esté agregada a "Authorized
+  // JavaScript origins" de este Client en Google Cloud Console.
+  googleClientId: '742581888095-uvrmgbol2d2q78eu6fnm7csk162usvfr.apps.googleusercontent.com',
 };

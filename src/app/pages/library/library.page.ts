@@ -12,6 +12,12 @@ import { PathLoaderComponent } from '../../shared/path-loader/path-loader.compon
 import { I18nService } from '../../core/services/i18n.service';
 import { matchesNameQuery } from '../../core/utils/name-match';
 
+// Tarjetas visibles por "página" de scroll (18/08/2026, ver
+// ROADMAP-calismap.md "Paginación del catálogo") — mismo criterio que
+// RoadmapsPage (ver ese archivo para el porqué completo): el catálogo
+// completo ya está en memoria, esto solo acota cuánto se DIBUJA de entrada.
+const VISIBLE_PAGE_SIZE = 10;
+
 type CategoryFilter = ExerciseCategory | 'ALL' | 'MINE';
 
 interface LibraryCard {
@@ -61,6 +67,9 @@ export class LibraryPage implements OnInit {
   selectedMuscles = signal<MuscleGroup[]>([]);
   activeCategory = signal<CategoryFilter>('ALL');
   filterOpen = signal(false);
+  // Cuántas tarjetas de `filtered()` se dibujan — ver VISIBLE_PAGE_SIZE y el
+  // comentario de RoadmapsPage.visibleCount (mismo patrón acá).
+  visibleCount = signal(VISIBLE_PAGE_SIZE);
 
   filtered = computed(() => {
     const q = this.query();
@@ -74,6 +83,10 @@ export class LibraryPage implements OnInit {
       return true;
     });
   });
+
+  // Lo que realmente pinta el template — ver RoadmapsPage.visible() para el
+  // razonamiento completo (mismo patrón acá).
+  visible = computed(() => this.filtered().slice(0, this.visibleCount()));
 
   constructor(
     private library: ExerciseLibraryService,
@@ -92,10 +105,27 @@ export class LibraryPage implements OnInit {
 
   onQueryChange(value: string): void {
     this.query.set(value);
+    this.visibleCount.set(VISIBLE_PAGE_SIZE);
   }
 
   onMusclesApplied(muscles: MuscleGroup[]): void {
     this.selectedMuscles.set(muscles);
+    this.visibleCount.set(VISIBLE_PAGE_SIZE);
+  }
+
+  setCategory(category: CategoryFilter): void {
+    this.activeCategory.set(category);
+    this.visibleCount.set(VISIBLE_PAGE_SIZE);
+  }
+
+  // Bindeado a (scroll) de .page-content — ver el mismo método en
+  // RoadmapsPage para el razonamiento completo.
+  onScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 150;
+    if (nearBottom && this.visibleCount() < this.filtered().length) {
+      this.visibleCount.update((n) => Math.min(n + VISIBLE_PAGE_SIZE, this.filtered().length));
+    }
   }
 
   onCardClick(event: Event, exercise: Exercise): void {

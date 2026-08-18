@@ -1,4 +1,4 @@
-<div class="page-content">
+<div class="page-content" (scroll)="onScroll($event)">
   <h1 class="screen-title">{{ i18n.t('roadmaps.title') }}</h1>
   <p class="screen-sub">{{ i18n.t('roadmaps.subtitle') }}</p>
 
@@ -20,7 +20,7 @@
       (filterClick)="filterOpen.set(true)"
     />
 
-    @for (card of filtered(); track card.roadmap.id) {
+    @for (card of visible(); track card.roadmap.id) {
       <a class="roadmap-card" [routerLink]="['/roadmaps', card.roadmap.id]">
         <div class="roadmap-card-top">
           <div>
