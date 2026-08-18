@@ -58,6 +58,10 @@ export class ProfilePage implements OnInit {
 
   viewMonth = signal(startOfMonth(new Date()));
   selectedDayKey = signal<string | null>(null);
+  // A lo sumo UNA sesión abierta a la vez (18/08/2026, pedido explícito del
+  // usuario) — lista de sesiones del día, cada una su propio dropdown,
+  // nunca dos abiertas juntas. null = ninguna abierta.
+  expandedSessionId = signal<string | null>(null);
   regions = MUSCLE_REGIONS;
 
   // Checklist de cada sesión YA resuelto (exercise + sets, para
@@ -167,22 +171,22 @@ export class ProfilePage implements OnInit {
     this.selectedDayKey.set(null);
   }
 
-  async selectDay(day: CalendarDay): Promise<void> {
+  selectDay(day: CalendarDay): void {
     if (!day.entries.length) return;
-    const key = this.selectedDayKey() === day.key ? null : day.key;
-    this.selectedDayKey.set(key);
-    if (!key) return;
+    this.selectedDayKey.set(this.selectedDayKey() === day.key ? null : day.key);
+    this.expandedSessionId.set(null); // cambiar de día cierra cualquier sesión que hubiera abierta
+  }
 
-    // Pide el checklist de cada sesión de este día que todavía no se haya
-    // resuelto — en paralelo, no una por una, ver TrainingHistoryService.getSessionChecklist().
-    const missing = day.entries.filter((entry) => !this.sessionChecklists().has(entry.session.id));
-    if (!missing.length) return;
-    const resolved = await Promise.all(missing.map((entry) => this.trainingHistory.getSessionChecklist(entry.session.id)));
-    this.sessionChecklists.update((map) => {
-      const next = new Map(map);
-      missing.forEach((entry, i) => next.set(entry.session.id, resolved[i]));
-      return next;
-    });
+  // Acordeón — a lo sumo una sesión abierta (ver expandedSessionId arriba).
+  // El checklist de la sesión que se abre se pide recién ACÁ, bajo demanda
+  // (no para todas las del día de una), ver TrainingHistoryService.getSessionChecklist().
+  async toggleSession(sessionId: string): Promise<void> {
+    const next = this.expandedSessionId() === sessionId ? null : sessionId;
+    this.expandedSessionId.set(next);
+    if (next && !this.sessionChecklists().has(next)) {
+      const checklist = await this.trainingHistory.getSessionChecklist(next);
+      this.sessionChecklists.update((map) => new Map(map).set(next, checklist));
+    }
   }
 
   checklistFor(sessionId: string): SessionChecklistItem[] {

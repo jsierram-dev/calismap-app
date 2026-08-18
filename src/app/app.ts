@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
@@ -9,11 +9,11 @@ import { UpdateBannerComponent } from './shared/update-banner/update-banner.comp
 
 // Shell de la app — NavbarComponent/NoticeSessionComponent/
 // UpdateBannerComponent son GLOBALES (viven acá, fuera del router-outlet, no
-// se instancian por página, ver COMPONENTES-calismap.md). Sin lógica de
-// "ocultar navbar en Login": Login dejó de ser una pantalla obligatoria (ver
-// "trigésimo primera pasada") — la app siempre tiene alguna sesión (invitado
-// o real) antes de que cualquier página renderice, así que el navbar
-// siempre corresponde.
+// se instancian por página, ver COMPONENTES-calismap.md). Login en sí sigue
+// sin pantalla propia (es un modal, ver LoginComponent) así que nunca tapa
+// el navbar por su cuenta — pero la pantalla de logros (18/08/2026, ver
+// isSessionSummary más abajo) SÍ lo oculta a propósito, mismo espíritu que
+// un modal: es una pantalla de cierre, no un lugar desde el que se navega.
 @Component({
   selector: 'app-root',
   imports: [IonApp, IonRouterOutlet, NavbarComponent, NoticeSessionComponent, UpdateBannerComponent],
@@ -41,4 +41,10 @@ export class App {
     ),
     { initialValue: this.router.url },
   );
+
+  // Pantalla de logros sin navbar (18/08/2026, pedido explícito del
+  // usuario — "igual que pasó con LoginComponent") — startsWith(), no
+  // igualdad exacta como el chequeo de arriba: la ruta real siempre trae
+  // el :sessionId al final (/session-summary/abc-123), nunca el path solo.
+  isSessionSummary = computed(() => this.currentUrl().startsWith('/session-summary'));
 }
