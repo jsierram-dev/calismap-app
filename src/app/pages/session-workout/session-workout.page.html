@@ -54,6 +54,14 @@
       }
     </div>
 
+  </div>
+
+  <!-- Fijos abajo del todo (18/08/2026, pedido explícito del usuario) —
+       siempre alcanzables sin scrollear el checklist, ver
+       session-workout.page.css para el porqué de bottom sin sumar
+       --navbar-height (mismo criterio ya resuelto para el FAB de
+       Biblioteca, ver ese archivo). -->
+  <div class="session-actions">
     <button class="add-outside" type="button" (click)="pickerOpen.set(true)">
       <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
       {{ i18n.t('session.logAnother') }}

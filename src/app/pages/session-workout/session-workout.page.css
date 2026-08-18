@@ -83,17 +83,36 @@
 }
 .chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
 
-.session-checklist { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+/* margin-bottom grande a propósito — dos botones fijos (.session-actions,
+   ver abajo) tapan la parte de abajo de la pantalla; sin este espacio el
+   último ejercicio del checklist quedaría escondido detrás. */
+.session-checklist { display: flex; flex-direction: column; gap: 9px; margin-bottom: 130px; }
 .session-checklist app-item-dropdown { display: block; }
+
+/* Fijos abajo del todo (18/08/2026, pedido explícito del usuario) — HERMANOS
+   de .page-content, no anidados adentro (un overflow:auto ancestro podría
+   recortar un position:fixed que además use ESE MISMO ancestro como
+   containing block; ser hermano lo evita de raíz, sin depender de esa
+   sutileza). bottom SIN sumar --navbar-height: .ion-page/.outlet-wrap YA
+   excluye la navbar de su propia caja (mismo hallazgo que el FAB de
+   Biblioteca, ver library.page.css) — sumarla de nuevo la duplicaría. */
+.session-actions {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: var(--space-4);
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 0 var(--space-4);
+  z-index: 10;
+}
 
 .add-outside {
   display: flex; align-items: center; justify-content: center; gap: 7px;
   width: 100%;
   padding: 12px; border: 1px dashed var(--line); border-radius: var(--radius-md);
-  background: none; color: var(--text-1); font-size: 12.5px; margin-bottom: 18px; cursor: pointer;
+  background: var(--ink-0); color: var(--text-1); font-size: 12.5px; cursor: pointer;
 }
 
-.end-session-btn { width: 100%; background: var(--danger); color: #fff; margin-bottom: 4px; }
+.end-session-btn { width: 100%; background: var(--danger); color: #fff; }
 
 /* Picker de ejercicio ("Registrar otro ejercicio") — overlay simple sobre
    toda la pantalla, mismo LibraryComponent en modo picker (ver
