@@ -20,9 +20,17 @@
     "@angular/service-worker": "21.2.13",
     "@ionic/angular": "^8.8.12",
     "@ionic/storage-angular": "^4.0.0",
+    "@jsierram-dev/jp-user-kit": "^0.1.1",
     "eslint-config-prettier": "^10.1.8",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
+  },
+  "overrides": {
+    "@jsierram-dev/jp-user-kit": {
+      "@angular/common": "$@angular/common",
+      "@angular/core": "$@angular/core",
+      "@angular/router": "$@angular/router"
+    }
   },
   "devDependencies": {
     "@angular/build": "^21.2.11",

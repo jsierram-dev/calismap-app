@@ -1,0 +1,77 @@
+<div class="page-content">
+  @if (loading()) {
+    <app-path-loader [label]="i18n.t('sessionSummary.loading')" />
+  } @else if (summary(); as s) {
+    <h1 class="screen-title">{{ i18n.t('sessionSummary.title') }}</h1>
+    <p class="screen-sub">{{ i18n.t('sessionSummary.stats', { minutes: s.durationMinutes, exercises: s.exerciseCount, sets: s.setCount }) }}</p>
+
+    <app-streak [count]="s.weeklySessionCount" />
+
+    <div class="settings-group">
+      <h5>{{ i18n.t('sessionSummary.highlightsHeader') }}</h5>
+
+      @if (s.hasAchievements) {
+        @for (a of s.roadmapTargetsReached; track a.roadmap.id) {
+          <div class="ach-card roadmap">
+            <div class="badge">
+              <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7l9 5 9-5-9-5Z" /><path d="M3 12l9 5 9-5" /><path d="M3 17l9 5 9-5" /></svg>
+            </div>
+            <div class="body">
+              <b>{{ i18n.t('sessionSummary.roadmapCompleteTitle') }}</b>
+              <div class="sub">{{ i18n.t('sessionSummary.roadmapCompleteSub', { roadmapName: a.roadmap.name }) }}</div>
+            </div>
+          </div>
+        }
+
+        @for (a of s.roadmapStepsUnlocked; track a.exercise.id) {
+          <div class="ach-card roadmap">
+            <div class="badge">
+              <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0" /></svg>
+            </div>
+            <div class="body">
+              <b>{{ i18n.t('sessionSummary.roadmapUnlockedTitle') }}</b>
+              <div class="sub">{{ i18n.t('sessionSummary.roadmapUnlockedSub', { roadmapName: a.roadmap.name, exerciseName: a.exercise.name }) }}</div>
+            </div>
+          </div>
+        }
+
+        @for (a of s.prs; track a.exercise.id) {
+          <div class="ach-card pr">
+            <div class="badge">
+              <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z" /><path d="M7 6H4a2 2 0 0 0 2 4M17 6h3a2 2 0 0 1-2 4" /></svg>
+            </div>
+            <div class="body">
+              <b>{{ i18n.t('sessionSummary.prTitle') }}</b>
+              <div class="sub">
+                {{ a.exercise.name }} · <strong class="hi">{{ a.value }} {{ i18n.t(a.exercise.repUnit === 'reps' ? 'enums.unit.reps' : 'enums.unit.seconds') }}</strong>
+                @if (a.previousValue !== null) {
+                  <span class="old">{{ i18n.t('sessionSummary.prPreviousSuffix', { value: a.previousValue }) }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        @for (a of s.tierUps; track a.exercise.id) {
+          <div class="ach-card tier">
+            <div class="badge">
+              <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+            </div>
+            <div class="body">
+              <b>{{ i18n.t('sessionSummary.tierUpTitle') }}</b>
+              <div class="sub">{{ a.exercise.name }}<span class="rating-badge" [class]="a.toRating.toLowerCase()">{{ a.toRating }}</span></div>
+            </div>
+          </div>
+        }
+      } @else {
+        <p class="empty-note">{{ i18n.t('sessionSummary.emptyNote') }}</p>
+      }
+    </div>
+
+    <button class="btn btn-primary" type="button" routerLink="/roadmaps">{{ i18n.t('sessionSummary.backToRoadmaps') }}</button>
+  } @else {
+    <h1 class="screen-title">{{ i18n.t('sessionSummary.title') }}</h1>
+    <p class="screen-sub">{{ i18n.t('sessionSummary.notFound') }}</p>
+    <button class="btn btn-primary" type="button" routerLink="/roadmaps">{{ i18n.t('sessionSummary.backToRoadmaps') }}</button>
+  }
+</div>

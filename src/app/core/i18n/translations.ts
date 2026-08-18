@@ -134,11 +134,13 @@ export const TRANSLATIONS = {
     'login.errorLoadFailed': 'No pudimos cargar el inicio de sesión de Google. Prueba de nuevo más tarde.',
     'login.errorLoginFailed': 'No pudimos iniciar sesión. Prueba de nuevo.',
 
+    // ── streak (StreakComponent, compartido entre roadmaps y session-summary) ──
+    'streak.label': 'sesiones esta semana',
+
     // ── roadmaps (01) ────────────────────────────────────────────────────
     'roadmaps.title': 'Roadmaps',
     'roadmaps.subtitle': 'Tu progresión de calistenia',
     'roadmaps.loading': 'Cargando tus roadmaps…',
-    'roadmaps.sessionsThisWeekLabel': 'sesiones esta semana',
     'roadmaps.searchPlaceholder': 'Buscar roadmap…',
     'roadmaps.target': 'Objetivo: {name}',
     'roadmaps.empty': 'No encontramos ninguna ruta con ese criterio.',
@@ -210,6 +212,22 @@ export const TRANSLATIONS = {
     'session.exercisesCountCreatedByYou': '{count} ejercicios · creada por ti',
     'session.own': 'Tuya',
     'session.createYourRoutine': 'Crear tu rutina',
+
+    // ── session-summary (pantalla de logros, 18/08/2026) ──────────────────
+    'sessionSummary.title': 'Sesión completa',
+    'sessionSummary.loading': 'Calculando los logros de tu sesión…',
+    'sessionSummary.stats': '{minutes} min · {exercises} ejercicios · {sets} series',
+    'sessionSummary.notFound': 'No encontramos esa sesión.',
+    'sessionSummary.highlightsHeader': 'Logros de hoy',
+    'sessionSummary.emptyNote': 'Sin récords nuevos esta vez — las marcas ya quedaron guardadas, sigue así.',
+    'sessionSummary.prTitle': 'Nuevo récord personal',
+    'sessionSummary.prPreviousSuffix': '(antes {value})',
+    'sessionSummary.tierUpTitle': 'Subiste de tier',
+    'sessionSummary.roadmapUnlockedTitle': 'Nuevo paso desbloqueado',
+    'sessionSummary.roadmapUnlockedSub': '{roadmapName} — {exerciseName} ya está disponible',
+    'sessionSummary.roadmapCompleteTitle': 'Objetivo del roadmap alcanzado',
+    'sessionSummary.roadmapCompleteSub': 'La ruta {roadmapName} está completa — gran trabajo.',
+    'sessionSummary.backToRoadmaps': 'Volver a Roadmaps',
 
     // ── settings (05) ────────────────────────────────────────────────────
     'settings.title': 'Ajustes',
@@ -499,11 +517,13 @@ export const TRANSLATIONS = {
     'login.errorLoadFailed': "We couldn't load Google sign-in. Please try again later.",
     'login.errorLoginFailed': "We couldn't sign you in. Please try again.",
 
+    // ── streak (StreakComponent, shared between roadmaps and session-summary) ──
+    'streak.label': 'sessions this week',
+
     // ── roadmaps ─────────────────────────────────────────────────────────
     'roadmaps.title': 'Roadmaps',
     'roadmaps.subtitle': 'Your calisthenics progression',
     'roadmaps.loading': 'Loading your roadmaps…',
-    'roadmaps.sessionsThisWeekLabel': 'sessions this week',
     'roadmaps.searchPlaceholder': 'Search roadmap…',
     'roadmaps.target': 'Target: {name}',
     'roadmaps.empty': "We couldn't find any route matching that.",
@@ -575,6 +595,22 @@ export const TRANSLATIONS = {
     'session.exercisesCountCreatedByYou': '{count} exercises · created by you',
     'session.own': 'Yours',
     'session.createYourRoutine': 'Create your routine',
+
+    // ── session-summary (achievements screen, 18/08/2026) ─────────────────
+    'sessionSummary.title': 'Session Complete',
+    'sessionSummary.loading': "Crunching this session's highlights…",
+    'sessionSummary.stats': '{minutes} min · {exercises} exercises · {sets} sets',
+    'sessionSummary.notFound': "We couldn't find that session.",
+    'sessionSummary.highlightsHeader': "Today's Highlights",
+    'sessionSummary.emptyNote': 'No new records this time — the marks are still logged, keep at it.',
+    'sessionSummary.prTitle': 'New personal record',
+    'sessionSummary.prPreviousSuffix': '(was {value})',
+    'sessionSummary.tierUpTitle': 'Tier up',
+    'sessionSummary.roadmapUnlockedTitle': 'Roadmap step unlocked',
+    'sessionSummary.roadmapUnlockedSub': '{roadmapName} — {exerciseName} is now available',
+    'sessionSummary.roadmapCompleteTitle': 'Roadmap target reached',
+    'sessionSummary.roadmapCompleteSub': '{roadmapName} path is complete — nice work.',
+    'sessionSummary.backToRoadmaps': 'Back to Roadmaps',
 
     // ── settings ─────────────────────────────────────────────────────────
     'settings.title': 'Settings',

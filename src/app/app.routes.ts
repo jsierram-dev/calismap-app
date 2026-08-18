@@ -35,6 +35,13 @@ export const routes: Routes = [
     path: 'active-session',
     loadComponent: () => import('./pages/session-workout/session-workout.page').then((m) => m.SessionWorkoutPage),
   },
+  // Pantalla de logros (18/08/2026, ver ROADMAP-calismap.md "Pantalla de
+  // logros") — SessionWorkoutPage.endSession() navega acá después de
+  // cerrar la sesión, nunca se entra directo desde la navbar (no es un tab).
+  {
+    path: 'session-summary/:sessionId',
+    loadComponent: () => import('./pages/session-summary/session-summary.component').then((m) => m.SessionSummaryComponent),
+  },
   {
     path: 'create-routine',
     loadComponent: () => import('./pages/create-routine/create-routine.page').then((m) => m.CreateRoutinePage),

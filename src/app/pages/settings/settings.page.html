@@ -3,7 +3,7 @@
 
   @if (!auth.isGuest()) {
     <div class="profile-card">
-      <div class="avatar">{{ initials() }}</div>
+      <juk-account-avatar class="avatar" [photoUrl]="auth.user()?.profilePictureUrl" [ariaLabel]="auth.user()?.username ?? ''" routerLink="/settings" />
       <div><h4>{{ auth.user()?.username }}</h4><p>{{ i18n.t('settings.googleConnected') }}</p></div>
     </div>
   } @else {
