@@ -1,9 +1,10 @@
 import { ApplicationConfig, importProvidersFrom, inject, isDevMode, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { PreloadAllModules, provideRouter, withPreloading } from '@angular/router';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 import { IonicStorageModule } from '@ionic/storage-angular';
 import { provideServiceWorker } from '@angular/service-worker';
+import { firstValueFrom } from 'rxjs';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -11,6 +12,7 @@ import { AuthService } from './core/services/auth.service';
 import { ThemeService } from './core/services/theme.service';
 import { RoadmapService } from './services/roadmap.service';
 import { WorkoutSessionService } from './services/workout-session.service';
+import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -86,6 +88,25 @@ export const appConfig: ApplicationConfig = {
       // (siempre se entra primero por Roadmaps, que sí repuebla) — por eso
       // no se había encontrado antes.
       inject(WorkoutSessionService);
+
+      // Ping en paralelo a calismap-back (18/08/2026, ver ROADMAP-calismap.md
+      // "Investigación: carga inicial lenta") — jp-back-auth y calismap-back
+      // son DOS servicios de Render independientes, cada uno duerme por su
+      // cuenta tras 15 min sin tráfico y tarda 30-60s en despertar en frío
+      // (medido/confirmado contra la documentación real de Render — Neon,
+      // en cambio, agrega apenas 300ms-1s, no es el cuello de botella real).
+      // Antes, ensureSession() (contra jp-back-auth) se esperaba ENTERA
+      // antes de siquiera pedir el catálogo (contra calismap-back) — en el
+      // peor caso (los dos dormidos a la vez, que es el escenario típico de
+      // "no abrí la app en un rato") eso son dos arranques en frío EN SERIE,
+      // hasta ~2 minutos. GET /health no pide auth ni toca la base (ver
+      // calismap-back/src/app.ts) — dispararlo ACÁ, sin esperarlo, hace que
+      // Render empiece a despertar calismap-back al mismo tiempo que
+      // jp-back-auth, no recién después. El resultado se descarta a
+      // propósito (catch silencioso): lo único que importa es el efecto
+      // secundario de dejarlo despertando en paralelo.
+      firstValueFrom(inject(HttpClient).get(`${environment.apiUrl}/health`)).catch(() => {});
+
       await inject(AuthService).ensureSession();
       try {
         await inject(RoadmapService).getAllRoadmaps();

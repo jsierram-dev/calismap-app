@@ -1,5 +1,18 @@
 .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
+/* Botón de Ajustes arriba a la derecha (18/08/2026, pedido explícito del
+   usuario — antes era una fila más al final de la pantalla). .screen-title
+   trae su propio margin-top fijo (ver styles.css) — acá se anula en la
+   fila para no duplicarlo, el margin real queda en .header-row. */
+.header-row { display: flex; align-items: center; justify-content: space-between; margin-top: var(--space-4); }
+.header-row .screen-title { margin: 0; }
+.settings-btn {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  background: var(--ink-1); border: 1px solid var(--line); color: var(--text-1);
+  display: flex; align-items: center; justify-content: center;
+}
+.settings-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 /* Tarjeta de perfil + botón de Google — mudados tal cual desde
    settings.page.css (18/08/2026, ver ROADMAP-calismap.md "Pantalla de
    Perfil") — mismo criterio de duplicación entre páginas que ya usa el
@@ -130,6 +143,8 @@ a.settings-row { text-decoration: none; color: inherit; }
 .day-cell.selected .day-dot { background: var(--accent-ink); }
 .day-dot { position: absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
 
-.day-detail { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: var(--space-3); }
-.day-detail-row .name { font-size: 13.5px; font-weight: 600; margin-bottom: var(--space-1); }
-.region-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+.day-detail { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: var(--space-4); }
+.day-detail-session .name { font-size: 13.5px; font-weight: 600; margin-bottom: var(--space-2); }
+.day-detail-session app-item-dropdown { display: block; margin-bottom: var(--space-2); }
+.day-detail-session app-item-dropdown:last-child { margin-bottom: 0; }
+.region-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: var(--space-2); }
