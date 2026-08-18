@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { AccountAvatarComponent } from '@jsierram-dev/jp-user-kit';
 import { Rating } from '../../models/exercise.model';
 import { UserProfile } from '../../models/user-profile.model';
 import { effectiveValue } from '../../models/workout-log.model';
@@ -27,7 +28,7 @@ const KG_PER_LB = 0.453592;
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, AccountAvatarComponent],
   templateUrl: './settings.page.html',
   styleUrl: './settings.page.css',
 })
@@ -56,11 +57,6 @@ export class SettingsPage implements OnInit {
 
   ionViewWillEnter(): void {
     this.load();
-  }
-
-  initials(): string {
-    const name = this.auth.user()?.username ?? '';
-    return name.slice(0, 2).toUpperCase() || '??';
   }
 
   // Ajustes NO abre el modal de LoginComponent (17/08/2026, ver

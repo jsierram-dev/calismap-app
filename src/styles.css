@@ -237,3 +237,27 @@ input, textarea, select { font-size: 16px !important; }
    a la tarjeta/lista de abajo. */
 .screen-title { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; margin: var(--space-4) 0 2px; }
 .screen-sub { font-size: 13px; color: var(--text-1); margin: 0 0 var(--space-5); }
+
+/* juk-account-avatar (jp-user-kit, ver ROADMAP-calismap.md "Foto de usuario
+   real") en la tarjeta de perfil de Ajustes -- SettingsPage le pone
+   class="avatar" al propio host (ver settings.page.css para el color/
+   currentColor), pero el <a class="juk-avatar"> real con el tamaño fijo
+   vive DENTRO de la plantilla del componente de la librería, un boundary de
+   encapsulación que un CSS de componente (view-encapsulated) no puede
+   cruzar. Este archivo es la única hoja de estilos global (sin scoping) de
+   la app, así que es el único lugar donde este selector puede alcanzarlo de
+   verdad -- no es ::ng-deep (esta app no lo usa en ningún otro lado) ni un
+   :host-context, es simplemente CSS global corriente apuntando a una clase
+   real. 46px porque acá es el avatar hero de la tarjeta de perfil, no un
+   ícono de toolbar chico (mudanza-app, el otro consumidor de esta
+   librería, usa el tamaño default de 32px porque ahí sí es un ícono de
+   toolbar -- mismo componente, contextos de tamaño distintos a propósito). */
+/* Selector de TRES clases a propósito, no dos — ".profile-card .juk-avatar"
+   (dos clases, especificidad 0-2-0) empataba en especificidad contra la
+   propia regla encapsulada de la librería (".juk-avatar[_ngcontent-xyz]",
+   el atributo cuenta igual que una clase, también 0-2-0) y perdía el
+   desempate por orden de inyección de hojas de estilo — medido con
+   Playwright, seguía dando 32x32, no 46x46. ".profile-card .avatar
+   .juk-avatar" (0-3-0, usando la clase "avatar" que SettingsPage ya le
+   pone al host del componente) gana sin depender de ese orden. */
+.profile-card .avatar .juk-avatar { width: 46px; height: 46px; }
