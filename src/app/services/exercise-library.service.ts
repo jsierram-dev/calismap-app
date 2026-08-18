@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Exercise, ExerciseCategory, Level, MuscleGroup, RatingThresholds, RepUnit } from '../models/exercise.model';
+import { PaginatedResult } from '../models/pagination.model';
 import { LocalCollection } from '../core/utils/local-collection';
 import { markDeleted, newId, touch } from '../core/utils/sync-meta';
 import { I18nService } from '../core/services/i18n.service';
@@ -10,6 +11,9 @@ import { LocalStorageService } from '../core/services/local-storage.service';
 import { SyncService } from '../core/services/sync.service';
 
 const KEY = 'calismap_exercises'; // catálogo + propios, mezclados — ver comentario de clase
+// Tope por página — espejo de MAX_PAGE_SIZE en el backend (ver
+// calismap-back/src/shared/pagination.ts), mismo criterio que RoadmapService.
+const PAGE_SIZE = 10;
 
 export interface ExerciseFilters {
   search?: string;
@@ -176,9 +180,41 @@ export class ExerciseLibraryService {
    * invalidación aparte.
    */
   async refreshCatalog(): Promise<void> {
-    const url = this.i18n.lang() === 'en' ? `${environment.apiUrl}/exercises?lang=en` : `${environment.apiUrl}/exercises`;
-    const fresh = await firstValueFrom(this.http.get<Exercise[]>(url));
-    await this.collection.applyUpdates(fresh); // merge por id — nunca pisa un ejercicio propio sin sincronizar todavía
+    await this.fetchAllExercisesPaged();
+  }
+
+  private exercisesUrl(page: number): string {
+    const base = `${environment.apiUrl}/exercises?page=${page}&pageSize=${PAGE_SIZE}`;
+    return this.i18n.lang() === 'en' ? `${base}&lang=en` : base;
+  }
+
+  /**
+   * Paginado (18/08/2026, ver ROADMAP-calismap.md "Paginación del
+   * catálogo") — antes un solo GET /exercises sin límite. Ahora se pagina de
+   * a PAGE_SIZE y cada página se aplica (merge por id, applyUpdates) a
+   * medida que llega, sin esperar a juntar el catálogo entero en memoria
+   * primero. Sigue trayendo TODO el catálogo igual (no solo lo que la
+   * Biblioteca muestra de entrada) porque RoadmapService.getRoadmapDetail()
+   * necesita poder resolver CUALQUIER ejercicio de CUALQUIER paso de
+   * CUALQUIER roadmap sin importar si el usuario ya scrolleó hasta ahí en
+   * la Biblioteca (ver el mismo razonamiento en
+   * RoadmapService.fetchAllRoadmapsPaged()). Lo que cambia es que ningún
+   * pedido de red individual crece sin límite con el catálogo — y es
+   * LibraryPage quien decide cuánto de lo ya cargado MUESTRA de entrada
+   * (ver visibleCount en ese archivo), no esta capa.
+   */
+  private async fetchAllExercisesPaged(): Promise<void> {
+    let page = 1;
+    let loaded = 0;
+    // Tope defensivo (500 ejercicios) — mismo criterio que RoadmapService,
+    // solo evita un loop infinito si el backend devolviera un total inconsistente.
+    while (page <= 50) {
+      const result = await firstValueFrom(this.http.get<PaginatedResult<Exercise>>(this.exercisesUrl(page)));
+      await this.collection.applyUpdates(result.items); // merge por id — nunca pisa un ejercicio propio sin sincronizar todavía
+      loaded += result.items.length;
+      if (result.items.length < result.pageSize || loaded >= result.total) break;
+      page++;
+    }
   }
 
   // ─── Escritura de CATÁLOGO — solo admin, ver core/guards/admin.guard.ts.
