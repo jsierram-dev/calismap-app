@@ -23,8 +23,19 @@ export const routes: Routes = [
     path: 'library',
     loadComponent: () => import('./pages/library/library.page').then((m) => m.LibraryPage),
   },
+  // Perfil (18/08/2026, ver ROADMAP-calismap.md "Pantalla de Perfil") pasa
+  // a ocupar el lugar de Ajustes en la navbar — Ajustes queda ANIDADA bajo
+  // /profile/settings (no /settings suelto) a propósito: así el prefix
+  // matching default de routerLinkActive en NavbarComponent (mismo
+  // mecanismo que ya deja "Roadmaps" resaltado en /roadmaps/:id) marca el
+  // tab de Perfil como activo también estando parado en Ajustes, sin
+  // necesitar ningún chequeo especial.
   {
-    path: 'settings',
+    path: 'profile',
+    loadComponent: () => import('./pages/profile/profile.page').then((m) => m.ProfilePage),
+  },
+  {
+    path: 'profile/settings',
     loadComponent: () => import('./pages/settings/settings.page').then((m) => m.SettingsPage),
   },
   {
