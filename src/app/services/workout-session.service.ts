@@ -46,6 +46,29 @@ export class WorkoutSessionService {
     return all.find((s) => s.endedAt === null && !s.deletedAt) ?? null;
   }
 
+  /** Usado por SessionAchievementsService para resolver la sesión recién terminada por id (ver session-summary). */
+  async getById(id: string): Promise<WorkoutSession | null> {
+    return this.collection.getById(id);
+  }
+
+  /**
+   * Sesiones de ESTA SEMANA CALENDARIO (lunes a hoy) — "¿entrenaste esta
+   * semana?", no un conteo de sesiones sueltas (ver ROADMAP-calismap.md,
+   * "Corrige algo mal resuelto en la ronda anterior"). Extraído el
+   * 18/08/2026 de RoadmapsPage.load() (ver ROADMAP-calismap.md "Pantalla de
+   * logros") para que StreakComponent lo reuse tal cual en la pantalla de
+   * resumen de sesión, sin duplicar esta cuenta de días en dos archivos.
+   */
+  async getWeeklySessionCount(): Promise<number> {
+    const sessions = await this.getAll();
+    const weekStart = new Date();
+    weekStart.setHours(0, 0, 0, 0);
+    const day = weekStart.getDay(); // 0=domingo
+    const diffToMonday = day === 0 ? 6 : day - 1;
+    weekStart.setDate(weekStart.getDate() - diffToMonday);
+    return sessions.filter((s) => !s.deletedAt && new Date(s.startedAt) >= weekStart).length;
+  }
+
   async startSession(options: {
     name: string;
     routineId?: string | null;

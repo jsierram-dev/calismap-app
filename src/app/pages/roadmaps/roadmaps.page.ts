@@ -6,6 +6,7 @@ import { WorkoutSessionService } from '../../services/workout-session.service';
 import { SearchComponent } from '../../shared/search/search.component';
 import { FilterComponent } from '../../shared/filter/filter.component';
 import { PathLoaderComponent } from '../../shared/path-loader/path-loader.component';
+import { StreakComponent } from '../../shared/streak/streak.component';
 import { I18nService } from '../../core/services/i18n.service';
 import { matchesNameQuery } from '../../core/utils/name-match';
 
@@ -28,7 +29,7 @@ const VISIBLE_PAGE_SIZE = 10;
 @Component({
   selector: 'app-roadmaps',
   standalone: true,
-  imports: [RouterLink, SearchComponent, FilterComponent, PathLoaderComponent],
+  imports: [RouterLink, SearchComponent, FilterComponent, PathLoaderComponent, StreakComponent],
   templateUrl: './roadmaps.page.html',
   styleUrl: './roadmaps.page.css',
 })
@@ -120,19 +121,12 @@ export class RoadmapsPage implements OnInit {
   }
 
   private async load(): Promise<void> {
-    const [roadmaps, sessions] = await Promise.all([
+    const [roadmaps, weeklyCount] = await Promise.all([
       this.roadmapService.getAllRoadmaps(),
-      this.workoutSessionService.getAll(),
+      this.workoutSessionService.getWeeklySessionCount(),
     ]);
     this.roadmaps.set(roadmaps);
     this.loading.set(false);
-
-    const weekStart = new Date();
-    weekStart.setHours(0, 0, 0, 0);
-    const day = weekStart.getDay(); // 0=domingo
-    const diffToMonday = day === 0 ? 6 : day - 1;
-    weekStart.setDate(weekStart.getDate() - diffToMonday);
-
-    this.weeklySessionCount.set(sessions.filter((s) => !s.deletedAt && new Date(s.startedAt) >= weekStart).length);
+    this.weeklySessionCount.set(weeklyCount);
   }
 }

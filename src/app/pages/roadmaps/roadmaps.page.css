@@ -1,18 +1,7 @@
-.icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-
-.streak-strip {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  background: var(--ink-1);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-4);
-}
-.streak-flame { color: var(--accent); flex-shrink: 0; }
-.streak-strip strong { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.streak-strip span.d { font-size: 12.5px; color: var(--text-1); }
+/* .streak-strip vive ahora en shared/streak/streak.component.css (ver
+   ROADMAP-calismap.md "Pantalla de logros", 18/08/2026) — StreakComponent
+   se usa acá vía <app-streak>, compartido con SessionSummaryComponent. */
+app-streak { display: block; }
 
 app-search { display: block; margin-top: var(--space-4); }
 
