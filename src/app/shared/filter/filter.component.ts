@@ -1,30 +1,21 @@
 import { Component, EventEmitter, Input, Output, computed, signal } from '@angular/core';
 import { MuscleGroup } from '../../models/exercise.model';
 import { I18nService } from '../../core/services/i18n.service';
-
-interface MuscleRegion {
-  regionKey: string;
-  muscles: MuscleGroup[];
-}
+import { MUSCLE_REGIONS } from '../../core/utils/muscle-regions';
 
 // Agrupado por "músculo principal" en vocabulario de gimnasio (Piernas/
-// Pecho/Espalda/Hombros/Brazos/Core) — DISTINTO de MUSCLE_GROUPS_BY_REGION
-// en exercise.model.ts (esa agrupación, PUSH/PULL/LEGS/CORE, es solo
-// organización interna del código). Ver ROADMAP-calismap.md, "Taxonomía de
-// músculos" y "Corrección de UX en el filtro de músculos".
+// Pecho/Espalda/Hombros/Brazos/Core) — extraído a core/utils/muscle-regions.ts
+// el 18/08/2026 (ver ROADMAP-calismap.md "Pantalla de Perfil"), la pantalla
+// de Perfil usa la misma taxonomía para el temporizador de descanso por
+// parte del cuerpo. DISTINTO de MUSCLE_GROUPS_BY_REGION en calismap-back
+// (esa agrupación, PUSH/PULL/LEGS/CORE, es solo organización interna del
+// código del servidor). Ver ROADMAP-calismap.md, "Taxonomía de músculos" y
+// "Corrección de UX en el filtro de músculos".
 //
 // Sin label fijo acá (17/08/2026, ver ROADMAP-calismap.md "Traducciones")
 // — regionKey/cada MuscleGroup se traducen recién en el template vía
 // i18n.t('enums.region.'+regionKey)/i18n.t('enums.muscle.'+muscle), para
 // que cambiar el idioma en Ajustes actualice esta lista sin recargar nada.
-const REGIONS: MuscleRegion[] = [
-  { regionKey: 'legs', muscles: ['CUADRICEPS', 'ISQUIOTIBIALES', 'GLUTEOS', 'GEMELOS', 'ADUCTORES'] },
-  { regionKey: 'chest', muscles: ['PECTORAL'] },
-  { regionKey: 'back', muscles: ['DORSAL_ANCHO', 'TRAPECIO', 'ROMBOIDES', 'LUMBARES'] },
-  { regionKey: 'shoulders', muscles: ['DELTOIDES_ANTERIOR', 'DELTOIDES_POSTERIOR'] },
-  { regionKey: 'arms', muscles: ['BICEPS', 'TRICEPS', 'ANTEBRAZOS'] },
-  { regionKey: 'core', muscles: ['RECTO_ABDOMINAL', 'OBLICUOS', 'TRANSVERSO_ABDOMINAL', 'SERRATO_ANTERIOR'] },
-];
 
 // Compartido — hermano de SearchComponent, no anidado adentro (corrección
 // del usuario, 15 de agosto). El botón de filtro vive en SearchComponent,
@@ -41,7 +32,7 @@ export class FilterComponent {
   @Output() closed = new EventEmitter<void>();
   @Output() applied = new EventEmitter<MuscleGroup[]>();
 
-  regions = REGIONS;
+  regions = MUSCLE_REGIONS;
   private selected = signal<Set<MuscleGroup>>(new Set());
   selectedCount = computed(() => this.selected().size);
 

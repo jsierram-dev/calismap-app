@@ -1,54 +1,47 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { AccountAvatarComponent } from '@jsierram-dev/jp-user-kit';
-import { Rating } from '../../models/exercise.model';
 import { UserProfile } from '../../models/user-profile.model';
-import { effectiveValue } from '../../models/workout-log.model';
 import { AuthService } from '../../core/services/auth.service';
-import { GoogleIdentityService, GooglePromptCancelledError } from '../../core/services/google-identity.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { ThemePreference, ThemeService } from '../../core/services/theme.service';
 import { SyncService } from '../../core/services/sync.service';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
-import { RatingCalculatorService } from '../../services/rating-calculator.service';
 import { RoadmapService } from '../../services/roadmap.service';
 import { UserProfileService } from '../../services/user-profile.service';
-import { WorkoutLogService } from '../../services/workout-log.service';
 
 const KG_PER_LB = 0.453592;
 
-// Pantalla 05 — ConfigurationComponent (ver COMPONENTES-calismap.md): perfil
-// (cuenta real o invitado, con CTA de login siempre disponible — uno de los
-// 5 lugares que abren LoginComponent en modal), progreso por tier,
+// Pantalla 05 — ConfigurationComponent (ver COMPONENTES-calismap.md):
 // preferencias (idioma, sincroniza con UserProfile; tema, SOLO local vía
 // ThemeService), unidades (peso corporal — se guarda siempre en kg, la
 // unidad es solo presentación), entrenamiento (timer default, estado de
 // sync), cuenta (cerrar sesión).
+//
+// Reestructurado el 18/08/2026 (ver ROADMAP-calismap.md "Pantalla de
+// Perfil") — la tarjeta de perfil (foto/nombre, login de Google) y el
+// resumen "Tu progreso" se mudaron a ProfilePage, que ahora ocupa el lugar
+// de esta pantalla en la navbar. Ajustes pasa a ser una pantalla
+// secundaria, a la que se llega con un botón desde Perfil — ver
+// profile.page.html.
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule, RouterLink, AccountAvatarComponent],
+  imports: [FormsModule, RouterLink],
   templateUrl: './settings.page.html',
   styleUrl: './settings.page.css',
 })
 export class SettingsPage implements OnInit {
-  tierCounts = signal<Record<Rating, number>>({ BRONZE: 0, SILVER: 0, GOLD: 0, PLATINUM: 0, DIAMOND: 0 });
   bodyWeightInput = signal(75);
-  loggingIn = signal(false);
-  loginError = signal<string | null>(null);
 
   constructor(
     public auth: AuthService,
     public theme: ThemeService,
     public sync: SyncService,
     public profile: UserProfileService,
-    private googleIdentity: GoogleIdentityService,
     public i18n: I18nService,
     private exerciseLibrary: ExerciseLibraryService,
     private roadmapService: RoadmapService,
-    private workoutLog: WorkoutLogService,
-    private ratingCalc: RatingCalculatorService,
   ) {}
 
   ngOnInit(): void {
@@ -57,33 +50,6 @@ export class SettingsPage implements OnInit {
 
   ionViewWillEnter(): void {
     this.load();
-  }
-
-  // Ajustes NO abre el modal de LoginComponent (17/08/2026, ver
-  // GoogleIdentityService) — acá el usuario ya pidió explícitamente iniciar
-  // sesión con Google estando parado en esta pantalla, así que dispara el
-  // prompt de Google directo. El modal sigue vivo para los otros 4 lugares
-  // (completar roadmap, terminar sesión, guardar ejercicio/rutina propia),
-  // donde el login es una sugerencia sobre OTRA acción y necesita su propio
-  // copy explicando el porqué + "Más tarde".
-  async openLogin(): Promise<void> {
-    this.loginError.set(null);
-    this.loggingIn.set(true);
-    try {
-      const idToken = await this.googleIdentity.promptSignIn();
-      await this.auth.loginWithGoogle(idToken);
-    } catch (err) {
-      // Cerrar/ignorar el prompt de Google no es un error real (pasa todo
-      // el tiempo — el usuario cambió de idea, ya tenía otra pestaña de
-      // Google abierta, etc.) — sin este chequeo, CUALQUIER cierre del
-      // prompt mostraba "No pudimos iniciar sesión", alarmando por algo
-      // normal (ver GoogleIdentityService.promptSignIn()).
-      if (!(err instanceof GooglePromptCancelledError)) {
-        this.loginError.set(this.i18n.t('settings.loginError'));
-      }
-    } finally {
-      this.loggingIn.set(false);
-    }
   }
 
   async logout(): Promise<void> {
@@ -120,20 +86,9 @@ export class SettingsPage implements OnInit {
   async saveBodyWeight(displayValue: number): Promise<void> {
     const kg = this.profile.profile().weightUnit === 'lbs' ? displayValue * KG_PER_LB : displayValue;
     await this.profile.save({ bodyWeightKg: Math.round(kg * 10) / 10 });
-    await this.load(); // recalcula el resumen de tiers con el peso nuevo
   }
 
-  private async load(): Promise<void> {
+  private load(): void {
     this.bodyWeightInput.set(this.displayWeight());
-
-    const exercises = await this.exerciseLibrary.getAll();
-    const counts: Record<Rating, number> = { BRONZE: 0, SILVER: 0, GOLD: 0, PLATINUM: 0, DIAMOND: 0 };
-    for (const exercise of exercises) {
-      const bestLog = await this.workoutLog.getBestLog(exercise.id);
-      if (!bestLog) continue;
-      const rating = this.ratingCalc.ratingForEffectiveValue(effectiveValue(bestLog), exercise.ratingThresholds);
-      counts[rating]++;
-    }
-    this.tierCounts.set(counts);
   }
 }

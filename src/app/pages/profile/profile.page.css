@@ -1,0 +1,135 @@
+.icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Tarjeta de perfil + botón de Google — mudados tal cual desde
+   settings.page.css (18/08/2026, ver ROADMAP-calismap.md "Pantalla de
+   Perfil") — mismo criterio de duplicación entre páginas que ya usa el
+   resto de la app (.rating-badge se repite en 4 archivos distintos, ver
+   COMPONENTES-calismap.md) en vez de una hoja global. El tamaño del
+   avatar real (46px) sigue viniendo de styles.css — ver el comentario
+   original ahí, no se duplica acá. */
+.profile-card {
+  display: flex; align-items: center; gap: var(--space-3);
+  background: linear-gradient(180deg, var(--accent-soft), transparent 70%), var(--ink-1);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.avatar { flex-shrink: 0; color: var(--accent); }
+.profile-card h4 { margin: 0 0 2px; font-size: 16px; }
+.profile-card p { margin: 0; font-size: 12.5px; color: var(--text-1); }
+.avatar-guest {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--ink-2); color: var(--text-2);
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar-guest svg { width: 20px; height: 20px; }
+
+.google-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%;
+  background: #FFFFFF;
+  color: #1F1F1F;
+  border: 1px solid #D2D7DA;
+  border-radius: 999px;
+  padding: 13px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.google-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.google-btn:disabled { opacity: 0.7; cursor: default; }
+.login-inline-error { font-size: 12px; color: var(--danger); text-align: left; margin: -14px 0 22px; }
+
+.settings-group { margin-bottom: var(--space-6); }
+.settings-group h5 { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-2); margin: 0 0 var(--space-3); }
+.settings-card { background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--line-soft); }
+a.settings-row { text-decoration: none; color: inherit; }
+.settings-row:last-child { border-bottom: none; }
+.settings-row .label { font-size: 13.5px; }
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--ink-2);
+  color: var(--text-1);
+  border: 1px solid var(--line-soft);
+}
+
+.stats-row { display: flex; gap: var(--space-2); }
+.stat {
+  flex: 1; min-width: 0;
+  background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-2);
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1);
+}
+.stat b { font-family: var(--font-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
+
+.rating-badge {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+  padding: 2px 7px; border-radius: 5px; text-transform: uppercase;
+}
+.rating-badge.silver { background: color-mix(in srgb, var(--silver) 22%, transparent); color: var(--silver); }
+.rating-badge.gold { background: color-mix(in srgb, var(--gold) 22%, transparent); color: var(--gold); }
+.rating-badge.platinum { background: color-mix(in srgb, var(--platinum) 22%, transparent); color: var(--platinum); }
+.rating-badge.diamond {
+  background: linear-gradient(120deg, color-mix(in srgb, var(--diamond) 30%, transparent), color-mix(in srgb, var(--diamond-2) 30%, transparent));
+  color: var(--diamond);
+}
+
+/* ── Temporizador de descanso por región (nuevo, ver
+   TrainingHistoryService — RECOVERY_HOURS=48) ── */
+.recovery-ready { color: var(--accent); border-color: var(--accent); }
+.recovery-resting { color: var(--gold); border-color: var(--gold); font-variant-numeric: tabular-nums; }
+.recovery-hint { font-size: 11.5px; color: var(--text-2); margin: var(--space-2) var(--space-1) 0; }
+
+/* ── Calendario mensual (nuevo) ──
+   Grilla fija de 7 columnas — mismo grid para la fila de días de semana Y
+   la de celdas, así quedan perfectamente alineadas sin depender de que
+   ambas tengan el mismo padding/gap por casualidad. */
+.calendar-card {
+  background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.calendar-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+.month-label { font-size: 14px; text-transform: capitalize; }
+.nav-btn {
+  width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--ink-2); color: var(--text-1);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.nav-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.weekday-row { margin-bottom: var(--space-2); }
+.weekday { text-align: center; font-family: var(--font-mono); font-size: 10px; color: var(--text-2); text-transform: uppercase; }
+
+.day-cell {
+  position: relative;
+  aspect-ratio: 1;
+  border: none; border-radius: var(--radius-sm);
+  background: transparent; color: var(--text-1);
+  font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; justify-content: center;
+  cursor: default;
+}
+.day-cell.out { color: var(--text-2); opacity: 0.4; }
+.day-cell.today { border: 1px solid var(--accent); }
+.day-cell.has-entries { background: var(--ink-2); color: var(--text-0); cursor: pointer; font-weight: 700; }
+.day-cell.has-entries:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.day-cell.selected { background: var(--accent); color: var(--accent-ink); }
+.day-cell.selected .day-dot { background: var(--accent-ink); }
+.day-dot { position: absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+
+.day-detail { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: var(--space-3); }
+.day-detail-row .name { font-size: 13.5px; font-weight: 600; margin-bottom: var(--space-1); }
+.region-pills { display: flex; flex-wrap: wrap; gap: 5px; }

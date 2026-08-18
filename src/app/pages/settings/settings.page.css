@@ -1,64 +1,15 @@
 .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
-.profile-card {
-  display: flex; align-items: center; gap: var(--space-3);
-  background: linear-gradient(180deg, var(--accent-soft), transparent 70%), var(--ink-1);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  margin-bottom: var(--space-6);
+/* Ajustes dejó de ser un tab de la navbar (18/08/2026, ver
+   ROADMAP-calismap.md "Pantalla de Perfil") — se llega acá con un botón
+   desde ProfilePage, así que necesita su propia forma de volver (el resto
+   de la navbar ya no tiene un tab que apunte de vuelta a esta pantalla). */
+.back-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: var(--text-1); text-decoration: none; font-size: 13px;
+  margin-top: var(--space-3);
 }
-/* juk-account-avatar (jp-user-kit, ver ROADMAP-calismap.md "Foto de usuario
-   real") reemplaza el círculo de iniciales de antes -- foto real de Google
-   si `AuthUser.profilePictureUrl` vino con la sesión (siempre debería, ver
-   jp-back-auth), ícono de fallback genérico si no. `color` acá se hereda
-   por currentColor DENTRO del componente (el ícono/fondo de fallback lo
-   usan, ver account-avatar.scss en jp-libraries) -- así es como esta
-   librería espera ser skineada, sin pisar sus estilos internos. El tamaño
-   (46px, el propio default de la librería es más chico, pensado para un
-   ícono de toolbar) se ajusta en styles.css: el override vive ahí, no acá,
-   porque este archivo está view-encapsulated y no puede alcanzar el <a>
-   interno del componente hijo -- ver ese archivo. */
-.avatar {
-  flex-shrink: 0;
-  color: var(--accent);
-}
-.profile-card h4 { margin: 0 0 2px; font-size: 16px; }
-.profile-card p { margin: 0; font-size: 12.5px; color: var(--text-1); }
-/* Bug real 18/08/2026: el círculo de invitado (SVG propio, sin pasar por
-   juk-account-avatar — no hay foto que mostrar para un invitado) se quedó
-   cuadrado cuando .avatar perdió su width/height/border-radius fijos al
-   pasar a la foto real (ver el comentario de arriba — ese tamaño ahora vive
-   en styles.css, apuntado a .juk-avatar, que este div NUNCA tiene). Este
-   div necesita su propio tamaño/forma, no puede depender de esa regla. */
-.avatar-guest {
-  width: 46px; height: 46px; border-radius: 50%;
-  background: var(--ink-2); color: var(--text-2);
-  display: flex; align-items: center; justify-content: center;
-}
-.avatar-guest svg { width: 20px; height: 20px; }
-
-.google-btn {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%;
-  background: #FFFFFF;
-  color: #1F1F1F;
-  border: 1px solid #D2D7DA;
-  border-radius: 999px;
-  padding: 13px;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.google-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.google-btn:disabled { opacity: 0.7; cursor: default; }
-
-/* Login sin modal desde Ajustes (17/08/2026, ver GoogleIdentityService) —
-   mismo estilo que .login-error de LoginComponent. El botón ya trae su
-   margin-bottom:22px fijo (ver settings.page.html); esto solo agrega el
-   error debajo cuando corresponde, sin robarle espacio al caso sin error. */
-.login-inline-error { font-size: 12px; color: var(--danger); text-align: left; margin: -14px 0 22px; }
+.back-link .icon { width: 16px; height: 16px; }
 
 .settings-group { margin-bottom: var(--space-6); }
 .settings-group h5 { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-2); margin: 0 0 var(--space-3); }
@@ -103,31 +54,4 @@ a.settings-row { text-decoration: none; color: inherit; }
   background: var(--ink-2);
   color: var(--text-1);
   border: 1px solid var(--line-soft);
-}
-
-.stats-row { display: flex; gap: var(--space-2); }
-.stat {
-  flex: 1;
-  min-width: 0;
-  background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-2);
-  display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1);
-}
-.stat b { font-family: var(--font-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
-
-.rating-badge {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  padding: 2px 7px;
-  border-radius: 5px;
-  text-transform: uppercase;
-}
-.rating-badge.silver { background: color-mix(in srgb, var(--silver) 22%, transparent); color: var(--silver); }
-.rating-badge.gold { background: color-mix(in srgb, var(--gold) 22%, transparent); color: var(--gold); }
-.rating-badge.platinum { background: color-mix(in srgb, var(--platinum) 22%, transparent); color: var(--platinum); }
-.rating-badge.diamond {
-  background: linear-gradient(120deg, color-mix(in srgb, var(--diamond) 30%, transparent), color-mix(in srgb, var(--diamond-2) 30%, transparent));
-  color: var(--diamond);
 }

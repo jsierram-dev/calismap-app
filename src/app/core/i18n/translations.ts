@@ -84,7 +84,7 @@ export const TRANSLATIONS = {
     'navbar.roadmaps': 'ROADMAPS',
     'navbar.library': 'BIBLIOTECA',
     'navbar.session': 'SESIÓN',
-    'navbar.settings': 'AJUSTES',
+    'navbar.profile': 'PERFIL',
     'navbar.sessionAria': 'Sesión',
 
     // ── notice-session ───────────────────────────────────────────────────
@@ -229,6 +229,16 @@ export const TRANSLATIONS = {
     'sessionSummary.roadmapCompleteSub': 'La ruta {roadmapName} está completa — gran trabajo.',
     'sessionSummary.backToRoadmaps': 'Volver a Roadmaps',
 
+    // ── profile (nueva, 18/08/2026 — reemplaza a Ajustes en la navbar) ────
+    'profile.title': 'Perfil',
+    'profile.loading': 'Cargando tu perfil…',
+    'profile.recoverySection': 'Descanso muscular',
+    'profile.recoveryReady': 'Lista',
+    'profile.recoveryRemaining': '{hours}h {minutes}m',
+    'profile.recoveryHint': 'Se recomiendan al menos {hours} horas de descanso antes de volver a entrenar la misma región — ver fuentes en "Sobre el catálogo".',
+    'profile.historySection': 'Historial de entrenamiento',
+    'profile.settingsLink': 'Ajustes',
+
     // ── settings (05) ────────────────────────────────────────────────────
     'settings.title': 'Ajustes',
     'settings.googleConnected': 'Cuenta de Google conectada',
@@ -351,6 +361,8 @@ export const TRANSLATIONS = {
     'catalogSources.source3Note': 'Base de la secuencia de nuestro roadmap de Planche (Tuck → Advanced Tuck → Straddle → Full).',
     'catalogSources.source4Title': 'Berg Movement — Front Lever Progressions',
     'catalogSources.source4Note': 'Lectura de referencia general sobre progresiones de holds estáticos (el front lever todavía no es un roadmap propio en CalisMap).',
+    'catalogSources.source5Title': 'University of Washington — Strength Training Recovery',
+    'catalogSources.source5Note': 'Base del temporizador de descanso muscular de 48 horas en la pantalla de Perfil — coincide con la recomendación general del ACSM (American College of Sports Medicine) de al menos 24 a 48 horas entre sesiones del mismo grupo muscular.',
     'catalogSources.numbersHeading': 'Sobre los números exactos',
     'catalogSources.numbersBodyPre': 'Acá va la parte importante para no prometer de más: de los cerca de 100 umbrales de repeticiones/tiempo del catálogo (Silver/Gold/Platinum/Diamond × 25 ejercicios), solo uno —las 12 dominadas para Gold— corresponde directamente a un estándar publicado y verificable. El resto son ',
     'catalogSources.numbersBodyBold': 'estimaciones razonables de diseño',
@@ -467,7 +479,7 @@ export const TRANSLATIONS = {
     'navbar.roadmaps': 'ROADMAPS',
     'navbar.library': 'LIBRARY',
     'navbar.session': 'SESSION',
-    'navbar.settings': 'SETTINGS',
+    'navbar.profile': 'PROFILE',
     'navbar.sessionAria': 'Session',
 
     // ── notice-session ───────────────────────────────────────────────────
@@ -612,6 +624,16 @@ export const TRANSLATIONS = {
     'sessionSummary.roadmapCompleteSub': '{roadmapName} path is complete — nice work.',
     'sessionSummary.backToRoadmaps': 'Back to Roadmaps',
 
+    // ── profile (new, 18/08/2026 — replaces Settings in the navbar) ───────
+    'profile.title': 'Profile',
+    'profile.loading': 'Loading your profile…',
+    'profile.recoverySection': 'Muscle recovery',
+    'profile.recoveryReady': 'Ready',
+    'profile.recoveryRemaining': '{hours}h {minutes}m',
+    'profile.recoveryHint': "At least {hours} hours of rest is recommended before training the same region again — see sources in \"About the catalog\".",
+    'profile.historySection': 'Training history',
+    'profile.settingsLink': 'Settings',
+
     // ── settings ─────────────────────────────────────────────────────────
     'settings.title': 'Settings',
     'settings.googleConnected': 'Google account connected',
@@ -734,6 +756,8 @@ export const TRANSLATIONS = {
     'catalogSources.source3Note': 'Basis for our Planche roadmap sequence (Tuck → Advanced Tuck → Straddle → Full).',
     'catalogSources.source4Title': 'Berg Movement — Front Lever Progressions',
     'catalogSources.source4Note': "General reference reading on static-hold progressions (the front lever isn't its own roadmap in CalisMap yet).",
+    'catalogSources.source5Title': 'University of Washington — Strength Training Recovery',
+    'catalogSources.source5Note': "Basis for the 48-hour muscle recovery timer on the Profile screen — matches the general ACSM (American College of Sports Medicine) guidance of at least 24 to 48 hours between sessions for the same muscle group.",
     'catalogSources.numbersHeading': 'About the exact numbers',
     'catalogSources.numbersBodyPre': "Here's the important part, so we don't overpromise: of the roughly 100 rep/time thresholds in the catalog (Silver/Gold/Platinum/Diamond × 25 exercises), only one — 12 pull-ups for Gold — directly maps to a published, verifiable standard. The rest are ",
     'catalogSources.numbersBodyBold': 'reasonable design estimates',
