@@ -25,7 +25,17 @@
 }
 .profile-card h4 { margin: 0 0 2px; font-size: 16px; }
 .profile-card p { margin: 0; font-size: 12.5px; color: var(--text-1); }
-.avatar-guest { background: var(--ink-2); color: var(--text-2); }
+/* Bug real 18/08/2026: el círculo de invitado (SVG propio, sin pasar por
+   juk-account-avatar — no hay foto que mostrar para un invitado) se quedó
+   cuadrado cuando .avatar perdió su width/height/border-radius fijos al
+   pasar a la foto real (ver el comentario de arriba — ese tamaño ahora vive
+   en styles.css, apuntado a .juk-avatar, que este div NUNCA tiene). Este
+   div necesita su propio tamaño/forma, no puede depender de esa regla. */
+.avatar-guest {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--ink-2); color: var(--text-2);
+  display: flex; align-items: center; justify-content: center;
+}
 .avatar-guest svg { width: 20px; height: 20px; }
 
 .google-btn {
