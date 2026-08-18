@@ -9,8 +9,9 @@ import { GoogleIdentityService, GooglePromptCancelledError } from '../../core/se
 import { I18nService } from '../../core/services/i18n.service';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
 import { RatingCalculatorService } from '../../services/rating-calculator.service';
-import { RegionRecovery, SessionHistoryEntry, TrainingHistoryService } from '../../services/training-history.service';
+import { RegionRecovery, SessionChecklistItem, SessionHistoryEntry, TrainingHistoryService } from '../../services/training-history.service';
 import { WorkoutLogService } from '../../services/workout-log.service';
+import { ItemDropdownComponent } from '../../shared/item-dropdown/item-dropdown.component';
 import { PathLoaderComponent } from '../../shared/path-loader/path-loader.component';
 
 interface CalendarDay {
@@ -42,7 +43,7 @@ function startOfMonth(d: Date): Date {
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [RouterLink, AccountAvatarComponent, PathLoaderComponent],
+  imports: [RouterLink, AccountAvatarComponent, PathLoaderComponent, ItemDropdownComponent],
   templateUrl: './profile.page.html',
   styleUrl: './profile.page.css',
 })
@@ -58,6 +59,13 @@ export class ProfilePage implements OnInit {
   viewMonth = signal(startOfMonth(new Date()));
   selectedDayKey = signal<string | null>(null);
   regions = MUSCLE_REGIONS;
+
+  // Checklist de cada sesión YA resuelto (exercise + sets, para
+  // <app-item-dropdown>) — se pide bajo demanda por sessionId, recién
+  // cuando el usuario toca un día con marcas (ver selectDay()), no para
+  // todo el historial de una. Cacheado acá para no volver a pedirlo si
+  // el usuario cierra y vuelve a abrir el mismo día.
+  private sessionChecklists = signal<Map<string, SessionChecklistItem[]>>(new Map());
 
   private historyByDate = computed(() => {
     const map = new Map<string, SessionHistoryEntry[]>();
@@ -159,9 +167,26 @@ export class ProfilePage implements OnInit {
     this.selectedDayKey.set(null);
   }
 
-  selectDay(day: CalendarDay): void {
+  async selectDay(day: CalendarDay): Promise<void> {
     if (!day.entries.length) return;
-    this.selectedDayKey.set(this.selectedDayKey() === day.key ? null : day.key);
+    const key = this.selectedDayKey() === day.key ? null : day.key;
+    this.selectedDayKey.set(key);
+    if (!key) return;
+
+    // Pide el checklist de cada sesión de este día que todavía no se haya
+    // resuelto — en paralelo, no una por una, ver TrainingHistoryService.getSessionChecklist().
+    const missing = day.entries.filter((entry) => !this.sessionChecklists().has(entry.session.id));
+    if (!missing.length) return;
+    const resolved = await Promise.all(missing.map((entry) => this.trainingHistory.getSessionChecklist(entry.session.id)));
+    this.sessionChecklists.update((map) => {
+      const next = new Map(map);
+      missing.forEach((entry, i) => next.set(entry.session.id, resolved[i]));
+      return next;
+    });
+  }
+
+  checklistFor(sessionId: string): SessionChecklistItem[] {
+    return this.sessionChecklists().get(sessionId) ?? [];
   }
 
   /** Texto real de cuánto falta ("2h 15m") — sin librería de formato de duración, alcanza con esto para el único lugar que lo necesita. */

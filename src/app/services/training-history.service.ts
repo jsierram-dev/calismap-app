@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
+import { Exercise } from '../models/exercise.model';
 import { WorkoutSession } from '../models/workout-session.model';
 import { MUSCLE_REGIONS, regionsForMuscleGroups } from '../core/utils/muscle-regions';
 import { I18nService } from '../core/services/i18n.service';
+import { SetEntry } from '../shared/item-dropdown/item-dropdown.component';
 import { ExerciseLibraryService } from './exercise-library.service';
 import { RoutineService } from './routine.service';
 import { UserRoutineService } from './user-routine.service';
@@ -31,6 +33,11 @@ export interface RegionRecovery {
   lastTrainedAt: string | null; // ISO de la marca más reciente que tocó esta región — null = nunca entrenada
   readyAt: string | null; // lastTrainedAt + RECOVERY_HOURS — null = ya lista (nunca entrenada, nada que esperar)
   isReady: boolean;
+}
+
+export interface SessionChecklistItem {
+  exercise: Exercise;
+  sets: SetEntry[]; // todas con done:true — es historial, no queda ninguna "pendiente" que mostrar
 }
 
 /**
@@ -94,5 +101,31 @@ export class TrainingHistoryService {
     });
 
     return { history, recovery };
+  }
+
+  /**
+   * Detalle de UNA sesión ya terminada, para visualizarla en el calendario
+   * de Perfil (18/08/2026, ver ROADMAP-calismap.md) — mismo shape que
+   * ItemDropdownComponent espera en modo "logging" (reusa el componente
+   * real de la sesión activa, no uno propio), pero sin nada "pendiente":
+   * una sesión pasada ya no tiene series por hacer, solo las que
+   * realmente se registraron. A diferencia de getOverview(), esto se pide
+   * bajo demanda (recién cuando el usuario toca un día con marcas), no
+   * para cada sesión del historial completo por adelantado.
+   */
+  async getSessionChecklist(sessionId: string): Promise<SessionChecklistItem[]> {
+    const logs = await this.workoutLog.getForSession(sessionId);
+    const exerciseIds = [...new Set(logs.map((l) => l.exerciseId))];
+
+    const items: SessionChecklistItem[] = [];
+    for (const exerciseId of exerciseIds) {
+      const exercise = await this.exerciseLibrary.getById(exerciseId);
+      if (!exercise) continue; // catálogo inconsistente — no debería pasar, se salta (mismo criterio que el resto de la app)
+      const sets: SetEntry[] = logs
+        .filter((l) => l.exerciseId === exerciseId)
+        .map((l) => ({ id: l.id, value: l.value, addedWeightKg: l.addedWeightKg, done: true }));
+      items.push({ exercise, sets });
+    }
+    return items;
   }
 }
