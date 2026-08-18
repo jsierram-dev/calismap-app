@@ -33,7 +33,23 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: '@jsierram-dev'
+      # @jsierram-dev/jp-user-kit (18/08/2026, ver ROADMAP-calismap.md "Foto
+      # de usuario real") se publica en GitHub Packages, no en el registro
+      # público de npm — sin login ahí, `npm ci` no puede resolverlo y el
+      # build falla (exit code 1, sin más detalle en el log). Localmente
+      # funcionaba porque el `.npmrc` global de la máquina de desarrollo ya
+      # tenía el scope + token configurados; un runner de CI arranca sin
+      # eso. Mismo patrón ya resuelto en mudanza-app (ver su .github/
+      # workflows/deploy.yml y .npmrc) — el GITHUB_TOKEN automático NO
+      # alcanza: solo lee paquetes del MISMO repo, y jp-user-kit se publica
+      # desde jp-libraries, un repo distinto (aunque del mismo dueño). Hace
+      # falta un PAT real con permiso read:packages, guardado como secret
+      # del repo — ver JP_PACKAGES_TOKEN más abajo.
       - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.JP_PACKAGES_TOKEN }}
       - run: npx ng build --configuration production --base-href /calismap-app/
       # GitHub Pages no sabe nada del router de Angular (routing por path, no
       # hash) — sin esto, refrescar o entrar directo a una URL como
