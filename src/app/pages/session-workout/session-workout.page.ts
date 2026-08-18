@@ -1,5 +1,5 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ModalController } from '@ionic/angular/standalone';
 import { Exercise } from '../../models/exercise.model';
 import { Routine } from '../../models/routine.model';
@@ -93,6 +93,7 @@ export class SessionWorkoutPage implements OnInit {
     private userRoutineService: UserRoutineService,
     private userProfile: UserProfileService,
     private modalCtrl: ModalController,
+    private router: Router,
     public i18n: I18nService,
   ) {
     this.nowTimerId = setInterval(() => this.now.set(Date.now()), 1000);
@@ -197,6 +198,10 @@ export class SessionWorkoutPage implements OnInit {
     this.clearRest();
   }
 
+  // Navega a la pantalla de logros (18/08/2026, ver ROADMAP-calismap.md
+  // "Pantalla de logros") en vez de recargar el selector acá mismo — esta
+  // página vuelve a mostrar "Elegir sesión" recién cuando el usuario
+  // vuelva por su cuenta (ionViewWillEnter ya la recarga sola).
   async endSession(): Promise<void> {
     const session = this.active();
     if (!session) return;
@@ -204,12 +209,13 @@ export class SessionWorkoutPage implements OnInit {
     this.clearRest();
     // Terminar la sesión es uno de los 4 momentos con motivo real para
     // pedirle cuenta a un invitado (ver ROADMAP-calismap.md "Login:
-    // OPCIONAL") — no bloqueante, la sesión ya se cerró antes de mostrarlo.
+    // OPCIONAL") — no bloqueante, la sesión ya se cerró antes de mostrarlo;
+    // queda como overlay encima de la pantalla de logros de abajo.
     if (this.auth.isGuest()) {
       const modal = await this.modalCtrl.create({ component: LoginComponent });
       await modal.present();
     }
-    await this.load();
+    await this.router.navigate(['/session-summary', session.id]);
   }
 
   private startRest(): void {
