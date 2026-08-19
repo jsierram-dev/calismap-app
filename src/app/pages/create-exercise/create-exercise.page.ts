@@ -115,8 +115,58 @@ export class CreateExercisePage implements OnInit {
   // original sin que este desaparezca — createOwn siempre genera un id
   // nuevo, nunca toca el ajeno.
   similarExercises = signal<Exercise[]>([]);
+  // Estilo dropdown/selector (19/08/2026, pedido explícito del usuario) —
+  // antes la lista quedaba SIEMPRE visible empujando el resto del form
+  // hacia abajo mientras hubiera resultados, aunque el usuario ya hubiera
+  // seguido a otro campo. Ahora solo se muestra con el campo enfocado (ver
+  // el template, position:absolute flotando encima en vez de empujar
+  // contenido — ver create-exercise.page.css). onNameBlur() retrasa el
+  // cierre 150ms en vez de cerrarlo en el mismo tick: sin ese margen, el
+  // blur del input borra la lista del DOM ANTES de que el click en una fila
+  // llegue a registrarse (mismo problema clásico de cualquier combobox).
+  nameFieldFocused = signal(false);
+  private nameBlurTimer: ReturnType<typeof setTimeout> | null = null;
   private nameSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private destroyRef = inject(DestroyRef);
+
+  onNameBlur(): void {
+    if (this.nameBlurTimer) clearTimeout(this.nameBlurTimer);
+    this.nameBlurTimer = setTimeout(() => this.nameFieldFocused.set(false), 150);
+  }
+
+  // Guardar deshabilitado hasta que haya un cambio real (19/08/2026, pedido
+  // explícito del usuario) — solo aplica EDITANDO (ver canSave): crear uno
+  // nuevo siempre tiene "algo distinto" de la nada, no tendría sentido acá.
+  // Snapshot en string (no comparar señal por señal — son 10+ campos de
+  // formas distintas: Set, array, objeto anidado) tomado UNA vez justo
+  // después de precargar en ngOnInit; formSnapshot() se vuelve a llamar en
+  // cada chequeo con el estado ACTUAL, mismas normalizaciones de save()
+  // (trim, filter Boolean) para que un espacio de más al final no cuente
+  // como "cambio" real. muscleGroups se ordena antes de comparar — el Set
+  // no garantiza el mismo orden de iteración entre la carga original y
+  // destildar+volver a tildar los mismos músculos en otro orden.
+  private originalSnapshot: string | null = null;
+
+  private formSnapshot(): string {
+    return JSON.stringify({
+      name: this.name().trim(),
+      description: this.description().trim(),
+      level: this.level(),
+      category: this.category(),
+      muscleGroups: Array.from(this.selectedMuscles()).sort(),
+      steps: this.steps().map((s) => s.trim()).filter(Boolean),
+      repUnit: this.repUnit(),
+      ratingThresholds: this.thresholds(),
+      videoUrl: this.videoUrl().trim(),
+      regressionExerciseId: this.regressionExerciseId(),
+      photoId: this.photoId() ?? null,
+      videoId: this.videoId() ?? null,
+    });
+  }
+
+  private isDirty(): boolean {
+    return this.originalSnapshot !== null && this.formSnapshot() !== this.originalSnapshot;
+  }
 
   constructor(
     private library: ExerciseLibraryService,
@@ -146,6 +196,7 @@ export class CreateExercisePage implements OnInit {
     });
     this.destroyRef.onDestroy(() => {
       if (this.nameSearchTimer) clearTimeout(this.nameSearchTimer);
+      if (this.nameBlurTimer) clearTimeout(this.nameBlurTimer);
     });
   }
 
@@ -207,6 +258,11 @@ export class CreateExercisePage implements OnInit {
     this.videoId.set(existing.videoId);
     if (existing.photoId) this.photoPreviewUrl.set(await this.photos.getObjectUrl(existing.photoId));
     if (existing.videoId) this.videoPreviewUrl.set(await this.photos.getObjectUrl(existing.videoId));
+
+    // Recién ACÁ, con todos los campos ya precargados — antes de esta
+    // línea formSnapshot() todavía vería los valores por defecto del
+    // formulario vacío, no los reales.
+    this.originalSnapshot = this.formSnapshot();
   }
 
   async onPhotoSelected(event: Event): Promise<void> {
@@ -274,11 +330,15 @@ export class CreateExercisePage implements OnInit {
   get canSave(): boolean {
     // uploadingPhoto/uploadingVideo: no guardar mientras el id todavía no
     // volvió del servidor — se perdería la foto/video recién elegido.
+    // editingId() && !isDirty(): guardar sin haber cambiado nada no tiene
+    // sentido — solo aplica editando (originalSnapshot es null recién
+    // creado, isDirty() siempre da false ahí y no bloquea nada).
     return (
       this.name().trim().length > 0 &&
       this.selectedMuscles().size > 0 &&
       !this.uploadingPhoto() &&
-      !this.uploadingVideo()
+      !this.uploadingVideo() &&
+      (!this.editingId() || this.isDirty())
     );
   }
 

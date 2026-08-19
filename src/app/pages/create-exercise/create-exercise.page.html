@@ -32,23 +32,34 @@
   }
 
   <label class="form-label" for="ex-name">{{ i18n.t('createExercise.name') }}</label>
-  <input id="ex-name" class="text-input" type="text" [placeholder]="i18n.t('createExercise.namePlaceholder')" [(ngModel)]="name" />
-  @if (similarExercises().length) {
-    <div class="similar-results">
-      <p class="similar-results-label">{{ i18n.t('createExercise.similarResultsLabel') }}</p>
-      @for (result of similarExercises(); track result.id) {
-        <a class="similar-result-row" [routerLink]="['/exercises', result.id]">
-          <span class="name">
-            {{ result.name }}
-            @if (result.userId) {
-              <span class="custom-pill">{{ i18n.t('library.custom') }}</span>
-            }
-          </span>
-          <span class="tag">{{ i18n.t('enums.category.' + result.category) }}</span>
-        </a>
-      }
-    </div>
-  }
+  <div class="name-combobox">
+    <input
+      id="ex-name"
+      class="text-input"
+      type="text"
+      autocomplete="off"
+      [placeholder]="i18n.t('createExercise.namePlaceholder')"
+      [(ngModel)]="name"
+      (focus)="nameFieldFocused.set(true)"
+      (blur)="onNameBlur()"
+    />
+    @if (nameFieldFocused() && similarExercises().length) {
+      <div class="similar-results">
+        <p class="similar-results-label">{{ i18n.t('createExercise.similarResultsLabel') }}</p>
+        @for (result of similarExercises(); track result.id) {
+          <a class="similar-result-row" [routerLink]="['/exercises', result.id]">
+            <span class="name">
+              {{ result.name }}
+              @if (result.userId) {
+                <span class="custom-pill">{{ i18n.t('library.custom') }}</span>
+              }
+            </span>
+            <span class="tag">{{ i18n.t('enums.category.' + result.category) }}</span>
+          </a>
+        }
+      </div>
+    }
+  </div>
 
   <label class="form-label" for="ex-description">{{ i18n.t('createExercise.description') }}</label>
   <textarea id="ex-description" class="text-input" rows="2" [(ngModel)]="description"></textarea>

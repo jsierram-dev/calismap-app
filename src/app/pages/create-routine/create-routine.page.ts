@@ -54,6 +54,25 @@ export class CreateRoutinePage implements OnInit {
   pickerOpen = signal(false);
   saving = signal(false);
 
+  // Guardar deshabilitado hasta que haya un cambio real (19/08/2026, pedido
+  // explícito del usuario) — mismo criterio que CreateExercisePage.canSave:
+  // solo aplica EDITANDO, el orden de items SÍ importa acá (a diferencia de
+  // muscleGroups en el otro form, que es un Set real) así que no se ordena
+  // antes de comparar.
+  private originalSnapshot: string | null = null;
+
+  private formSnapshot(): string {
+    return JSON.stringify({
+      name: this.name().trim(),
+      description: this.description().trim(),
+      items: this.items().map((it) => ({ exerciseId: it.exercise.id, targetSets: it.targetSets, targetValues: it.targetValues })),
+    });
+  }
+
+  private isDirty(): boolean {
+    return this.originalSnapshot !== null && this.formSnapshot() !== this.originalSnapshot;
+  }
+
   constructor(
     private userRoutineService: UserRoutineService,
     private routineService: RoutineService,
@@ -91,6 +110,7 @@ export class CreateRoutinePage implements OnInit {
         draftItems.push({ exercise, targetSets: row.targetSets, targetValues: row.targetValues });
       }
       this.items.set(draftItems);
+      this.originalSnapshot = this.formSnapshot();
       return;
     }
 
@@ -107,6 +127,7 @@ export class CreateRoutinePage implements OnInit {
       draftItems.push({ exercise, targetSets: entry.targetSets, targetValues: entry.targetValues });
     }
     this.items.set(draftItems);
+    this.originalSnapshot = this.formSnapshot();
   }
 
   onExercisePicked(exercise: Exercise): void {
@@ -139,7 +160,11 @@ export class CreateRoutinePage implements OnInit {
   }
 
   get canSave(): boolean {
-    return this.name().trim().length > 0 && this.items().length > 0;
+    // editingId() && !isDirty(): mismo criterio que CreateExercisePage —
+    // guardar sin haber cambiado nada no tiene sentido, solo aplica
+    // editando (originalSnapshot es null recién creando, isDirty() da
+    // false ahí y no bloquea nada).
+    return this.name().trim().length > 0 && this.items().length > 0 && (!this.editingId() || this.isDirty());
   }
 
   async save(): Promise<void> {

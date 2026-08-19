@@ -52,21 +52,40 @@ textarea.text-input { resize: none; font-family: inherit; }
 .name-warning { margin: -14px 0 18px; font-size: 12px; color: var(--danger); }
 .name-warning b { color: var(--danger); }
 
-/* Resultados de "ejercicio parecido" (19/08/2026) — lista real en vez de
-   una sola línea de aviso, ver create-exercise.page.ts. Tocar una fila SOLO
-   navega a verla — nunca reusa/pisa ese ejercicio para el que se está
-   creando acá, ver el comentario de similarExercises. */
-.similar-results { margin: -14px 0 18px; display: flex; flex-direction: column; gap: 6px; }
+/* Resultados de "ejercicio parecido", estilo dropdown/selector (19/08/2026,
+   pedido explícito del usuario) — antes era una lista en el flujo normal
+   del documento, empujando el resto del form hacia abajo mientras hubiera
+   resultados. Ahora .name-combobox es el contenedor posicionado
+   (position:relative) y .similar-results flota ENCIMA del contenido de
+   abajo (position:absolute) como un combobox/autocomplete real — no mueve
+   nada de lugar al aparecer/desaparecer. Solo visible con el campo
+   enfocado (ver create-exercise.page.ts, nameFieldFocused). */
+.name-combobox { position: relative; }
+.similar-results {
+  position: absolute;
+  top: calc(100% - 14px);
+  left: 0; right: 0;
+  z-index: 20;
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 10px;
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
 .similar-results-label { margin: 0 0 2px; font-size: 11.5px; color: var(--text-2); }
 .similar-result-row {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   padding: 9px 11px;
   border-radius: var(--radius-sm);
-  background: var(--ink-1);
+  background: var(--ink-2);
   border: 1px solid var(--line-soft);
   text-decoration: none;
   color: inherit;
   font-size: 13px;
+  flex-shrink: 0;
 }
 .similar-result-row .name { display: flex; align-items: center; gap: 6px; }
 .similar-result-row .tag {
