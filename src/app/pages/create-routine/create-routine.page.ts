@@ -65,25 +65,46 @@ export class CreateRoutinePage implements OnInit {
     public i18n: I18nService,
   ) {}
 
+  // Ampliado (19/08/2026, pedido explícito del usuario) — antes esto
+  // cortaba de entrada para cualquier rutina NO admin, igual que el mismo
+  // hallazgo en CreateExercisePage.ngOnInit(): editar una rutina PROPIA no
+  // existía a nivel de ruta, `UserRoutineService.update()` ya estaba
+  // escrito pero nada de la UI lo llamaba.
   async ngOnInit(): Promise<void> {
     this.isAdminMode = this.route.snapshot.data['admin'] === true;
-    if (!this.isAdminMode) return;
-
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
-    this.editingId.set(id);
-    const detail = await this.routineService.getDetail(id);
-    if (!detail) return;
-    this.name.set(detail.name);
-    this.description.set(detail.description);
-    this.currentExerciseRowIds.set(detail.exercises.map((e) => e.id));
 
-    const sorted = [...detail.exercises].sort((a, b) => a.stepOrder - b.stepOrder);
+    if (this.isAdminMode) {
+      this.editingId.set(id);
+      const detail = await this.routineService.getDetail(id);
+      if (!detail) return;
+      this.name.set(detail.name);
+      this.description.set(detail.description);
+      this.currentExerciseRowIds.set(detail.exercises.map((e) => e.id));
+
+      const sorted = [...detail.exercises].sort((a, b) => a.stepOrder - b.stepOrder);
+      const draftItems: DraftItem[] = [];
+      for (const row of sorted) {
+        const exercise = await this.exerciseLibrary.getById(row.exerciseId);
+        if (!exercise) continue;
+        draftItems.push({ exercise, targetSets: row.targetSets, targetValues: row.targetValues });
+      }
+      this.items.set(draftItems);
+      return;
+    }
+
+    const own = await this.userRoutineService.getById(id);
+    if (!own) return; // guardrail — un id de ruta se puede escribir a mano; sin la rutina propia, queda como formulario de creación vacío
+    this.editingId.set(id);
+    this.name.set(own.name);
+
+    const sorted = [...own.exercises].sort((a, b) => a.order - b.order);
     const draftItems: DraftItem[] = [];
-    for (const row of sorted) {
-      const exercise = await this.exerciseLibrary.getById(row.exerciseId);
+    for (const entry of sorted) {
+      const exercise = await this.exerciseLibrary.getById(entry.exerciseId);
       if (!exercise) continue;
-      draftItems.push({ exercise, targetSets: row.targetSets, targetValues: row.targetValues });
+      draftItems.push({ exercise, targetSets: entry.targetSets, targetValues: entry.targetValues });
     }
     this.items.set(draftItems);
   }
@@ -152,6 +173,19 @@ export class CreateRoutinePage implements OnInit {
       targetSets: it.targetSets,
       targetValues: it.targetValues,
     }));
+
+    // Editar una rutina propia ya existente (19/08/2026) — antes esta rama
+    // SIEMPRE creaba una nueva, sin importar si `editingId()` venía seteado
+    // (no podía pasar hasta ahora, ver ngOnInit). Sin aviso de login acá —
+    // editar no es uno de los 4 momentos reales (ver ROADMAP-calismap.md
+    // "Login: OPCIONAL"), solo crear.
+    const editId = this.editingId();
+    if (editId) {
+      await this.userRoutineService.update(editId, { name: this.name().trim(), exercises });
+      this.router.navigateByUrl('/choose-session');
+      return;
+    }
+
     await this.userRoutineService.create(this.name().trim(), exercises);
 
     // Guardar una rutina propia es uno de los 4 momentos con motivo real
@@ -164,10 +198,20 @@ export class CreateRoutinePage implements OnInit {
     this.router.navigateByUrl('/choose-session');
   }
 
+  // Ampliado (19/08/2026) — antes esto SOLO existía para modo admin;
+  // `UserRoutineService.remove` ya existía del lado del servicio pero nada
+  // de la UI lo llamaba todavía. Mismo branch que ya usa save().
   async remove(): Promise<void> {
     const id = this.editingId();
     if (!id) return;
     if (!confirm(this.i18n.t('createRoutine.confirmDelete', { name: this.name() }))) return;
+
+    if (!this.isAdminMode) {
+      await this.userRoutineService.remove(id);
+      this.router.navigateByUrl('/choose-session');
+      return;
+    }
+
     await this.routineService.adminDelete(id);
     this.router.navigateByUrl('/admin/routines');
   }

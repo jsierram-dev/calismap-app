@@ -57,8 +57,23 @@ export const routes: Routes = [
     path: 'create-routine',
     loadComponent: () => import('./pages/create-routine/create-routine.page').then((m) => m.CreateRoutinePage),
   },
+  // Editar una rutina PROPIA (19/08/2026, ver ROADMAP-calismap.md) — misma
+  // ruta base que crear, sin `data: { admin: true }` (eso queda reservado
+  // para /admin/routines/:id/edit). CreateRoutinePage decide sola si el id
+  // recibido es realmente de una rutina propia del usuario actual (ver el
+  // guardrail en su ngOnInit) antes de tratarlo como edición.
+  {
+    path: 'create-routine/:id',
+    loadComponent: () => import('./pages/create-routine/create-routine.page').then((m) => m.CreateRoutinePage),
+  },
   {
     path: 'create-exercise',
+    loadComponent: () => import('./pages/create-exercise/create-exercise.page').then((m) => m.CreateExercisePage),
+  },
+  // Editar un ejercicio PROPIO — mismo criterio que create-routine/:id de
+  // arriba.
+  {
+    path: 'create-exercise/:id',
     loadComponent: () => import('./pages/create-exercise/create-exercise.page').then((m) => m.CreateExercisePage),
   },
   {

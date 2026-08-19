@@ -125,6 +125,15 @@ export class SessionWorkoutPage implements OnInit {
     await this.load();
   }
 
+  // Botón de editar sobre una rutina PROPIA (19/08/2026, pedido explícito
+  // del usuario) — stopPropagation: la tarjeta entera también tiene un
+  // (click) propio (arrancar sesión con esa rutina), sin esto el click acá
+  // arrancaría una sesión Y navegaría a editar al mismo tiempo.
+  editRoutine(event: Event, userRoutineId: string): void {
+    event.stopPropagation();
+    this.router.navigate(['/create-routine', userRoutineId]);
+  }
+
   // ─── Sesión en curso ──────────────────────────────────────────────────
   async onSetDone(exerciseId: string, event: SetDoneEvent): Promise<void> {
     const session = this.active();

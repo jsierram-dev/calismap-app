@@ -141,6 +141,28 @@ export class ExerciseLibraryService {
     await this.collection.upsert(markDeleted(exercise));
   }
 
+  // Faltaba (19/08/2026, pedido explícito del usuario: "botones de editar y
+  // eliminar ejercicios... creados por el usuario") — createOwn/deleteOwn ya
+  // existían, esto cierra el CRUD de lo propio. Mismo guardrail que
+  // deleteOwn: nunca toca una fila de catálogo (userId ausente) aunque
+  // alguien llegue acá con un id de catálogo a mano (ej. URL escrita
+  // directo). nameSpanish/nameEnglish se pisan junto con name — un
+  // ejercicio propio no tiene traducción real, los tres siguen siendo el
+  // mismo valor tal cual lo escribió el usuario (mismo criterio que
+  // createOwn).
+  async updateOwn(id: string, patch: Partial<OwnExerciseInput>): Promise<Exercise | null> {
+    const existing = await this.collection.getById(id);
+    if (!existing || !existing.userId) return null;
+    const updated: Exercise = touch({
+      ...existing,
+      ...patch,
+      nameSpanish: patch.name ?? existing.nameSpanish,
+      nameEnglish: patch.name ?? existing.nameEnglish,
+    });
+    await this.collection.upsert(updated);
+    return updated;
+  }
+
   // ─── Pull-and-cache del catálogo ─────────────────────────────────────────
   // Guarda la PROMESA en vuelo, no un booleano — encontrado el 16/08/2026
   // armando el panel de admin: getAllRoadmaps() dispara varias llamadas a

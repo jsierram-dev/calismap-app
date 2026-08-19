@@ -33,8 +33,21 @@
 
   <label class="form-label" for="ex-name">{{ i18n.t('createExercise.name') }}</label>
   <input id="ex-name" class="text-input" type="text" [placeholder]="i18n.t('createExercise.namePlaceholder')" [(ngModel)]="name" />
-  @if (similarExercise(); as similar) {
-    <p class="name-warning">{{ i18n.t('createExercise.similarWarningPrefix') }}<b>{{ similar.name }}</b></p>
+  @if (similarExercises().length) {
+    <div class="similar-results">
+      <p class="similar-results-label">{{ i18n.t('createExercise.similarResultsLabel') }}</p>
+      @for (result of similarExercises(); track result.id) {
+        <a class="similar-result-row" [routerLink]="['/exercises', result.id]">
+          <span class="name">
+            {{ result.name }}
+            @if (result.userId) {
+              <span class="custom-pill">{{ i18n.t('library.custom') }}</span>
+            }
+          </span>
+          <span class="tag">{{ i18n.t('enums.category.' + result.category) }}</span>
+        </a>
+      }
+    </div>
   }
 
   <label class="form-label" for="ex-description">{{ i18n.t('createExercise.description') }}</label>
@@ -107,7 +120,7 @@
     {{ saving() ? i18n.t('createExercise.saving') : (editingId() ? i18n.t('createExercise.saveChanges') : i18n.t('createExercise.saveNew')) }}
   </button>
 
-  @if (isAdminMode && editingId()) {
+  @if (editingId()) {
     <button class="btn btn-danger" type="button" style="width:100%;margin-top:8px" (click)="remove()">{{ i18n.t('createExercise.deleteExercise') }}</button>
   }
 </div>

@@ -34,6 +34,25 @@
 .routine-card .origin.own { background: var(--accent-soft); color: var(--accent); }
 .routine-card.create { border-style: dashed; justify-content: center; color: var(--accent); font-size: 13px; font-weight: 700; gap: 8px; }
 
+/* Rutina PROPIA: .origin + botón de editar agrupados (19/08/2026, ver
+   session-workout.page.ts) — antes acá solo vivía .origin suelto; la
+   tarjeta de rutina propia pasó de <button> a <div role="button"> para
+   poder anidar este botón adentro (mismo motivo que .ex-card en
+   library.page.html — <button> dentro de <button> es HTML inválido). */
+.routine-card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.routine-edit-btn {
+  width: 30px; height: 30px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-2);
+  border: 1px solid var(--line-soft);
+  color: var(--text-2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.routine-edit-btn svg { width: 14px; height: 14px; }
+.routine-edit-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 /* ── Sesión activa ── */
 .session-header { display: flex; align-items: center; justify-content: space-between; margin: 12px 0 18px; }
 .session-header .name span { font-size: 11.5px; color: var(--text-2); display: block; }

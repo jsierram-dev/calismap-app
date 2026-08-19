@@ -168,6 +168,7 @@ export const TRANSLATIONS = {
     'library.custom': 'Personalizado',
     'library.empty': 'No encontramos ningún ejercicio con ese criterio.',
     'library.createAria': 'Crear ejercicio',
+    'library.editAria': 'Editar ejercicio',
 
     // ── exercise-detail (03) ─────────────────────────────────────────────
     'exerciseDetail.photoSoon': 'FOTO PRÓXIMAMENTE',
@@ -211,6 +212,7 @@ export const TRANSLATIONS = {
     'session.official': 'Oficial',
     'session.exercisesCountCreatedByYou': '{count} ejercicios · creada por ti',
     'session.own': 'Tuya',
+    'session.editRoutineAria': 'Editar rutina',
     'session.createYourRoutine': 'Crear tu rutina',
 
     // ── session-summary (pantalla de logros, 18/08/2026) ──────────────────
@@ -279,7 +281,7 @@ export const TRANSLATIONS = {
     'createExercise.photo': 'Foto',
     'createExercise.video': 'Video',
     'createExercise.uploadHint': 'Toca un recuadro para elegir cámara o almacenamiento',
-    'createExercise.similarWarningPrefix': 'Ya existe un ejercicio parecido: ',
+    'createExercise.similarResultsLabel': 'Ya existen ejercicios con un nombre parecido:',
     'createExercise.name': 'Nombre',
     'createExercise.namePlaceholder': 'Ej. Plancha lateral',
     'createExercise.description': 'Descripción',
@@ -563,6 +565,7 @@ export const TRANSLATIONS = {
     'library.custom': 'Custom',
     'library.empty': "We couldn't find any exercise matching that.",
     'library.createAria': 'Create exercise',
+    'library.editAria': 'Edit exercise',
 
     // ── exercise-detail ──────────────────────────────────────────────────
     'exerciseDetail.photoSoon': 'PHOTO COMING SOON',
@@ -606,6 +609,7 @@ export const TRANSLATIONS = {
     'session.official': 'Official',
     'session.exercisesCountCreatedByYou': '{count} exercises · created by you',
     'session.own': 'Yours',
+    'session.editRoutineAria': 'Edit routine',
     'session.createYourRoutine': 'Create your routine',
 
     // ── session-summary (achievements screen, 18/08/2026) ─────────────────
@@ -674,7 +678,7 @@ export const TRANSLATIONS = {
     'createExercise.photo': 'Photo',
     'createExercise.video': 'Video',
     'createExercise.uploadHint': 'Tap a tile to pick camera or storage',
-    'createExercise.similarWarningPrefix': 'A similar exercise already exists: ',
+    'createExercise.similarResultsLabel': 'Exercises with a similar name already exist:',
     'createExercise.name': 'Name',
     'createExercise.namePlaceholder': 'E.g. Side plank',
     'createExercise.description': 'Description',

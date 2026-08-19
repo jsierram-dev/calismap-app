@@ -35,7 +35,7 @@
     {{ saving() ? i18n.t('createRoutine.saving') : (editingId() ? i18n.t('createRoutine.saveChanges') : i18n.t('createRoutine.saveNew')) }}
   </button>
 
-  @if (isAdminMode && editingId()) {
+  @if (editingId()) {
     <button class="btn btn-danger" type="button" style="width:100%;margin-top:8px" (click)="remove()">{{ i18n.t('createRoutine.deleteRoutine') }}</button>
   }
 </div>

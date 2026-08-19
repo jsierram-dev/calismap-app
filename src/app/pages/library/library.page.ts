@@ -1,6 +1,6 @@
 import { UpperCasePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, computed, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Exercise, ExerciseCategory, MuscleGroup, Rating } from '../../models/exercise.model';
 import { effectiveValue } from '../../models/workout-log.model';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
@@ -92,6 +92,7 @@ export class LibraryPage implements OnInit {
     private library: ExerciseLibraryService,
     private workoutLog: WorkoutLogService,
     private ratingCalc: RatingCalculatorService,
+    private router: Router,
     public i18n: I18nService,
   ) {}
 
@@ -128,10 +129,29 @@ export class LibraryPage implements OnInit {
     }
   }
 
-  onCardClick(event: Event, exercise: Exercise): void {
-    if (!this.pickerMode) return;
-    event.preventDefault();
-    this.picked.emit(exercise);
+  // `.ex-card` pasó de <a routerLink> a <div> (19/08/2026) — hacía falta
+  // para poder anidar un botón de editar DENTRO de la tarjeta (ver el
+  // template): <button> adentro de <a> es HTML inválido (contenido
+  // interactivo anidado), así que la tarjeta entera no podía seguir siendo
+  // un link. La navegación normal (no picker) ahora es programática acá en
+  // vez de dejar que el navegador la resuelva sola.
+  onCardClick(exercise: Exercise): void {
+    if (this.pickerMode) {
+      this.picked.emit(exercise);
+      return;
+    }
+    this.router.navigate(['/exercises', exercise.id]);
+  }
+
+  // Botón de editar (19/08/2026, pedido explícito del usuario: "botones de
+  // editar y eliminar ejercicios... creados por el usuario") — solo
+  // aparece en modo no-picker sobre una tarjeta PROPIA (ver template).
+  // stopPropagation: sin esto, el click también burbujea al (click) de la
+  // tarjeta entera y navegaría a la vista de detalle en vez de (o además
+  // de) ir a editar.
+  editOwn(event: Event, exerciseId: string): void {
+    event.stopPropagation();
+    this.router.navigate(['/create-exercise', exerciseId]);
   }
 
   private async load(): Promise<void> {
