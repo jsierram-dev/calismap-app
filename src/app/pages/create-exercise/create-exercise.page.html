@@ -47,7 +47,7 @@
       <div class="similar-results">
         <p class="similar-results-label">{{ i18n.t('createExercise.similarResultsLabel') }}</p>
         @for (result of similarExercises(); track result.id) {
-          <a class="similar-result-row" [routerLink]="['/exercises', result.id]">
+          <a class="similar-result-row" [routerLink]="['/exercises', result.id]" (mousedown)="$event.preventDefault()">
             <span class="name">
               {{ result.name }}
               @if (result.userId) {

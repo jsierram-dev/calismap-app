@@ -120,10 +120,24 @@ export class CreateExercisePage implements OnInit {
   // hacia abajo mientras hubiera resultados, aunque el usuario ya hubiera
   // seguido a otro campo. Ahora solo se muestra con el campo enfocado (ver
   // el template, position:absolute flotando encima en vez de empujar
-  // contenido — ver create-exercise.page.css). onNameBlur() retrasa el
-  // cierre 150ms en vez de cerrarlo en el mismo tick: sin ese margen, el
-  // blur del input borra la lista del DOM ANTES de que el click en una fila
-  // llegue a registrarse (mismo problema clásico de cualquier combobox).
+  // contenido — ver create-exercise.page.css).
+  //
+  // Bug real, encontrado el mismo día ("no funciona acceder a un ejercicio
+  // desde el selector") y confirmado con un click LENTO simulado (mousedown
+  // → esperar 300ms → mouseup, en vez del click instantáneo de una prueba
+  // automatizada normal): con solo este timer de 150ms, un click/tap real
+  // que tarda más que eso en soltar el botón/dedo alcanza a disparar el
+  // blur del input, que borra la fila del DOM ANTES de que el click llegue
+  // a registrarse en ella — la navegación nunca pasaba. Arreglado en la
+  // RAÍZ, no ajustando el número: cada fila del template suma
+  // `(mousedown)="$event.preventDefault()"` — eso cancela el cambio de foco
+  // que el navegador haría por defecto en el mousedown, así que el input
+  // JAMÁS pierde el foco al interactuar con una fila (sin importar cuánto
+  // tarde el click), y el evento `click` de la fila (que sí disparó
+  // routerLink) sigue llegando normal. El timer de acá abajo queda como
+  // red de seguridad para CUALQUIER OTRA forma de perder el foco (Tab,
+  // click bien afuera del combobox) — ya no protege el click de una fila,
+  // eso lo resuelve el preventDefault.
   nameFieldFocused = signal(false);
   private nameBlurTimer: ReturnType<typeof setTimeout> | null = null;
   private nameSearchTimer: ReturnType<typeof setTimeout> | null = null;
