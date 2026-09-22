@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Exercise } from '../../models/exercise.model';
 import { CsvImportService, ExerciseDecision, ParsedImport } from '../../services/csv-import.service';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
@@ -29,7 +29,7 @@ interface ExerciseRow {
 @Component({
   selector: 'app-import',
   standalone: true,
-  imports: [LibraryPage],
+  imports: [LibraryPage, RouterLink],
   templateUrl: './import.page.html',
   styleUrl: './import.page.css',
 })

@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { ThemePreference, ThemeService } from '../../core/services/theme.service';
 import { SyncService } from '../../core/services/sync.service';
+import { CsvExportService } from '../../services/csv-export.service';
 import { ExerciseLibraryService } from '../../services/exercise-library.service';
 import { RoadmapService } from '../../services/roadmap.service';
 import { UserProfileService } from '../../services/user-profile.service';
@@ -33,6 +34,8 @@ const KG_PER_LB = 0.453592;
 })
 export class SettingsPage implements OnInit {
   bodyWeightInput = signal(75);
+  exportingCsv = signal(false);
+  exportError = signal<string | null>(null);
 
   constructor(
     public auth: AuthService,
@@ -42,6 +45,7 @@ export class SettingsPage implements OnInit {
     public i18n: I18nService,
     private exerciseLibrary: ExerciseLibraryService,
     private roadmapService: RoadmapService,
+    private csvExport: CsvExportService,
   ) {}
 
   ngOnInit(): void {
@@ -86,6 +90,24 @@ export class SettingsPage implements OnInit {
   async saveBodyWeight(displayValue: number): Promise<void> {
     const kg = this.profile.profile().weightUnit === 'lbs' ? displayValue * KG_PER_LB : displayValue;
     await this.profile.save({ bodyWeightKg: Math.round(kg * 10) / 10 });
+  }
+
+  // Exportar CSV (22/09/2026, pedido explícito del usuario, mismo día que
+  // se construyó el importador) — un solo click, sin pantalla propia: a
+  // diferencia de importar, exportar no tiene ninguna ambigüedad que
+  // resolver (es dato propio, ya se sabe exactamente qué es cada fila),
+  // así que no hace falta ningún wizard.
+  async exportCsv(): Promise<void> {
+    if (this.exportingCsv()) return;
+    this.exportError.set(null);
+    this.exportingCsv.set(true);
+    try {
+      await this.csvExport.exportAll();
+    } catch {
+      this.exportError.set(this.i18n.t('settings.exportError'));
+    } finally {
+      this.exportingCsv.set(false);
+    }
   }
 
   private load(): void {

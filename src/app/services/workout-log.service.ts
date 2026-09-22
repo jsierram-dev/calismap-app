@@ -81,6 +81,11 @@ export class WorkoutLogService {
     await this.collection.upsert({ ...log, deletedAt: new Date().toISOString() });
   }
 
+  /** Exportador de CSV (22/09/2026, ver ROADMAP-calismap.md) — hasta ahora no hacía falta traer TODO el historial de una, solo por ejercicio/sesión puntual. */
+  async getAll(): Promise<WorkoutLog[]> {
+    return (await this.collection.getAll()).filter((l) => !l.deletedAt);
+  }
+
   async getForExercise(exerciseId: string): Promise<WorkoutLog[]> {
     const all = await this.collection.getAll();
     return all.filter((l) => l.exerciseId === exerciseId && !l.deletedAt);

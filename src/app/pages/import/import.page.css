@@ -1,6 +1,17 @@
 .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .icon.big { width: 40px; height: 40px; stroke-width: 1.4; }
 
+/* Bug real reportado por el usuario (22/09/2026) — la pantalla no tenía
+   forma de salir sin usar el botón "atrás" del navegador. Mismo patrón
+   que SettingsPage (que tampoco es un tab, también necesita su propio
+   link para volver). */
+.back-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: var(--text-1); text-decoration: none; font-size: 13px;
+  margin-bottom: var(--space-3);
+}
+.back-link .icon { width: 16px; height: 16px; }
+
 /* Paso 1 — elegir archivo */
 .file-drop {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
