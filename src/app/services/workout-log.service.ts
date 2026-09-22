@@ -52,6 +52,28 @@ export class WorkoutLogService {
     return log;
   }
 
+  /**
+   * Importador de CSV (22/09/2026, ver ROADMAP-calismap.md) — a diferencia
+   * de logSet(), acá `loggedAt` viene del archivo importado (la fecha REAL
+   * en que se hizo el ejercicio), no `new Date()` — importar el historial
+   * de otra app y que todo aparezca "logueado hoy" rompería justo el punto
+   * de importar el pasado. `bodyWeightAtLog` usa el peso ACTUAL del
+   * usuario para todas las filas (no hay peso histórico guardado en
+   * calismap — limitación conocida, documentada en el ROADMAP, no hay otro
+   * dato disponible).
+   *
+   * Un solo `applyUpdates()` para todo el lote — un archivo real puede
+   * traer cientos de marcas; `upsert()` en loop reescribiría la colección
+   * ENTERA a IndexedDB una vez por marca.
+   */
+  async importLogs(
+    entries: { id: string; sessionId: string; exerciseId: string; value: number; addedWeightKg: number; bodyWeightAtLog: number; loggedAt: string }[],
+  ): Promise<void> {
+    if (!entries.length) return;
+    const logs: WorkoutLog[] = entries.map((e) => ({ ...e, deletedAt: null }));
+    await this.collection.applyUpdates(logs);
+  }
+
   /** Una marca es inmutable — borrar es la única "edición" posible (ver ROADMAP-calismap.md). */
   async remove(id: string): Promise<void> {
     const log = await this.collection.getById(id);

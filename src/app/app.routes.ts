@@ -80,6 +80,12 @@ export const routes: Routes = [
     path: 'catalog-sources',
     loadComponent: () => import('./pages/catalog-sources/catalog-sources.page').then((m) => m.CatalogSourcesPage),
   },
+  // Importador de CSV (22/09/2026, ver ROADMAP-calismap.md) — entrada desde
+  // Ajustes, sección "Datos".
+  {
+    path: 'import',
+    loadComponent: () => import('./pages/import/import.page').then((m) => m.ImportPage),
+  },
 
   // ── Panel de admin (agregado 16/08/2026) — dentro de la app móvil, no una
   //    sección de escritorio aparte (decisión del usuario, ver

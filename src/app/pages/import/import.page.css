@@ -1,0 +1,73 @@
+.icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.icon.big { width: 40px; height: 40px; stroke-width: 1.4; }
+
+/* Paso 1 — elegir archivo */
+.file-drop {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  width: 100%;
+  padding: 36px 16px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-md);
+  color: var(--text-1);
+  cursor: pointer;
+  margin-top: 8px;
+}
+.file-drop .icon { width: 28px; height: 28px; color: var(--accent); }
+.error-note { color: var(--danger); font-size: 12.5px; margin-top: 10px; }
+
+/* Paso "weight-unit" */
+.segmented { display: flex; background: var(--ink-2); border-radius: 8px; padding: 2px; }
+.segmented.full { width: 100%; margin-top: var(--space-3); }
+.segmented button { border: none; background: none; font-family: var(--font-mono); font-size: 11px; padding: 8px 12px; border-radius: 6px; color: var(--text-1); cursor: pointer; flex: 1; }
+.segmented button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Paso 2 — revisar ejercicios */
+.ignored-note { font-size: 11.5px; color: var(--text-2); margin: 0 0 12px; }
+.exercise-row {
+  background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md);
+  padding: 14px; margin-bottom: 10px;
+}
+.exercise-row.resolved { border-color: var(--accent); }
+.exercise-row .info h4 { margin: 0 0 3px; font-size: 14px; }
+.exercise-row .info p { margin: 0; font-size: 11.5px; color: var(--text-2); }
+.exercise-row .decision-note { margin-top: 4px; color: var(--text-1); }
+.exercise-row .decision-note b { color: var(--accent); }
+.exercise-row .decision-note.danger { color: var(--danger); }
+.exercise-row .actions { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
+
+.chip-select {
+  font-family: var(--font-mono); font-size: 11px; padding: 8px 13px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--text-1); background: none; cursor: pointer;
+}
+.chip-select.danger { border-color: var(--danger); color: var(--danger); }
+.chip-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Paso 3 — confirmar */
+.settings-card { background: var(--ink-1); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; margin-top: 8px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--line-soft); }
+.settings-row:last-child { border-bottom: none; }
+.settings-row .label { font-size: 13.5px; }
+.tag {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 5px; background: var(--ink-2); color: var(--text-1); border: 1px solid var(--line-soft);
+}
+
+/* Paso 4 — hecho */
+.done-card {
+  display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+  padding: 32px 16px; margin: 8px 0 20px;
+}
+.done-card .icon.big { color: var(--accent); }
+.done-card h3 { margin: 0; font-size: 17px; }
+.done-card p { margin: 0; font-size: 13px; color: var(--text-2); }
+
+/* Picker de "elegir otro ejercicio" — mismo mecanismo que create-routine/session-workout */
+.picker-overlay {
+  position: fixed; inset: 0; z-index: 40;
+  background: var(--ink-0);
+  display: flex; flex-direction: column;
+}
+.picker-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line-soft); flex-shrink: 0; }
+.picker-header h3 { font-size: 15px; margin: 0; }
+.picker-header button { background: none; border: none; color: var(--text-2); display: flex; cursor: pointer; }
+.picker-overlay app-library { flex: 1; min-height: 0; display: flex; flex-direction: column; }

@@ -1,0 +1,98 @@
+<div class="page-content">
+  <h1 class="screen-title">{{ i18n.t('import.title') }}</h1>
+
+  @if (step() === 'file') {
+    <p class="screen-sub">{{ i18n.t('import.fileSubtitle') }}</p>
+    <label class="file-drop">
+      <input type="file" accept=".csv" hidden (change)="onFileSelected($event)" />
+      <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>
+      <span>{{ i18n.t('import.chooseFile') }}</span>
+    </label>
+    @if (parseError()) {
+      <p class="error-note">{{ parseError() }}</p>
+    }
+  }
+
+  @if (step() === 'weight-unit') {
+    <p class="screen-sub">{{ i18n.t('import.weightUnitSubtitle', { file: fileName() }) }}</p>
+    <div class="segmented full">
+      <button type="button" (click)="onWeightUnitConfirmed('kg')">{{ i18n.t('import.kg') }}</button>
+      <button type="button" (click)="onWeightUnitConfirmed('lbs')">{{ i18n.t('import.lbs') }}</button>
+    </div>
+  }
+
+  @if (step() === 'review' && parsed(); as p) {
+    <p class="screen-sub">{{ i18n.t('import.reviewSubtitle', { count: rows().length }) }}</p>
+
+    @if (p.ignoredColumns.length) {
+      <p class="ignored-note">{{ i18n.t('import.ignoredColumnsNote', { columns: p.ignoredColumns.join(', ') }) }}</p>
+    }
+    @if (p.skippedRowCount) {
+      <p class="ignored-note">{{ i18n.t('import.skippedRowsNote', { count: p.skippedRowCount }) }}</p>
+    }
+
+    @for (row of rows(); track row.name) {
+      <div class="exercise-row" [class.resolved]="row.decision !== null">
+        <div class="info">
+          <h4>{{ row.name }}</h4>
+          <p>{{ i18n.t('import.setsCount', { count: row.rowCount }) }}</p>
+          @if (row.decision?.kind === 'confirm' || row.decision?.kind === 'map') {
+            <p class="decision-note">{{ i18n.t('import.mappedTo') }} <b>{{ exerciseLibraryName(row) }}</b></p>
+          } @else if (row.decision?.kind === 'create') {
+            <p class="decision-note">{{ i18n.t('import.willCreateOwn') }}</p>
+          } @else if (row.decision?.kind === 'skip') {
+            <p class="decision-note danger">{{ i18n.t('import.willSkip') }}</p>
+          }
+        </div>
+        <div class="actions">
+          @if (row.suggestion && row.decision?.kind !== 'confirm') {
+            <button class="chip-select" type="button" (click)="confirmSuggestion(row)">{{ i18n.t('import.useSuggestion', { name: row.suggestion.name }) }}</button>
+          }
+          <button class="chip-select" type="button" (click)="openPickerFor(row.name)">{{ i18n.t('import.pickAnother') }}</button>
+          <button class="chip-select" type="button" (click)="createAsOwn(row.name)">{{ i18n.t('import.createOwn') }}</button>
+          <button class="chip-select danger" type="button" (click)="skip(row.name)">{{ i18n.t('import.skipExercise') }}</button>
+        </div>
+      </div>
+    }
+
+    <button class="btn btn-primary" type="button" style="width:100%;margin-top:16px" [disabled]="!allDecided" (click)="goToConfirm()">
+      {{ i18n.t('import.continueToConfirm') }}
+    </button>
+  }
+
+  @if (step() === 'confirm' && parsed(); as p) {
+    <p class="screen-sub">{{ i18n.t('import.confirmSubtitle') }}</p>
+    <div class="settings-card">
+      <div class="settings-row"><div class="label">{{ i18n.t('import.summarySessions') }}</div><span class="tag">{{ summarySessionCount }}</span></div>
+      <div class="settings-row"><div class="label">{{ i18n.t('import.summaryLogs') }}</div><span class="tag">{{ summaryLogCount }}</span></div>
+      @if (p.skippedRowCount) {
+        <div class="settings-row"><div class="label">{{ i18n.t('import.summarySkippedRows') }}</div><span class="tag">{{ p.skippedRowCount }}</span></div>
+      }
+    </div>
+    <button class="btn btn-primary" type="button" style="width:100%;margin-top:16px" [disabled]="importing()" (click)="doImport()">
+      {{ importing() ? i18n.t('import.importing') : i18n.t('import.importNow') }}
+    </button>
+  }
+
+  @if (step() === 'done' && result(); as r) {
+    <div class="done-card">
+      <svg class="icon big" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+      <h3>{{ i18n.t('import.doneTitle') }}</h3>
+      <p>{{ i18n.t('import.doneSubtitle', { sessions: r.sessions, logs: r.logs }) }}</p>
+    </div>
+    <button class="btn btn-primary" type="button" style="width:100%" (click)="goToProfile()">{{ i18n.t('import.goToProfile') }}</button>
+    <button class="btn btn-ghost" type="button" style="width:100%;margin-top:8px" (click)="goToLibrary()">{{ i18n.t('import.goToLibrary') }}</button>
+  }
+</div>
+
+@if (pickerOpenFor()) {
+  <div class="picker-overlay">
+    <div class="picker-header">
+      <h3>{{ i18n.t('import.pickAnother') }}</h3>
+      <button type="button" (click)="pickerOpenFor.set(null)" [attr.aria-label]="i18n.t('createRoutine.closeAria')">
+        <svg class="icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+      </button>
+    </div>
+    <app-library [pickerMode]="true" (picked)="onExercisePicked($event)" />
+  </div>
+}

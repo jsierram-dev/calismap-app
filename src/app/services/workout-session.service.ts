@@ -90,6 +90,38 @@ export class WorkoutSessionService {
     return session;
   }
 
+  /**
+   * Importador de CSV (22/09/2026, ver ROADMAP-calismap.md) — a diferencia
+   * de startSession(), acá las sesiones nacen YA CERRADAS (con su
+   * endedAt real del archivo importado, no null) y con `source:'import'`
+   * (el valor ya existía en el modelo desde el diseño original, reservado
+   * justo para esto). Sin tocar ActiveSessionIndicatorService/
+   * ACTIVE_NAME_KEY — una sesión importada nunca es "la sesión activa" de
+   * ahora, así que no debe encender el indicador de la navbar.
+   *
+   * Un solo `applyUpdates()` para todo el lote (no `upsert()` en loop) —
+   * mismo motivo que WorkoutLogService.importLogs(): evita N writes
+   * completos a IndexedDB para un archivo que puede traer decenas de
+   * sesiones.
+   */
+  async importSessions(entries: { id: string; startedAt: string; endedAt: string }[]): Promise<WorkoutSession[]> {
+    if (!entries.length) return [];
+    const sessions = entries.map((e) =>
+      touch({
+        id: e.id,
+        startedAt: e.startedAt,
+        endedAt: e.endedAt,
+        source: 'import' as const,
+        routineId: null,
+        userRoutineId: null,
+        updatedAt: '',
+        deletedAt: null,
+      }),
+    );
+    await this.collection.applyUpdates(sessions);
+    return sessions;
+  }
+
   async endSession(id: string): Promise<void> {
     const session = await this.collection.getById(id);
     if (!session) return;
