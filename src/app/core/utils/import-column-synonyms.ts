@@ -43,11 +43,29 @@
 //     concepto. Export CSV confirmado que existe; header verbatim no
 //     encontrado en la investigación — no se listan sinónimos propios acá
 //     todavía, pendiente de conseguir un export real de muestra.
+//   - Liftoff (liftoffrank.com) — 9na app, sumada el 22/09/2026: el USUARIO
+//     mismo exportó su propio historial y confirmó las columnas de primera
+//     mano (fuente más confiable que cualquier búsqueda — texto exacto, no
+//     una guía de terceros parafraseando). Prácticamente calcada de Strong
+//     (Fecha/Duración/Nombre de Entrenamiento/Nombre del Ejercicio/Orden de
+//     las series/Peso/Reps/Distancia/Segundos/RPE/Notas) — tiene sentido,
+//     Liftoff explícitamente importa CSVs de Strong y Hevy, así que su
+//     propio export sigue ese mismo esquema. A diferencia de las otras 8
+//     (todas documentadas en inglés), este export es en CASTELLANO — reveló
+//     un hueco real: hasta acá el diccionario solo tenía sinónimos en
+//     inglés. Se suman abajo los equivalentes en español CONFIRMADOS por
+//     este export real a los campos que ya existían (sin inventar campos
+//     nuevos) — "Repeticiones" en vez de "Reps", por ejemplo, es el caso
+//     que destapó el problema: cualquier app usada en español (no solo
+//     Liftoff) puede exportar headers en español, no solo variar el
+//     inglés entre apps.
 //
 // Case-insensitive a propósito — normalizeHeader() ya resuelve
 // mayúsculas/espacios/guiones-bajos antes de buscar, así "Exercise Name",
 // "exercise_name" y "ExerciseName" matchean igual sin listar las 3 variantes
-// a mano acá abajo.
+// a mano acá abajo. NO resuelve idioma — "Duración" y "Duration" son
+// strings distintos de por sí, cada equivalente real en otro idioma se
+// lista aparte en COLUMN_SYNONYMS (ver el comentario de arriba).
 
 export type ImportField =
   | 'DATE'
@@ -101,11 +119,13 @@ export const COLUMN_SYNONYMS: Record<ImportField, string[]> = {
     'start_time', // Hevy — hay también "end_time", ver WORKOUT_NAME/duración de sesión
     'date', // StrongLifts, Caliber, JEFIT (forma genérica, header exacto no confirmado)
     'Workout Date',
+    'Fecha', // Liftoff (export real del usuario, 22/09/2026) — confirma que cualquier app usada en español exporta headers en español, no solo inglés
   ],
   WORKOUT_NAME: [
     'Workout Name', // Strong, StrongLifts
     'title', // Hevy
     'description', // Hevy también reusa esta para el título largo de la rutina
+    'Nombre de Entrenamiento', 'Nombre del Entrenamiento', // Liftoff (español)
   ],
   EXERCISE_NAME: [
     'Exercise Name', // Strong
@@ -113,16 +133,19 @@ export const COLUMN_SYNONYMS: Record<ImportField, string[]> = {
     'Exercise', // FitNotes, Fitbod, JEFIT/StrongLifts/Caliber (forma genérica)
     'Movement',
     'Exercise Type',
+    'Nombre del Ejercicio', 'Ejercicio', // Liftoff (español)
   ],
   SET_INDEX: [
     'Set Order', // Strong
     'set_index', // Hevy
     'Set', 'Set #', 'Set Number',
+    'Orden de las series', 'Orden de la serie', 'Serie', // Liftoff (español)
   ],
   REPS: [
     'Reps', // Strong, FitNotes, Fitbod
     'reps', // Hevy
     'Repetitions',
+    'Repeticiones', // Liftoff (español) — el caso real que destapó que hacía falta cobertura en español, no solo variantes de inglés entre apps
   ],
   DURATION_SECONDS: [
     'Seconds', // Strong (ejercicios cronometrados)
@@ -130,12 +153,22 @@ export const COLUMN_SYNONYMS: Record<ImportField, string[]> = {
     'Duration(s)', // Fitbod
     'Time', // FitNotes — OJO: en FitNotes suele venir en formato mm:ss, no segundos crudos, hay que parsear distinto que las demás
     'Duration',
+    // Liftoff (español, 22/09/2026) — el usuario aclaró explícitamente que
+    // "Duración" acá es el valor de UN EJERCICIO puntual medido en tiempo en
+    // vez de reps (mismo concepto que "Seconds"/DURATION_SECONDS de
+    // siempre), NO la duración del entrenamiento completo — calismap no
+    // tiene (ni necesita) un campo separado para "duración total de la
+    // sesión", así que no se creó uno nuevo. Liftoff trae "Duración" Y
+    // "Segundos" como dos columnas — ambas reconocidas acá, apuntando al
+    // mismo campo.
+    'Duración', 'Duracion', 'Segundos',
   ],
   WEIGHT_KG: [
     'Weight (kg)', // FitNotes
     'Weight(kg)', // Fitbod
     'Weight', // Strong — OJO: la unidad de "Weight" en Strong depende de una preferencia GLOBAL de la cuenta (kg o lbs), no viene indicada por fila; hay que preguntarle al usuario o asumir kg si no hay forma de saberlo
     'weight_kg',
+    'Peso', // Liftoff (español) — misma ambigüedad de unidad que "Weight" de Strong, ver arriba
   ],
   WEIGHT_LBS: [
     'Weight (lbs)', // FitNotes
@@ -146,6 +179,7 @@ export const COLUMN_SYNONYMS: Record<ImportField, string[]> = {
     'distance_miles', // Hevy
     'Distance(m)', // Fitbod
     'Distance Unit', // FitNotes (columna aparte con la unidad)
+    'Distancia', // Liftoff (español)
   ],
   NOTES: [
     'Notes', // Strong, FitNotes
@@ -153,9 +187,10 @@ export const COLUMN_SYNONYMS: Record<ImportField, string[]> = {
     'exercise_notes', // Hevy
     'Note', // Fitbod
     'Comment', 'Comments',
+    'Notas', // Liftoff (español)
   ],
   RPE: [
-    'RPE', // Strong, Hevy
+    'RPE', // Strong, Hevy, Liftoff (misma sigla en español, sin traducir)
     'Effort', 'rpe',
   ],
   SET_TYPE: [
