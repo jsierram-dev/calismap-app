@@ -41,6 +41,7 @@ export class CsvExportService {
     const sessionNameById = new Map(history.map((h) => [h.session.id, h.name]));
     const exerciseById = new Map(catalog.map((e) => [e.id, e]));
     const headers = this.i18n.lang() === 'en' ? HEADERS_EN : HEADERS_ES;
+    const fields = [headers.date, headers.workoutName, headers.exerciseName, headers.setOrder, headers.weightKg, headers.reps, headers.seconds];
 
     // "Orden de las series" no es una columna real de WorkoutLog — se
     // deriva acá agrupando por (sessionId, exerciseId) y numerando en
@@ -56,19 +57,27 @@ export class CsvExportService {
         const groupKey = `${log.sessionId}__${log.exerciseId}`;
         const setOrder = (setOrderBySessionExercise.get(groupKey) ?? 0) + 1;
         setOrderBySessionExercise.set(groupKey, setOrder);
-        return {
-          [headers.date]: formatLocalDateTime(log.loggedAt),
-          [headers.workoutName]: sessionNameById.get(log.sessionId)!,
-          [headers.exerciseName]: exercise.name,
-          [headers.setOrder]: setOrder,
-          [headers.weightKg]: log.addedWeightKg,
-          [headers.reps]: exercise.repUnit === 'reps' ? log.value : '',
-          [headers.seconds]: exercise.repUnit === 'seconds' ? log.value : '',
-        };
+        return [
+          formatLocalDateTime(log.loggedAt),
+          sessionNameById.get(log.sessionId)!,
+          exercise.name,
+          setOrder,
+          log.addedWeightKg,
+          exercise.repUnit === 'reps' ? log.value : '',
+          exercise.repUnit === 'seconds' ? log.value : '',
+        ];
       })
       .filter((r): r is NonNullable<typeof r> => r !== null);
 
-    const csv = Papa.unparse(rows);
+    // Bug real reportado por el usuario (22/09/2026) — Papa.unparse(rows)
+    // a secas infiere los headers de las KEYS del primer objeto; con el
+    // historial vacío (rows = []) no hay ningún objeto del que inferir
+    // nada, así que el archivo salía sin ninguna columna, ni siquiera la
+    // fila de encabezados. Pasando { fields, data } explícito en vez de
+    // solo el array, papaparse SIEMPRE escribe `fields` como encabezado,
+    // haya o no filas de datos — confirmado con un test propio antes de
+    // aplicar esto (Papa.unparse({fields, data: []}) ya da el header solo).
+    const csv = Papa.unparse({ fields, data: rows });
     const filename = `calismap-export-${new Date().toISOString().slice(0, 10)}.csv`;
     downloadTextFile(csv, filename);
     return { rowCount: rows.length };
