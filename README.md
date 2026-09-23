@@ -20,10 +20,14 @@ CalisMap is a calisthenics (bodyweight strength training) progression tracker. I
 
 ### What this repo does
 
-- The entire app a user sees: Roadmaps (progression paths) → Roadmap detail → Exercise detail, Exercise library (search + filter), workout sessions (free or from a routine, with a rest timer you can adjust mid-rest), Settings, and an admin panel for the three of us who curate the catalog.
+- The entire app a user sees: Roadmaps (progression paths) → Roadmap detail → Exercise detail, Exercise library (search + filter), workout sessions (free or from a routine, with a rest timer you can adjust mid-rest), and an admin panel for the three of us who curate the catalog.
+- Profile (the app's main navbar tab, replacing Settings): a monthly calendar of past sessions, a per-muscle-region recovery timer (48h, ACSM-based), and tier-progress stats. Settings moved to a secondary screen, reached from its own gear icon.
+- End-of-session summary: personal records, tier-ups, roadmap progress and weekly streak, shown right after finishing a workout.
+- Full CRUD for your own exercises and routines: search-as-you-type with suggestions that match across Spanish/English exercise names, plus editing and deleting what you created (not just creating it).
 - Rating engine: reps/seconds/weight logged against a step's thresholds compute its Bronze/Silver/Gold/Platinum/Diamond tier client-side, which is what actually unlocks the next step in a roadmap.
 - Local-first data: workout sessions, logged sets, personal routines and custom exercises live in `@ionic/storage-angular` (IndexedDB) first, synced to `calismap-back` in the background — the app works fully offline for anything you own.
 - Catalog (roadmaps/exercises/routines curated by an admin) is pull-and-cache: fetched from `calismap-back` network-first on every cold start, cached locally only as an offline fallback.
+- CSV import/export (`/import`, Settings → Data): recognizes columns from Strong/Hevy/Liftoff/FitNotes/Fitbod and similar apps' exports automatically via a multilingual column-synonym dictionary (`core/utils/import-column-synonyms.ts`), with a manual review step for every exercise name before anything is created — never a blind auto-import. Export is one click, same header vocabulary, so a round-trip through this app matches perfectly.
 - Admin panel (`/admin/**`, role-gated): full CRUD for roadmaps/exercises/routines, reusing the same exercise/routine editors a regular user uses for their own content, plus a read-only user list.
 - `/catalog-sources`: tells any user, with real links, where the catalog's progressions and rating thresholds actually come from — and is honest that most of the numeric thresholds are reasoned estimates, not all individually sourced from a published standard.
 
@@ -46,7 +50,7 @@ flowchart LR
 
 ![Angular, Ionic, TypeScript](https://skillicons.dev/icons?i=angular,ts)
 
-Angular 21 (standalone components, signals, `@if`/`@for`) + Ionic Angular 8 (standalone) for the mobile shell — animations and the iOS swipe-back gesture are deliberately off (`provideIonicAngular({ animated: false, swipeBackEnabled: false })`), since this app owns its own page transitions. `@ionic/storage-angular` for local-first data, plain `localStorage` for auth tokens only (needs synchronous reads in the route guard and interceptor). No NgRx — state lives in the relevant service, mostly as signals.
+Angular 21 (standalone components, signals, `@if`/`@for`) + Ionic Angular 8 (standalone) for the mobile shell — animations and the iOS swipe-back gesture are deliberately off (`provideIonicAngular({ animated: false, swipeBackEnabled: false })`), since this app owns its own page transitions. `@ionic/storage-angular` for local-first data, plain `localStorage` for auth tokens only (needs synchronous reads in the route guard and interceptor). `papaparse` for CSV import/export parsing. No NgRx — state lives in the relevant service, mostly as signals.
 
 ### Testing
 
@@ -71,7 +75,7 @@ Two one-time manual steps this workflow can't do by itself:
 1. Make this repo public (GitHub Pages' free tier doesn't serve private repos).
 2. `Settings → Pages → Source: GitHub Actions`, then re-run the workflow if the first push happened before enabling it.
 
-Login with Google isn't wired up in the UI yet (see `LoginComponent` in "What this repo does" — not built), so `googleClientId` is intentionally empty for this first deploy; the app works fully as a guest without it. Live URL once Pages is enabled: `https://jsierram-dev.github.io/calismap-app/`.
+Login with Google is fully wired up (offered at every moment that has a real reason — finishing a session, creating your own exercise/routine, completing a roadmap — plus a persistent button, with the app always usable as a guest without it). `googleClientId` in `environment.prod.ts` is a real Client ID from Google Cloud Console, shared with this author's `mudanza-app`/`similart-app`. Live URL once Pages is enabled: `https://jsierram-dev.github.io/calismap-app/`.
 
 ### Related repos
 
@@ -96,10 +100,14 @@ CalisMap es un rastreador de progresión de calistenia (entrenamiento de fuerza 
 
 ### Qué hace este repo
 
-- Toda la app que ve un usuario: Roadmaps (rutas de progresión) → Detalle de roadmap → Detalle de ejercicio, Biblioteca de ejercicios (búsqueda + filtro), sesiones de entrenamiento (libres o desde una rutina, con temporizador de descanso ajustable a mitad de descanso), Ajustes, y un panel de administración para quienes curamos el catálogo.
+- Toda la app que ve un usuario: Roadmaps (rutas de progresión) → Detalle de roadmap → Detalle de ejercicio, Biblioteca de ejercicios (búsqueda + filtro), sesiones de entrenamiento (libres o desde una rutina, con temporizador de descanso ajustable a mitad de descanso), y un panel de administración para quienes curamos el catálogo.
+- Perfil (tab principal de la navbar, reemplaza a Ajustes): calendario mensual de sesiones pasadas, temporizador de recuperación muscular por región (48h, basado en ACSM), y estadísticas de progreso por tier. Ajustes pasó a ser una pantalla secundaria, a la que se entra desde su propio ícono de engranaje.
+- Pantalla de resumen al terminar una sesión: récords personales, subidas de tier, avance de roadmap y racha semanal, mostrados justo después de terminar un entrenamiento.
+- CRUD completo de ejercicios y rutinas propias: búsqueda con sugerencias mientras se escribe, que cruza nombres en español/inglés, más editar y eliminar lo que creaste (antes solo se podía crear).
 - Motor de rating: repeticiones/segundos/peso registrados contra los umbrales de un paso calculan su nivel Bronce/Plata/Oro/Platino/Diamante del lado del cliente, que es lo que realmente desbloquea el siguiente paso de un roadmap.
 - Datos local-first: sesiones de entrenamiento, series registradas, rutinas propias y ejercicios personalizados viven primero en `@ionic/storage-angular` (IndexedDB), sincronizados con `calismap-back` en segundo plano — la app funciona completa sin conexión para todo lo propio.
 - El catálogo (roadmaps/ejercicios/rutinas curados por un admin) es pull-and-cache: se pide a `calismap-back` primero por red en cada arranque frío, el caché local solo se usa como respaldo sin conexión.
+- Importar/exportar CSV (`/import`, Ajustes → Datos): reconoce automáticamente las columnas de exports de Strong/Hevy/Liftoff/FitNotes/Fitbod y apps similares, vía un diccionario de sinónimos multilingüe (`core/utils/import-column-synonyms.ts`), con un paso de revisión manual para cada nombre de ejercicio antes de crear nada — nunca una importación automática a ciegas. Exportar es de un click, con el mismo vocabulario de headers, así que un ida y vuelta por esta misma app matchea perfecto.
 - Panel de administración (`/admin/**`, protegido por rol): CRUD completo de roadmaps/ejercicios/rutinas, reusando los mismos editores de ejercicio/rutina que ya usa un usuario normal para lo propio, más una lista de usuarios de solo lectura.
 - `/catalog-sources`: le cuenta a cualquier usuario, con links reales, de dónde sale el catálogo y sus umbrales de rating — con honestidad sobre que la mayoría de los umbrales numéricos son estimaciones razonadas, no todos respaldados individualmente por un estándar publicado.
 
@@ -122,7 +130,7 @@ flowchart LR
 
 ![Angular, Ionic, TypeScript](https://skillicons.dev/icons?i=angular,ts)
 
-Angular 21 (componentes standalone, signals, `@if`/`@for`) + Ionic Angular 8 (standalone) para el shell mobile — las animaciones y el gesto de swipe-back de iOS están apagados a propósito (`provideIonicAngular({ animated: false, swipeBackEnabled: false })`), porque esta app maneja sus propias transiciones de página. `@ionic/storage-angular` para datos local-first, `localStorage` plano solo para los tokens de auth (necesita lectura síncrona en el route guard y el interceptor). Sin NgRx — el estado vive en el servicio correspondiente, mayormente como signals.
+Angular 21 (componentes standalone, signals, `@if`/`@for`) + Ionic Angular 8 (standalone) para el shell mobile — las animaciones y el gesto de swipe-back de iOS están apagados a propósito (`provideIonicAngular({ animated: false, swipeBackEnabled: false })`), porque esta app maneja sus propias transiciones de página. `@ionic/storage-angular` para datos local-first, `localStorage` plano solo para los tokens de auth (necesita lectura síncrona en el route guard y el interceptor). `papaparse` para parsear/generar los CSV de import/export. Sin NgRx — el estado vive en el servicio correspondiente, mayormente como signals.
 
 ### Pruebas
 
@@ -147,7 +155,7 @@ Dos pasos manuales de una sola vez que este workflow no puede hacer solo:
 1. Hacer público este repo (el tier gratis de GitHub Pages no sirve repos privados).
 2. `Settings → Pages → Source: GitHub Actions`, y volver a correr el workflow si el primer push pasó antes de habilitarlo.
 
-El login con Google todavía no está conectado en la interfaz (ver `LoginComponent` en "Qué hace este repo" — sin construir), así que `googleClientId` queda vacío a propósito para este primer deploy; la app funciona completa como invitado sin él. URL en vivo una vez habilitado Pages: `https://jsierram-dev.github.io/calismap-app/`.
+El login con Google está completamente conectado (se ofrece en cada momento con un motivo real — terminar una sesión, crear tu propio ejercicio/rutina, completar un roadmap — más un botón persistente, con la app siempre usable como invitado sin él). `googleClientId` en `environment.prod.ts` es un Client ID real de Google Cloud Console, compartido con `mudanza-app`/`similart-app` de este mismo autor. URL en vivo una vez habilitado Pages: `https://jsierram-dev.github.io/calismap-app/`.
 
 ### Repos relacionados
 
