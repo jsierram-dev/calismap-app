@@ -3,6 +3,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthUser, TokenPair } from '../models/auth-user.model';
+import { LocalStorageService } from './local-storage.service';
 
 const ACCESS_TOKEN_KEY = 'calismap_access_token';
 const REFRESH_TOKEN_KEY = 'calismap_refresh_token';
@@ -37,9 +38,15 @@ export class AuthService {
   isLoggedIn = computed(() => this.userSignal() !== null);
   isGuest = computed(() => this.userSignal()?.isGuest ?? true); // sin sesión todavía = tratalo como invitado, nunca como "logueado"
   isAdmin = computed(() => this.userSignal()?.isAdmin ?? false);
+  // La sesión de una cuenta de Google caducó (refresh vencido): se avisa en
+  // vez de pasar a invitado en silencio (ver SessionExpiredBannerComponent).
+  sessionExpired = signal(false);
   private refreshPromise: Promise<TokenPair | null> | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private localData: LocalStorageService,
+  ) {}
 
   getAccessToken(): string | null {
     return localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -74,7 +81,17 @@ export class AuthService {
     const response = await firstValueFrom(
       this.http.post<{ user: AuthUser } & TokenPair>(`${environment.authApiUrl}/auth/google`, { idToken }),
     );
+    // Tras una sesión caducada se puede entrar con OTRA cuenta: los datos
+    // locales son del usuario anterior y no deben subirse a la nueva.
+    const previous = this.userSignal();
+    if (previous && !previous.isGuest && previous.id !== response.user.id) {
+      await this.localData.clear();
+      this.applySession(response.user, response);
+      location.reload();
+      return response.user;
+    }
     this.applySession(response.user, response);
+    this.sessionExpired.set(false);
     return response.user;
   }
 
@@ -111,6 +128,7 @@ export class AuthService {
   }
 
   private async doRefresh(): Promise<TokenPair | null> {
+    if (this.sessionExpired()) return null; // ya avisado, hasta que vuelva a entrar
     const refreshToken = this.getRefreshToken();
     if (refreshToken) {
       try {
@@ -125,6 +143,13 @@ export class AuthService {
       }
     }
 
+    // Una cuenta de Google NO pasa a invitado: perdería la cuenta sin enterarse
+    // y sus datos locales quedarían colgados de un invitado. Se le pide entrar.
+    if (this.userSignal()?.isGuest === false) {
+      this.sessionExpired.set(true);
+      return null;
+    }
+
     try {
       await this.loginAsGuest();
       const accessToken = this.getAccessToken();
@@ -136,19 +161,20 @@ export class AuthService {
   }
 
   /**
-   * "Cerrar sesión" de una cuenta real. A diferencia de una app 100%
-   * opcional, acá la app SIEMPRE necesita algún JWT para funcionar (aunque
-   * sea de invitado) — por eso, a diferencia de un logout típico, esto
-   * encadena un `ensureSession()` para volver a invitado en vez de dejar la
-   * app sin sesión utilizable. Para un invitado, la pantalla de Ajustes usa
-   * otra acción ("Borrar datos locales"), no este método.
+   * "Cerrar sesión" de una cuenta real: borra TODOS los datos locales (si no,
+   * el siguiente en usar el dispositivo veía los del anterior y al iniciar
+   * sesión se subirían a su cuenta) y recarga la app, que arranca de cero
+   * con un invitado nuevo (ensureSession en app.config.ts). Recargar en vez
+   * de vaciar a mano cada caché en memoria de los servicios: no se olvida
+   * ninguna. Tema e idioma quedan (son del dispositivo, en localStorage).
+   * El último sync antes de salir lo hace quien llama (SettingsPage.logout).
    */
   async logout(): Promise<void> {
+    await this.localData.clear();
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    this.userSignal.set(null);
-    await this.ensureSession();
+    location.reload();
   }
 
   private applySession(user: AuthUser, tokens: TokenPair): void {

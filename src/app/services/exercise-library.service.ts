@@ -90,7 +90,7 @@ export class ExerciseLibraryService {
       // Solo la mitad PROPIA viaja por /sync — el catálogo es admin-only,
       // pull-and-cache aparte (ver refreshCatalog()).
       getAllForSync: async () => {
-        const all = await this.collection.getAll();
+        const all = await this.collection.getAllForSync();
         return all.filter((e) => !!e.userId);
       },
       applyUpdates: (updates) => this.collection.applyUpdates(updates),

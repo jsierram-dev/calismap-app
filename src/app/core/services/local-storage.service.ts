@@ -38,4 +38,10 @@ export class LocalStorageService {
     await this.ready;
     await this.storage.remove(key);
   }
+
+  /** Todo lo de Ionic Storage: datos del usuario y cachés del catálogo (se vuelven a pedir). */
+  async clear(): Promise<void> {
+    await this.ready;
+    await this.storage.clear();
+  }
 }

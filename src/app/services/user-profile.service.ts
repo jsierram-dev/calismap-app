@@ -58,8 +58,10 @@ export class UserProfileService {
     mirrorLangForSplash(next.language);
   }
 
+  // 75 = el peso de referencia de la fórmula (effectiveValue): sin peso
+  // indicado, la marca cuenta tal cual, sin ajustar por peso.
   getBodyWeightKg(): number {
-    return this.profileSignal().bodyWeightKg;
+    return this.profileSignal().bodyWeightKg ?? 75;
   }
 
   private async load(): Promise<void> {
@@ -67,6 +69,11 @@ export class UserProfileService {
     if (stored) {
       this.profileSignal.set(stored);
       mirrorLangForSplash(stored.language);
+      return;
     }
+    // Sin perfil (primer arranque o tras cerrar sesión): el idioma es del
+    // dispositivo, se conserva el último elegido en vez de volver al default.
+    const lang = localStorage.getItem(SPLASH_LANG_KEY);
+    if (lang === 'es' || lang === 'en') this.profileSignal.set({ ...DEFAULT_PROFILE, language: lang });
   }
 }

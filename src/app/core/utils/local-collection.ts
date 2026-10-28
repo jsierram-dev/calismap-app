@@ -35,6 +35,11 @@ interface Identifiable {
 export class LocalCollection<T extends Identifiable> {
   private cache: T[] | null = null;
   private loadPromise: Promise<T[]> | null = null;
+  // Escrituras en cola: dos a la vez (marcar dos series rápido, o una marca
+  // mientras llega un sync) leían la misma copia y la segunda pisaba a la primera.
+  private writes: Promise<unknown> = Promise.resolve();
+  // Ids escritos desde que se armó el último snapshot de sync (ver applyUpdates).
+  private changedSinceSnapshot = new Set<string>();
 
   constructor(
     private storage: LocalStorageService,
@@ -51,8 +56,9 @@ export class LocalCollection<T extends Identifiable> {
     return [...this.cache!];
   }
 
-  /** Alias — mismo nombre que espera SyncCollection<T>. */
+  /** Mismo nombre que espera SyncCollection<T> — marca el inicio de un sync. */
   async getAllForSync(): Promise<T[]> {
+    this.changedSinceSnapshot.clear();
     return this.getAll();
   }
 
@@ -61,25 +67,44 @@ export class LocalCollection<T extends Identifiable> {
     return all.find((e) => e.id === id) ?? null;
   }
 
-  async upsert(entity: T): Promise<void> {
-    const all = await this.getAll();
-    const idx = all.findIndex((e) => e.id === entity.id);
-    if (idx >= 0) {
-      all[idx] = entity;
-    } else {
-      all.push(entity);
-    }
-    this.cache = all;
-    await this.storage.set(this.key, all);
+  upsert(entity: T): Promise<void> {
+    return this.queue(async () => {
+      const all = await this.getAll();
+      const idx = all.findIndex((e) => e.id === entity.id);
+      if (idx >= 0) {
+        all[idx] = entity;
+      } else {
+        all.push(entity);
+      }
+      this.cache = all;
+      this.changedSinceSnapshot.add(entity.id);
+      await this.storage.set(this.key, all);
+    });
   }
 
-  /** Mismo nombre que espera SyncCollection<T> — upsert por id, una fila a la vez, por cada update que ganó del servidor. */
-  async applyUpdates(updates: T[]): Promise<void> {
-    if (!updates.length) return;
-    const all = await this.getAll();
-    const map = new Map(all.map((e) => [e.id, e]));
-    for (const update of updates) map.set(update.id, update);
-    this.cache = Array.from(map.values());
-    await this.storage.set(this.key, this.cache);
+  /**
+   * Mismo nombre que espera SyncCollection<T> — upsert por id de lo que ganó
+   * del servidor. Si la fila local se editó mientras el sync estaba en vuelo,
+   * se queda la local (es más nueva que lo que vio el servidor): viaja en el
+   * próximo sync. Por id escrito, no por updatedAt: un reloj adelantado no la
+   * haría pasar por más nueva.
+   */
+  applyUpdates(updates: T[]): Promise<void> {
+    if (!updates.length) return Promise.resolve();
+    return this.queue(async () => {
+      const all = await this.getAll();
+      const map = new Map(all.map((e) => [e.id, e]));
+      for (const update of updates) {
+        if (!this.changedSinceSnapshot.has(update.id)) map.set(update.id, update);
+      }
+      this.cache = Array.from(map.values());
+      await this.storage.set(this.key, this.cache);
+    });
+  }
+
+  private queue(write: () => Promise<void>): Promise<void> {
+    const run = this.writes.then(write, write);
+    this.writes = run.catch(() => undefined);
+    return run;
   }
 }

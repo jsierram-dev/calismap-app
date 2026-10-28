@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { Injectable, effect, signal, untracked } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Exercise } from '../../models/exercise.model';
@@ -7,9 +7,13 @@ import { UserProfile } from '../../models/user-profile.model';
 import { UserRoutine } from '../../models/user-routine.model';
 import { WorkoutLogSyncDto } from '../../models/workout-log.model';
 import { WorkoutSession } from '../../models/workout-session.model';
+import { AuthService } from './auth.service';
 import { LocalStorageService } from './local-storage.service';
 
 const LAST_SYNCED_AT_KEY = 'lastSyncedAt';
+// Entre syncs automáticos (volver a la app, salir de ella...): el back
+// admite 10/min por usuario y cada sync manda el snapshot entero.
+const MIN_AUTO_INTERVAL_MS = 20_000;
 
 /** Una colección local-first con lista (WorkoutSession/WorkoutLog/UserRoutine/Exercise propios). */
 export interface SyncCollection<T> {
@@ -79,12 +83,37 @@ export class SyncService {
 
   syncing = signal(false);
   lastError = signal<string | null>(null);
+  lastSyncedAt = signal<string | null>(null);
   conflicts = signal<ConflictsDto>({ workoutLogs: [] });
+  private lastAutoAttempt = 0;
+  private inFlight: Promise<void> | null = null;
 
+  /**
+   * Cuándo se sincroniza solo (antes no lo llamaba nada y todo vivía solo en
+   * el navegador): al arrancar con una cuenta de Google y justo tras iniciar
+   * sesión (este effect, lo hecho como invitado se sube a la cuenta), al
+   * salir de la app o volver a ella (visibilitychange) y al terminar un
+   * entrenamiento (WorkoutSessionService.endSession). No tras cada escritura:
+   * el snapshot va entero y durante un entrenamiento sería uno por serie.
+   */
   constructor(
     private http: HttpClient,
     private localStorage: LocalStorageService,
-  ) {}
+    private auth: AuthService,
+  ) {
+    this.localStorage.get<string>(LAST_SYNCED_AT_KEY).then((v) => this.lastSyncedAt.set(v));
+    effect(() => {
+      if (this.auth.user()?.isGuest === false) untracked(() => this.syncInBackground(true));
+    });
+    document.addEventListener('visibilitychange', () => this.syncInBackground());
+  }
+
+  /** Sync sin esperar ni propagar el error: el estado queda en lastError (Ajustes lo muestra). */
+  syncInBackground(force = false): void {
+    if (!force && Date.now() - this.lastAutoAttempt < MIN_AUTO_INTERVAL_MS) return;
+    this.lastAutoAttempt = Date.now();
+    this.sync().catch(() => undefined);
+  }
 
   registerWorkoutSessions(collection: SyncCollection<WorkoutSession>): void {
     this.workoutSessions = collection;
@@ -112,12 +141,22 @@ export class SyncService {
    * se termina de construir (paso 5), no debería pasar nunca en la app
    * terminada, así que no hace falta más que un log.
    */
-  async sync(): Promise<void> {
+  sync(): Promise<void> {
+    // Si ya hay uno en vuelo se devuelve ese mismo (candado del lado del
+    // cliente, mismo motivo que syncsInProgress en el back): quien espera un
+    // sync, como el logout antes de borrar los datos, espera al real.
+    if (!this.inFlight) this.inFlight = this.run().finally(() => (this.inFlight = null));
+    return this.inFlight;
+  }
+
+  private async run(): Promise<void> {
+    // Un invitado no tiene cuenta a la que subir (el back responde 403), y una
+    // sesión caducada espera a que vuelva a entrar.
+    if (this.auth.isGuest() || this.auth.sessionExpired()) return;
     if (!this.workoutSessions || !this.workoutLogs || !this.userRoutines || !this.exercises || !this.userProfile) {
       console.warn('SyncService.sync(): faltan colecciones por registrar todavía, se omite este ciclo.');
       return;
     }
-    if (this.syncing()) return; // candado simple del lado del cliente — mismo motivo que syncsInProgress en el back, evita 2 syncs superpuestos por F5/varias pestañas
 
     this.syncing.set(true);
     this.lastError.set(null);
@@ -143,9 +182,11 @@ export class SyncService {
       await this.userProfile.applyUpdate(response.updates.userProfile);
 
       await this.localStorage.set(LAST_SYNCED_AT_KEY, response.syncedAt);
+      this.lastSyncedAt.set(response.syncedAt);
       this.conflicts.set(response.conflicts);
     } catch (err) {
-      this.lastError.set(err instanceof Error ? err.message : 'La sincronización falló');
+      // Solo para depurar: la UI muestra su propio texto traducido, no este.
+      this.lastError.set(err instanceof Error ? err.message : String(err));
       throw err;
     } finally {
       this.syncing.set(false);
