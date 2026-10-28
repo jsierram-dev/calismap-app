@@ -26,7 +26,7 @@ export class WorkoutLogService {
   ) {
     this.collection = new LocalCollection<WorkoutLog>(storage, KEY);
     this.sync.registerWorkoutLogs({
-      getAllForSync: async () => (await this.collection.getAll()).map(toSyncDto),
+      getAllForSync: async () => (await this.collection.getAllForSync()).map(toSyncDto),
       applyUpdates: (updates) => this.collection.applyUpdates(updates.map(fromSyncDto)),
     });
   }
