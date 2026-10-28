@@ -66,6 +66,21 @@ export class SettingsPage implements OnInit {
     await this.auth.logout();
   }
 
+  deletingAccount = signal(false);
+  deleteError = signal<string | null>(null);
+
+  async deleteAccount(): Promise<void> {
+    if (!confirm(this.i18n.t('settings.deleteAccountConfirm'))) return;
+    this.deletingAccount.set(true);
+    this.deleteError.set(null);
+    try {
+      await this.auth.deleteAccount(); // recarga la app al terminar
+    } catch {
+      this.deleteError.set(this.i18n.t('settings.deleteAccountError'));
+      this.deletingAccount.set(false);
+    }
+  }
+
   syncNow(): void {
     this.sync.syncInBackground(true);
   }
@@ -109,6 +124,11 @@ export class SettingsPage implements OnInit {
   // Solo guarda un peso real (1-500 kg) que haya cambiado: antes un blur con
   // el campo a medio escribir guardaba 0, negativos o el valor por defecto.
   async saveBodyWeight(displayValue: number | null): Promise<void> {
+    // Campo vacío = quitar el peso (es un dato de salud: tiene que poder retirarse).
+    if (displayValue == null) {
+      if (this.profile.profile().bodyWeightKg != null) await this.profile.save({ bodyWeightKg: null });
+      return;
+    }
     const kg = this.profile.profile().weightUnit === 'lbs' && displayValue != null ? displayValue * KG_PER_LB : displayValue;
     if (kg == null || !Number.isFinite(kg) || kg < 1 || kg > 500) {
       this.load(); // vuelve a mostrar el peso guardado
