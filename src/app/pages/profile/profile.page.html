@@ -33,6 +33,12 @@
       @if (loginError(); as message) {
         <p class="login-inline-error">{{ message }}</p>
       }
+      <p class="sub legal-note" style="margin:-12px 0 22px;text-align:center">
+        {{ i18n.t('legal.acceptPrefix') }}
+        <a href="terms.html" target="_blank" rel="noopener">{{ i18n.t('legal.terms') }}</a>
+        {{ i18n.t('legal.and') }}
+        <a href="privacy.html" target="_blank" rel="noopener">{{ i18n.t('legal.privacy') }}</a>.
+      </p>
     }
 
     <div class="settings-group">

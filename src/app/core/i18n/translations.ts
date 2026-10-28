@@ -287,6 +287,15 @@ export const TRANSLATIONS = {
     'settings.adminPanel': 'Panel de administración',
     'settings.account': 'Cuenta',
     'settings.logout': 'Cerrar sesión',
+    'settings.deleteAccount': 'Eliminar cuenta y datos',
+    'settings.deletingAccount': 'Eliminando…',
+    'settings.deleteAccountDesc': 'Borra todos tus datos de CalisMap, en el servidor y en este dispositivo',
+    'settings.deleteAccountConfirm': 'Se borrarán para siempre todos tus datos de CalisMap: entrenamientos, series, rutinas y ejercicios propios, fotos y perfil. No se puede deshacer. Si quieres conservarlos, expórtalos antes a CSV desde Ajustes → Datos. Tu cuenta de Google no se toca. ¿Eliminar?',
+    'settings.deleteAccountError': 'No se pudo eliminar la cuenta. Revisa tu conexión y prueba de nuevo.',
+    'legal.privacy': 'Política de privacidad',
+    'legal.terms': 'Términos de uso',
+    'legal.acceptPrefix': 'Al continuar aceptas los',
+    'legal.and': 'y la',
 
     // ── import (22/09/2026) ──────────────────────────────────────────────
     'import.title': 'Importar entrenamientos',
@@ -733,6 +742,15 @@ export const TRANSLATIONS = {
     'settings.adminPanel': 'Admin panel',
     'settings.account': 'Account',
     'settings.logout': 'Log out',
+    'settings.deleteAccount': 'Delete account and data',
+    'settings.deletingAccount': 'Deleting…',
+    'settings.deleteAccountDesc': 'Removes all your CalisMap data, on the server and on this device',
+    'settings.deleteAccountConfirm': "All your CalisMap data will be deleted forever: workouts, sets, your own routines and exercises, photos and profile. This can't be undone. To keep a copy, export it to CSV first from Settings → Data. Your Google account isn't affected. Delete?",
+    'settings.deleteAccountError': "Couldn't delete the account. Check your connection and try again.",
+    'legal.privacy': 'Privacy Policy',
+    'legal.terms': 'Terms of Use',
+    'legal.acceptPrefix': 'By continuing you accept the',
+    'legal.and': 'and the',
 
     // ── import (22/09/2026) ──────────────────────────────────────────────
     'import.title': 'Import workouts',

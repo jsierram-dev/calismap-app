@@ -177,6 +177,16 @@ export class AuthService {
     location.reload();
   }
 
+  /**
+   * Borra en calismap-back TODOS los datos de CalisMap de esta cuenta y
+   * después los del dispositivo (logout). La cuenta de Google en
+   * jp-back-auth no se toca: es compartida con las otras apps del autor.
+   */
+  async deleteAccount(): Promise<void> {
+    await firstValueFrom(this.http.delete(`${environment.apiUrl}/me`));
+    await this.logout();
+  }
+
   private applySession(user: AuthUser, tokens: TokenPair): void {
     localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);

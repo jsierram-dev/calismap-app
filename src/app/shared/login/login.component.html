@@ -23,5 +23,11 @@
       <p class="login-error">{{ message }}</p>
     }
     <p class="login-note">{{ i18n.t('login.note') }}</p>
+    <p class="login-note">
+      {{ i18n.t('legal.acceptPrefix') }}
+      <a href="terms.html" target="_blank" rel="noopener">{{ i18n.t('legal.terms') }}</a>
+      {{ i18n.t('legal.and') }}
+      <a href="privacy.html" target="_blank" rel="noopener">{{ i18n.t('legal.privacy') }}</a>.
+    </p>
   </div>
 </div>

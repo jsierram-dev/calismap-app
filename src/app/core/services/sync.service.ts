@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, effect, signal, untracked } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -185,6 +185,13 @@ export class SyncService {
       this.lastSyncedAt.set(response.syncedAt);
       this.conflicts.set(response.conflicts);
     } catch (err) {
+      // 410: la cuenta se borró desde otro dispositivo después del último
+      // sync de este. Sus datos locales son de esa cuenta borrada: se
+      // descartan igual que en el logout, sin volver a subirlos.
+      if (err instanceof HttpErrorResponse && err.status === 410) {
+        await this.auth.logout();
+        return;
+      }
       // Solo para depurar: la UI muestra su propio texto traducido, no este.
       this.lastError.set(err instanceof Error ? err.message : String(err));
       throw err;
