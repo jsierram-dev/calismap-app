@@ -33,7 +33,7 @@ const KG_PER_LB = 0.453592;
   styleUrl: './settings.page.css',
 })
 export class SettingsPage implements OnInit {
-  bodyWeightInput = signal(75);
+  bodyWeightInput = signal<number | null>(null);
   exportingCsv = signal(false);
   exportError = signal<string | null>(null);
 
@@ -56,8 +56,25 @@ export class SettingsPage implements OnInit {
     this.load();
   }
 
+  // Antes de borrar los datos del dispositivo se intenta un último sync; si
+  // falla (sin red, sesión caducada) se avisa de lo que se pierde y se deja
+  // salir igualmente si el usuario quiere.
   async logout(): Promise<void> {
+    let synced = !this.auth.sessionExpired();
+    if (synced) await this.sync.sync().catch(() => (synced = false));
+    if (!confirm(this.i18n.t(synced ? 'settings.logoutConfirm' : 'settings.logoutUnsynced'))) return;
     await this.auth.logout();
+  }
+
+  syncNow(): void {
+    this.sync.syncInBackground(true);
+  }
+
+  lastSyncLabel(): string {
+    const at = this.sync.lastSyncedAt();
+    if (!at) return this.i18n.t('settings.neverSynced');
+    const time = new Date(at).toLocaleString(this.profile.profile().language, { dateStyle: 'short', timeStyle: 'short' });
+    return this.i18n.t('settings.lastSync', { time });
   }
 
   // El toggle ES/EN cambia la UI al instante (I18nService.lang() es un
@@ -79,16 +96,25 @@ export class SettingsPage implements OnInit {
   }
 
   setWeightUnit(weightUnit: UserProfile['weightUnit']): void {
-    this.profile.save({ weightUnit });
+    // Recarga el campo en la unidad nueva: si no, el número en kg se guardaría como libras al salir.
+    this.profile.save({ weightUnit }).then(() => this.load());
   }
 
-  displayWeight(): number {
+  displayWeight(): number | null {
     const kg = this.profile.profile().bodyWeightKg;
+    if (kg == null) return null;
     return this.profile.profile().weightUnit === 'lbs' ? Math.round(kg / KG_PER_LB) : Math.round(kg);
   }
 
-  async saveBodyWeight(displayValue: number): Promise<void> {
-    const kg = this.profile.profile().weightUnit === 'lbs' ? displayValue * KG_PER_LB : displayValue;
+  // Solo guarda un peso real (1-500 kg) que haya cambiado: antes un blur con
+  // el campo a medio escribir guardaba 0, negativos o el valor por defecto.
+  async saveBodyWeight(displayValue: number | null): Promise<void> {
+    const kg = this.profile.profile().weightUnit === 'lbs' && displayValue != null ? displayValue * KG_PER_LB : displayValue;
+    if (kg == null || !Number.isFinite(kg) || kg < 1 || kg > 500) {
+      this.load(); // vuelve a mostrar el peso guardado
+      return;
+    }
+    if (displayValue === this.displayWeight()) return;
     await this.profile.save({ bodyWeightKg: Math.round(kg * 10) / 10 });
   }
 

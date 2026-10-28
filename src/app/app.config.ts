@@ -12,6 +12,10 @@ import { AuthService } from './core/services/auth.service';
 import { ThemeService } from './core/services/theme.service';
 import { RoadmapService } from './services/roadmap.service';
 import { WorkoutSessionService } from './services/workout-session.service';
+import { WorkoutLogService } from './services/workout-log.service';
+import { UserRoutineService } from './services/user-routine.service';
+import { ExerciseLibraryService } from './services/exercise-library.service';
+import { UserProfileService } from './services/user-profile.service';
 import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
@@ -88,6 +92,13 @@ export const appConfig: ApplicationConfig = {
       // (siempre se entra primero por Roadmaps, que sí repuebla) — por eso
       // no se había encontrado antes.
       inject(WorkoutSessionService);
+      // Las 5 colecciones que sincronizan se registran en SyncService desde
+      // su constructor: sin crearlas aquí, el sync del arranque (cuenta de
+      // Google) se saltaría hasta que el usuario visitara cada pantalla.
+      inject(WorkoutLogService);
+      inject(UserRoutineService);
+      inject(ExerciseLibraryService);
+      inject(UserProfileService);
 
       // Ping en paralelo a calismap-back (18/08/2026, ver ROADMAP-calismap.md
       // "Investigación: carga inicial lenta") — jp-back-auth y calismap-back

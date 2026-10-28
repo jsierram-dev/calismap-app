@@ -129,6 +129,7 @@ export class WorkoutSessionService {
     await this.collection.upsert(ended);
     await this.storage.remove(ACTIVE_NAME_KEY);
     this.indicator.clear();
+    this.sync.syncInBackground(); // terminar un entrenamiento es el momento de subirlo
   }
 
   /** Repuebla el indicador compartido al arrancar la app, si quedó una sesión abierta de antes (cierre inesperado, F5, etc.). */

@@ -6,6 +6,7 @@ import { filter, map } from 'rxjs/operators';
 import { NavbarComponent } from './shared/navbar/navbar.component';
 import { NoticeSessionComponent } from './shared/notice-session/notice-session.component';
 import { UpdateBannerComponent } from './shared/update-banner/update-banner.component';
+import { SessionExpiredBannerComponent } from './shared/session-expired-banner/session-expired-banner.component';
 
 // Shell de la app — NavbarComponent/NoticeSessionComponent/
 // UpdateBannerComponent son GLOBALES (viven acá, fuera del router-outlet, no
@@ -16,7 +17,7 @@ import { UpdateBannerComponent } from './shared/update-banner/update-banner.comp
 // un modal: es una pantalla de cierre, no un lugar desde el que se navega.
 @Component({
   selector: 'app-root',
-  imports: [IonApp, IonRouterOutlet, NavbarComponent, NoticeSessionComponent, UpdateBannerComponent],
+  imports: [IonApp, IonRouterOutlet, NavbarComponent, NoticeSessionComponent, UpdateBannerComponent, SessionExpiredBannerComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
   standalone: true
