@@ -323,16 +323,16 @@ export class CreateExercisePage implements OnInit {
   }
 
   // Mismos topes que calismap-back (photos/routes.ts): subir exige cuenta real
-  // y un vídeo hasta 15 MB. Se avisa antes de mandar nada.
+  // y cada archivo hasta 20 MB. Se avisa antes de mandar nada.
   private uploadBlockedKey(file: File): string | null {
     if (this.auth.isGuest()) return 'createExercise.loginToUpload';
-    if (file.type.startsWith('video/') && file.size > 15 * 1024 * 1024) return 'createExercise.videoTooLarge';
+    if (file.size > 20 * 1024 * 1024) return 'createExercise.fileTooLarge';
     return null;
   }
 
+  // 507: el back alcanzó su tope global de espacio (photos/controller.ts).
   private uploadErrorKey(err: unknown, fallback: string): string {
-    const limit = err instanceof HttpErrorResponse && (err.status === 413 || err.status === 507);
-    return limit ? 'createExercise.uploadLimit' : fallback;
+    return err instanceof HttpErrorResponse && err.status === 507 ? 'createExercise.uploadLimit' : fallback;
   }
 
   isSelected(muscle: MuscleGroup): boolean {

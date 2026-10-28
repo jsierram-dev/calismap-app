@@ -18,25 +18,9 @@ export class PhotoService {
   async upload(file: File): Promise<string> {
     const id = newId();
     const formData = new FormData();
-    if (file.type.startsWith('image/')) formData.append('file', await this.shrink(file), 'photo.jpg');
-    else formData.append('file', file);
+    formData.append('file', file);
     await firstValueFrom(this.http.put(`${environment.apiUrl}/photos/${id}`, formData));
     return id;
-  }
-
-  // Una foto de móvil pesa 3-6 MB y el back acepta 3 MB por imagen: se reduce
-  // a 1600 px en JPEG (de paso convierte HEIC, que el back no acepta).
-  private async shrink(file: File): Promise<Blob> {
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(bitmap.width * scale);
-    canvas.height = Math.round(bitmap.height * scale);
-    canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    bitmap.close();
-    return new Promise((resolve, reject) =>
-      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('No se pudo comprimir la imagen'))), 'image/jpeg', 0.85),
-    );
   }
 
   /**
