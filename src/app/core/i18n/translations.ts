@@ -340,6 +340,9 @@ export const TRANSLATIONS = {
     'createExercise.deleteExercise': 'Eliminar ejercicio',
     'createExercise.photoUploadError': 'No se pudo subir la foto — prueba de nuevo.',
     'createExercise.videoUploadError': 'No se pudo subir el video — prueba de nuevo.',
+    'createExercise.loginToUpload': 'Inicia sesión con Google para subir fotos y vídeos.',
+    'createExercise.videoTooLarge': 'El vídeo supera 15 MB — prueba con uno más corto.',
+    'createExercise.uploadLimit': 'Has llegado al límite de archivos subidos.',
     'createExercise.confirmDelete': '¿Borrar el ejercicio "{name}"? Esta acción no se puede deshacer.',
 
     // ── create-routine (08) ──────────────────────────────────────────────
@@ -773,6 +776,9 @@ export const TRANSLATIONS = {
     'createExercise.deleteExercise': 'Delete exercise',
     'createExercise.photoUploadError': "Couldn't upload the photo — please try again.",
     'createExercise.videoUploadError': "Couldn't upload the video — please try again.",
+    'createExercise.loginToUpload': 'Sign in with Google to upload photos and videos.',
+    'createExercise.videoTooLarge': 'The video is over 15 MB — try a shorter one.',
+    'createExercise.uploadLimit': "You've reached the upload limit.",
     'createExercise.confirmDelete': 'Delete "{name}"? This action cannot be undone.',
 
     // ── create-routine ───────────────────────────────────────────────────

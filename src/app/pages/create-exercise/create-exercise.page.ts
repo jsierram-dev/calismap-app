@@ -1,4 +1,5 @@
 import { Component, DestroyRef, OnInit, effect, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ModalController } from '@ionic/angular/standalone';
@@ -282,14 +283,19 @@ export class CreateExercisePage implements OnInit {
   async onPhotoSelected(event: Event): Promise<void> {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
+    const blocked = this.uploadBlockedKey(file);
+    if (blocked) {
+      this.photoUploadError.set(this.i18n.t(blocked));
+      return;
+    }
     if (this.photoPreviewUrl()) URL.revokeObjectURL(this.photoPreviewUrl()!);
     this.photoPreviewUrl.set(URL.createObjectURL(file)); // instantáneo, no espera la subida
     this.photoUploadError.set(null);
     this.uploadingPhoto.set(true);
     try {
       this.photoId.set(await this.photos.upload(file));
-    } catch {
-      this.photoUploadError.set(this.i18n.t('createExercise.photoUploadError'));
+    } catch (err) {
+      this.photoUploadError.set(this.i18n.t(this.uploadErrorKey(err, 'createExercise.photoUploadError')));
     } finally {
       this.uploadingPhoto.set(false);
     }
@@ -298,17 +304,35 @@ export class CreateExercisePage implements OnInit {
   async onVideoSelected(event: Event): Promise<void> {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
+    const blocked = this.uploadBlockedKey(file);
+    if (blocked) {
+      this.videoUploadError.set(this.i18n.t(blocked));
+      return;
+    }
     if (this.videoPreviewUrl()) URL.revokeObjectURL(this.videoPreviewUrl()!);
     this.videoPreviewUrl.set(URL.createObjectURL(file));
     this.videoUploadError.set(null);
     this.uploadingVideo.set(true);
     try {
       this.videoId.set(await this.photos.upload(file));
-    } catch {
-      this.videoUploadError.set(this.i18n.t('createExercise.videoUploadError'));
+    } catch (err) {
+      this.videoUploadError.set(this.i18n.t(this.uploadErrorKey(err, 'createExercise.videoUploadError')));
     } finally {
       this.uploadingVideo.set(false);
     }
+  }
+
+  // Mismos topes que calismap-back (photos/routes.ts): subir exige cuenta real
+  // y un vídeo hasta 15 MB. Se avisa antes de mandar nada.
+  private uploadBlockedKey(file: File): string | null {
+    if (this.auth.isGuest()) return 'createExercise.loginToUpload';
+    if (file.type.startsWith('video/') && file.size > 15 * 1024 * 1024) return 'createExercise.videoTooLarge';
+    return null;
+  }
+
+  private uploadErrorKey(err: unknown, fallback: string): string {
+    const limit = err instanceof HttpErrorResponse && (err.status === 413 || err.status === 507);
+    return limit ? 'createExercise.uploadLimit' : fallback;
   }
 
   isSelected(muscle: MuscleGroup): boolean {
